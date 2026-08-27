@@ -173,6 +173,7 @@ defmodule Capstone.Manifest do
   # holding the wrong value does — `Capstone.Config` makes the same choice for
   # `target.exs`, and one hand editing the other file deserves one error class.
   @doc false
+  @spec fetch!(map(), atom(), Path.t()) :: term()
   def fetch!(map, key, file) do
     case Map.fetch(map, key) do
       {:ok, value} -> value
@@ -186,6 +187,7 @@ defmodule Capstone.Manifest do
   def invalid!(message), do: raise(__MODULE__.InvalidError, message: message)
 
   @doc false
+  @spec validate_digest!(term(), String.t()) :: :ok
   def validate_digest!(digest, field) when is_binary(digest) do
     if digest =~ @digest_format,
       do: :ok,
@@ -197,6 +199,7 @@ defmodule Capstone.Manifest do
   end
 
   @doc false
+  @spec validate_timestamp!(term(), String.t()) :: :ok
   def validate_timestamp!(value, field) when is_binary(value) do
     case DateTime.from_iso8601(value) do
       {:ok, datetime, 0} -> validate_utc_spelling!(datetime, value, field)
@@ -334,6 +337,10 @@ defmodule Capstone.Manifest.Plugin do
     project: []
   ]
 
+  @typedoc """
+  Where an applied plugin's archive came from: a hex package and version, a
+  local path relative to the checkout, or the filename of a registry archive.
+  """
   @type origin :: {:hex, String.t(), String.t()} | {:path, Path.t()} | {:registry, String.t()}
 
   @type t :: %__MODULE__{
@@ -348,6 +355,7 @@ defmodule Capstone.Manifest.Plugin do
         }
 
   @doc false
+  @spec validate!(t()) :: :ok
   def validate!(%__MODULE__{} = plugin) do
     validate_version!(plugin.version)
     validate_origin!(plugin.origin)
@@ -356,6 +364,7 @@ defmodule Capstone.Manifest.Plugin do
   end
 
   @doc false
+  @spec from_data!(map(), Path.t()) :: t()
   def from_data!(data, file) do
     %__MODULE__{
       applied_at: Manifest.fetch!(data, :applied_at, file),
@@ -376,6 +385,7 @@ defmodule Capstone.Manifest.Plugin do
   # nil FileEntry key gets and for the same reason: the bytes must match SDD
   # 8.2, and a plugin that changed nothing in mix.exs says so by silence.
   @doc false
+  @spec to_data(t()) :: map()
   def to_data(%__MODULE__{} = plugin) do
     %{
       applied_at: plugin.applied_at,
@@ -456,6 +466,7 @@ defmodule Capstone.Manifest.FileEntry do
   @enforce_keys [:hash, :mode, :path]
   defstruct [:hash, :key, :mode, :path]
 
+  @typedoc "How a plugin owns this file — see the moduledoc for what each value means."
   @type mode :: :sole_owner | :contributes | :seed | :manual
   @type t :: %__MODULE__{hash: String.t(), key: atom() | nil, mode: mode(), path: String.t()}
 
@@ -463,6 +474,7 @@ defmodule Capstone.Manifest.FileEntry do
   @keyed [:contributes, :manual]
 
   @doc false
+  @spec validate!(t()) :: :ok
   def validate!(%__MODULE__{mode: mode, key: nil, path: path}) when mode in @keyed do
     Manifest.invalid!("#{path}: mode #{inspect(mode)} requires a :key")
   end
@@ -481,6 +493,7 @@ defmodule Capstone.Manifest.FileEntry do
   end
 
   @doc false
+  @spec from_data!(map(), Path.t()) :: t()
   def from_data!(data, file) do
     %__MODULE__{
       hash: Manifest.fetch!(data, :hash, file),
@@ -493,6 +506,7 @@ defmodule Capstone.Manifest.FileEntry do
   # Hand-written, NOT Map.from_struct/1: a nil :key must be OMITTED, not
   # encoded as `key: nil`, so the bytes match SDD 8.2 exactly.
   @doc false
+  @spec to_data(t()) :: map()
   def to_data(%__MODULE__{key: nil} = entry) do
     %{hash: entry.hash, mode: entry.mode, path: entry.path}
   end

@@ -21,6 +21,7 @@ defmodule Capstone.Config.Fields do
   `plugins`) each have bespoke validation rules, not a shared predicate.
   """
 
+  @typedoc "Re-exported for callers that only need `Fields`; see `Capstone.Config.Literal.path/0`."
   @type path :: Capstone.Config.Literal.path()
 
   @doc """

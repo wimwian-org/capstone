@@ -6,8 +6,7 @@ defmodule Capstone.Update do
 
   Never re-resolves or upgrades an already-recorded plugin, even when a
   better-matching archive now exists for it — that comparison is explicitly
-  out of scope here, the same boundary `Capstone.Plugin.Record`'s own
-  moduledoc already documents as unwritten.
+  out of scope, per the design doc's "Explicitly out of scope" section.
   """
 
   alias Capstone.Config
@@ -25,7 +24,6 @@ defmodule Capstone.Update do
     root = Root.new!(target)
     target_exs_path = Root.path(root, "target.exs")
 
-    # If target.exs doesn't exist, return empty list (no plugins to apply)
     if File.regular?(target_exs_path) do
       config = Config.read!(target_exs_path)
       already = already_applied(root)

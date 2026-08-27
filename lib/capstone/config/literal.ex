@@ -24,7 +24,10 @@ defmodule Capstone.Config.Literal do
   `static_atoms_encoder:` is the mechanism to reach for.
   """
 
+  @typedoc "A location inside the parsed term, as a list of map keys and list indices from the root."
   @type path :: [atom() | non_neg_integer()]
+
+  @typedoc "Every reason `from_source/1` can fail: unparseable source, a non-literal AST node, or a duplicate map key."
   @type error ::
           {:syntax_error, line :: pos_integer(), description :: String.t()}
           | {:not_literal, path(), quoted :: Macro.t()}

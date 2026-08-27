@@ -24,6 +24,7 @@ defmodule Capstone.Source.ApplicationEx do
   alias Capstone.Source.MixExs
   alias Capstone.Vendor.Sourceror.Zipper
 
+  @typedoc "Every reason adding a child to `start/2`'s supervision list can fail."
   @type error ::
           {:no_start_function, :not_found}
           | {:children_not_a_literal, :start}

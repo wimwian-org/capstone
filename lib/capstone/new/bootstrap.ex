@@ -22,6 +22,13 @@ defmodule Capstone.New.Bootstrap do
   Patching and config-writing precede dependency work too, so a project whose
   `mix.exs` cannot be patched is never compiled against a dep it does not
   declare.
+
+  Plugin application sits between the `target.exs` write and dependency work,
+  for two independent reasons: it must follow the write, because
+  `Capstone.Plugin.Install` reads `target.exs` back through
+  `Capstone.Config`; and it must precede `deps.get`/`deps.compile`, because a
+  plugin's `deps:` are written into `mix.exs` there and would otherwise never
+  be fetched.
   """
 
   alias Capstone.New.Env
@@ -31,6 +38,7 @@ defmodule Capstone.New.Bootstrap do
   alias Capstone.Plugin.Install
   alias Capstone.Plugin.Registry
 
+  @typedoc "Every side effect `run/3` performs, injected so each is fake-able in-process."
   @type effects :: %{
           getenv: (-> %{optional(String.t()) => String.t()}),
           lookup: Shell.lookup(),
