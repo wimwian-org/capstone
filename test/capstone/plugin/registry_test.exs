@@ -5,6 +5,10 @@ defmodule Capstone.Plugin.RegistryTest do
 
   defp put(dir, filename), do: File.write!(Path.join(dir, filename), "")
 
+  test "default_dir/0 is this app's own priv/plugins" do
+    assert Registry.default_dir() == Application.app_dir(:capstone, "priv/plugins")
+  end
+
   @tag :tmp_dir
   test "resolves the only matching archive", %{tmp_dir: dir} do
     put(dir, "cache-1.20.3-0.1.0-aaaaaaaaaaaa.tar.gz")
