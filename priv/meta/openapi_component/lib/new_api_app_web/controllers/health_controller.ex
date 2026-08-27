@@ -1,0 +1,72 @@
+defmodule NewApiAppWeb.HealthController do
+  @moduledoc """
+  Liveness and readiness probes.
+
+  The two are deliberately different questions. `health` answers "is this
+  process up", which an orchestrator uses to decide whether to RESTART the
+  container; `ready` answers "can it serve traffic", which decides whether
+  to ROUTE to it. Collapsing them means a database blip restarts every
+  replica instead of draining it.
+  """
+
+  use NewApiAppWeb, :controller
+
+  alias NewApiApp.Repo
+  alias NewApiAppWeb.Schemas
+  alias OpenApiSpex.Operation
+
+  @doc """
+  Resolves an action to its operation.
+
+  `OpenApiSpex.Paths.from_router/1` calls this for every route it finds, so
+  without it the document raises at generation time rather than at compile
+  time — which means `/api/v1/openapi` 500s while everything else looks fine.
+  """
+  def open_api_operation(action), do: apply(__MODULE__, :"#{action}_operation", [])
+
+  @doc "The OpenAPI operation for `health/2`."
+  def health_operation do
+    %Operation{
+      tags: ["ops"],
+      summary: "Liveness probe",
+      operationId: "HealthController.health",
+      responses: %{200 => Operation.response("Health", "application/json", Schemas.Health)}
+    }
+  end
+
+  @doc "Reports that the application is running."
+  def health(conn, _params) do
+    json(conn, %{status: "ok"})
+  end
+
+  @doc "The OpenAPI operation for `ready/2`."
+  def ready_operation do
+    %Operation{
+      tags: ["ops"],
+      summary: "Readiness probe",
+      operationId: "HealthController.ready",
+      responses: %{
+        200 => Operation.response("Ready", "application/json", Schemas.Ready),
+        503 => Operation.response("Ready", "application/json", Schemas.Ready)
+      }
+    }
+  end
+
+  @doc "Reports whether the application can serve traffic."
+  def ready(conn, _params) do
+    case database() do
+      "up" ->
+        json(conn, %{status: "ok", database: "up"})
+
+      down ->
+        conn |> put_status(:service_unavailable) |> json(%{status: "error", database: down})
+    end
+  end
+
+  defp database do
+    case Ecto.Adapters.SQL.query(Repo, "SELECT 1", []) do
+      {:ok, _result} -> "up"
+      {:error, _reason} -> "down"
+    end
+  end
+end

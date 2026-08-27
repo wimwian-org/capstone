@@ -1,0 +1,27 @@
+  pipeline :openapi do
+    plug OpenApiSpex.Plug.PutApiSpec, module: <%= @module %>Web.ApiSpec
+  end
+
+  pipeline :openapi_ui do
+    plug :accepts, ["html"]
+  end
+
+  scope "/api/v1", <%= @module %>Web do
+    pipe_through [:api, :openapi]
+
+    get "/health", HealthController, :health
+    get "/ready", HealthController, :ready
+  end
+
+  scope "/api/v1" do
+    pipe_through :openapi
+
+    get "/openapi", OpenApiSpex.Plug.RenderSpec, []
+  end
+
+  scope "/api/v1/docs" do
+    pipe_through :openapi_ui
+
+    get "/", OpenApiSpex.Plug.SwaggerUI, path: "/api/v1/openapi"
+  end
+

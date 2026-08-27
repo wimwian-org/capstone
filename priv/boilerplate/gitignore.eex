@@ -1,0 +1,45 @@
+# Shipped as `gitignore.eex`, never `.gitignore`: `mix archive.build` silently
+# drops dotfiles under priv/ unless --include-dot-files, and `archive.install
+# hex` passes no options. The generator writes it out under the real name.
+
+# The directory Mix will write compiled artifacts to.
+/_build/
+
+# If you run "mix test --cover", coverage assets end up here.
+/cover/
+
+# The directory Mix downloads your dependencies sources to.
+/deps/
+
+# Where third-party dependencies like ExDoc output generated docs.
+/doc/
+
+# Ignore .fetch files in case you like to edit your project deps locally.
+/.fetch
+
+# If the VM crashes, it generates a dump, let's ignore it too.
+erl_crash.dump
+
+# Also ignore archive artifacts (built via "mix archive.build").
+*.ez
+
+# Temporary files, for example, from tests.
+/tmp/
+
+# Local secrets — GITHUB_TOKEN, HEX_API_KEY, etc. Never committed.
+.env
+.env.*
+!/.env.sample
+
+# Ignore package tarball (built via "mix hex.build").
+<%= @app %>-*.tar
+<%= if @web? and not @api? do %>
+# Assets produced by the Vite/Svelte build.
+/priv/static/assets/
+
+# Digested assets cache.
+/priv/static/cache_manifest.json
+
+# Node modules for the asset pipeline.
+/assets/node_modules/
+<% end %>

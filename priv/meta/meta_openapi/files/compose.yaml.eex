@@ -1,0 +1,27 @@
+services:
+  db:
+    image: docker.io/library/postgres:17-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: dba4PG
+      POSTGRES_DB: <%= @app %>_prod
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  app:
+    build:
+      context: .
+    environment:
+      DATABASE_URL: ecto://postgres:dba4PG@db/<%= @app %>_prod
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      PHX_HOST: localhost
+      PHX_SERVER: "true"
+      PORT: "4000"
+    ports:
+      - "${APP_PORT:-4000}:4000"
+    depends_on:
+      db:
+        condition: service_healthy
