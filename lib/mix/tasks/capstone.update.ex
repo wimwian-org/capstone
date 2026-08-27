@@ -19,10 +19,23 @@ defmodule Mix.Tasks.Capstone.Update do
   alias Capstone.VersionGuard
 
   @impl Mix.Task
-  def run([]), do: do_run(".", Registry.default_dir())
-  def run([target]), do: do_run(target, Registry.default_dir())
+  def run(argv), do: run(argv, Registry.default_dir())
 
-  def run(_argv), do: Mix.raise("capstone.update expects at most one target directory")
+  @doc """
+  `run/1` with the plugin registry directory injected.
+
+  The seam exists for tests: without it every test of this task resolves
+  against `Capstone.Plugin.Registry.default_dir/0`, which under `MIX_ENV=test`
+  is a symlink to this repository's own checked-in, hex-shipped
+  `priv/plugins/` — so a test that seeds a fixture archive seeds it into the
+  package.
+  """
+  @spec run([String.t()], Path.t()) :: :ok
+  def run([], registry_dir), do: do_run(".", registry_dir)
+  def run([target], registry_dir), do: do_run(target, registry_dir)
+
+  def run(_argv, _registry_dir),
+    do: Mix.raise("capstone.update expects at most one target directory")
 
   defp do_run(target, registry_dir) do
     VersionGuard.verify!()
