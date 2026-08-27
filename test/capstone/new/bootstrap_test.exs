@@ -41,7 +41,8 @@ defmodule Capstone.New.BootstrapTest do
         lookup: fn _name -> Mix.Tasks.Help end,
         generator: generator(dir, :stock_otp),
         runner: {RecordingRunner, :cmd},
-        shell: Say
+        shell: Say,
+        sync: fn _type, _dir -> :ok end
       },
       overrides
     )
@@ -142,6 +143,7 @@ defmodule Capstone.New.BootstrapTest do
     assert is_function(defaults.lookup, 1)
     assert is_function(defaults.generator, 2)
     assert is_atom(defaults.shell)
+    assert is_function(defaults.sync, 2)
   end
 
   @tag :tmp_dir
@@ -190,7 +192,10 @@ defmodule Capstone.New.BootstrapTest do
         lookup: fn _ -> :fake_task end,
         generator: fn _name, _argv -> :ok end,
         runner: {__MODULE__, :fake_cmd},
-        shell: Say
+        shell: Say,
+        # :probe is a local fixture, never actually published — a real
+        # network sync for it would be an incidental, unnecessary dependency.
+        sync: fn _type, _dir -> :ok end
     }
 
     File.cd!(tmp, fn -> assert Bootstrap.run(opts, effects, registry) == :ok end)

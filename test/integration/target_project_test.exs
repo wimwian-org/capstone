@@ -134,7 +134,11 @@ defmodule Capstone.New.Integration.TargetProjectTest do
     effects = %{
       Bootstrap.defaults()
       | runner: {RecordingRunner, :cmd},
-        generator: generator
+        generator: generator,
+        # This helper's whole point is a LOCAL, controlled plugin registry —
+        # a real network sync for a fixture type (:probe) that is never
+        # actually published would be an incidental, unnecessary dependency.
+        sync: fn _type, _dir -> :ok end
     }
 
     capture_io(fn ->

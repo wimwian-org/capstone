@@ -7,8 +7,8 @@ defmodule Capstone.Plugin.RegistryTest do
 
   defp put(dir, filename), do: File.write!(Path.join(dir, filename), "")
 
-  test "default_dir/0 is this app's own priv/plugins" do
-    assert Registry.default_dir() == Application.app_dir(:capstone, "priv/plugins")
+  test "default_dir/0 is the OS user-cache directory, not priv/plugins" do
+    assert Registry.default_dir() == :filename.basedir(:user_cache, "capstone/plugins")
   end
 
   @tag :tmp_dir

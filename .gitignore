@@ -35,3 +35,10 @@ capstone-*.tar
 # subdirectory's worth of content this repo should track.
 /.claude/worktrees/
 
+# Plugin archives are downloaded on demand from this repo's GitHub
+# releases (see Capstone.Plugin.Remote) into an OS user-cache directory,
+# never committed to source — see Capstone.Plugin.Registry.default_dir/0.
+# A locally-packaged archive (mix capstone.plugin.package) lands here too;
+# it gets attached to a release manually, not committed.
+/priv/plugins/*.tar.gz
+
