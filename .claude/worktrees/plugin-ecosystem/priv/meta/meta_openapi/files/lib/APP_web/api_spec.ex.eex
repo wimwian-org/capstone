@@ -1,0 +1,20 @@
+defmodule <%= @module %>Web.ApiSpec do
+  @moduledoc "The OpenAPI 3 document served at `/api/v1/openapi`."
+
+  alias OpenApiSpex.Info
+  alias OpenApiSpex.OpenApi
+  alias OpenApiSpex.Paths
+  alias OpenApiSpex.Server
+
+  @behaviour OpenApi
+
+  @impl OpenApi
+  def spec do
+    %OpenApi{
+      servers: [Server.from_endpoint(<%= @module %>Web.Endpoint)],
+      info: %Info{title: "<%= @app %>", version: "1.0"},
+      paths: Paths.from_router(<%= @module %>Web.Router)
+    }
+    |> OpenApiSpex.resolve_schema_modules()
+  end
+end
