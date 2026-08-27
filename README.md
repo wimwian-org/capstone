@@ -86,6 +86,15 @@ hand, or activate it as a `post-commit` hook once per checkout:
 git config core.hooksPath scripts/hooks
 ```
 
+## Changelog
+
+`CHANGELOG.md` is generated, not hand-written: `mix devops.release` runs
+`git cliff` (configured in `cliff.toml`) against full history, consolidating
+every tagged release into one section each. Commit groups mirror
+`config/devops.exs`'s `:commit_types` table — a commit type that doesn't
+bump the version (`test`, `chore`, `build`, `ci`) doesn't appear in the
+changelog either.
+
 ## Gates
 
 Every commit is expected to satisfy:
