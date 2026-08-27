@@ -349,6 +349,17 @@ defmodule Capstone.ManifestTest do
     end
   end
 
+  describe "origin :registry" do
+    test "a {:registry, filename} origin is accepted and round-trips" do
+      manifest =
+        one_component_manifest(origin: {:registry, "cache-1.20.3-0.1.0-a3f9c21b0e77.tar.gz"})
+
+      encoded = Manifest.encode!(manifest)
+      assert encoded =~ "{:registry, \"cache-1.20.3-0.1.0-a3f9c21b0e77.tar.gz\"}"
+      assert Manifest.decode!(encoded, "plugin.exs") == manifest
+    end
+  end
+
   defp one_component_manifest(attrs) do
     Factory.build(:manifest, plugins: [Factory.build(:manifest_component, attrs)])
   end

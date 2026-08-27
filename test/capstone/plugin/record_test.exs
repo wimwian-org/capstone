@@ -266,6 +266,33 @@ defmodule Capstone.Plugin.RecordTest do
     end
   end
 
+  describe "an :origin opt" do
+    test "is recorded verbatim instead of the computed :path", %{dir: dir, target: target} do
+      # Apply.run/2 first, exactly as every other test here, so every file the
+      # plugin owns already exists on disk. Record.run/5 is then called a
+      # second time directly, standing in for what Apply.run/3 does
+      # internally, to isolate the override on the recorder itself.
+      declare!(target)
+      {:ok, plugin} = Apply.run(@plugin, dir)
+      names = Apply.names(dir)
+
+      Record.run(@plugin, dir, plugin, names,
+        origin: {:registry, "cache-1.20.3-0.1.0-a3f9c21b0e77.tar.gz"}
+      )
+
+      assert entry(target).origin == {:registry, "cache-1.20.3-0.1.0-a3f9c21b0e77.tar.gz"}
+    end
+
+    test "is not consulted when absent, computing the :path origin as before",
+         %{dir: dir, target: target} do
+      declare!(target)
+
+      {:ok, _plugin} = Apply.run(@plugin, dir)
+
+      assert entry(target).origin == {:path, @plugin}
+    end
+  end
+
   describe "a target that does not" do
     test "is installed, and records nothing", %{dir: dir, target: target} do
       {:ok, _component} = Apply.run(@plugin, dir)

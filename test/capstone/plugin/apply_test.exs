@@ -457,6 +457,59 @@ defmodule Capstone.Plugin.ApplyTest do
     end
   end
 
+  describe "an :origin opt" do
+    setup :target
+
+    test "passes through to Record, recorded verbatim", %{target: t} do
+      # A one-file synthetic plugin, same pattern as the :contributes/:manual
+      # dispatch tests above — the full meta_cache fixture needs a README.md
+      # and lib/APP.ex already on disk to contribute/anchor against, which a
+      # bare target/1 fixture does not have.
+      plugin_dir =
+        Path.join(System.tmp_dir!(), "origin-comp-#{System.unique_integer([:positive])}")
+
+      File.mkdir_p!(Path.join(plugin_dir, "files/lib/APP"))
+      on_exit(fn -> File.rm_rf!(plugin_dir) end)
+
+      File.write!(
+        Path.join(plugin_dir, "files/lib/APP/cache.ex.eex"),
+        "defmodule <%= @module %>.Cache do\nend\n"
+      )
+
+      Capstone.Plugin.write!(Path.join(plugin_dir, "manifest.exs"), %{
+        name: :cache,
+        version: "0.1.0",
+        deps: [],
+        files: [{"lib/APP/cache.ex", :sole_owner}]
+      })
+
+      File.write!(
+        Path.join(t, "mix.exs"),
+        "defmodule T.MixProject do\n  def project, do: [app: :tgt_app]\nend\n"
+      )
+
+      File.write!(
+        Path.join(t, "target.exs"),
+        ~s"""
+        %{
+          schema_version: 1,
+          base: :api,
+          plugins: [],
+          project: [name: "new_otp_app", github_org: "acme"]
+        }
+        """
+      )
+
+      {:ok, _plugin} =
+        Apply.run(plugin_dir, t, origin: {:registry, "cache-1.20.3-0.1.0-a3f9c21b0e77.tar.gz"})
+
+      manifest = Capstone.Manifest.read!(Capstone.Root.new!(t))
+      [entry] = manifest.plugins
+
+      assert entry.origin == {:registry, "cache-1.20.3-0.1.0-a3f9c21b0e77.tar.gz"}
+    end
+  end
+
   describe "a put: entry" do
     setup :target
 

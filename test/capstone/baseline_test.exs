@@ -143,6 +143,26 @@ defmodule Capstone.BaselineTest do
     refute mix_exs =~ ":tailwind"
   end
 
+  test "the prod_image_api component and its derived plugin both exclude .env" do
+    # .dockerignore governs what is SENT TO THE DAEMON, not merely what lands
+    # in the image, so a project generated with this plugin would otherwise
+    # transmit a local .env (GITHUB_TOKEN, HEX_API_KEY) on every build. The
+    # raw component is asserted alongside the derived output because it is the
+    # source `mix capstone.plugin.derive` reads: with only the derived file
+    # pinned, the next re-derive silently overwrites it back out again, which
+    # is exactly how this regressed.
+    for file <- [
+          "priv/meta/prod_image_api_component/.dockerignore",
+          "priv/meta/meta_prod_image_api/files/.dockerignore.eex"
+        ] do
+      contents = File.read!(file)
+
+      assert contents =~ ~r/^\.env$/m, "#{file} does not exclude .env"
+      assert contents =~ ~r/^\.env\.\*$/m, "#{file} does not exclude .env.*"
+      assert contents =~ ~r/^!\/\.env\.sample$/m, "#{file} does not re-include .env.sample"
+    end
+  end
+
   test "priv/baselines.exs is readable by Capstone.Source.decode!/2" do
     # Pins the task ordering so Baseline can never regress to Code.eval_file/1.
     assert is_map(Capstone.Source.decode!(File.read!("priv/baselines.exs"), "priv/baselines.exs"))

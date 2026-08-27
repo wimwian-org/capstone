@@ -10,8 +10,8 @@ defmodule Capstone.New.Options do
   supply.
   """
 
-  @enforce_keys [:app, :base, :github_org, :module, :name, :capstone]
-  defstruct [:app, :base, :github_org, :module, :name, :capstone]
+  @enforce_keys [:app, :base, :github_org, :module, :name, :capstone, :plugins]
+  defstruct [:app, :base, :github_org, :module, :name, :capstone, :plugins]
 
   @type base :: :otp | :api | :web | :both
   @type dep_source :: {:hex, String.t()} | {:path, Path.t()}
@@ -21,7 +21,8 @@ defmodule Capstone.New.Options do
           github_org: String.t(),
           module: module(),
           name: String.t(),
-          capstone: dep_source()
+          capstone: dep_source(),
+          plugins: [atom()]
         }
 
   @switches [path: :string]
@@ -57,7 +58,8 @@ defmodule Capstone.New.Options do
       module: config.project.module,
       base: config.base,
       github_org: config.project.github_org,
-      capstone: {:hex, @default_requirement}
+      capstone: {:hex, @default_requirement},
+      plugins: config.plugins
     }
   end
 

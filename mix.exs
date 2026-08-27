@@ -94,6 +94,7 @@ defmodule Capstone.MixProject do
       links: %{"GitHub" => @github},
       files: ~w(
         lib
+        priv/plugins
         mix.exs
         .formatter.exs
         .version

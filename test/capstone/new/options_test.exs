@@ -70,8 +70,15 @@ defmodule Capstone.New.OptionsTest do
              module: config.project.module,
              base: config.base,
              github_org: config.project.github_org,
-             capstone: {:hex, "~> 0.1"}
+             capstone: {:hex, "~> 0.1"},
+             plugins: config.plugins
            }
+  end
+
+  test "from_config!/1 carries the config's plugins list through" do
+    config = Factory.build(:config, plugins: [:cache])
+
+    assert Options.from_config!(config).plugins == [:cache]
   end
 
   test "generator/1 and generator_argv/1 differ by base, :both included" do

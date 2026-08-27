@@ -46,7 +46,7 @@ defmodule Capstone.New.Project do
         app: #{inspect(opts.app)},
         github_org: "#{opts.github_org}"
       ],
-      plugins: []
+      plugins: #{inspect(opts.plugins)}
     }
     """
   end
