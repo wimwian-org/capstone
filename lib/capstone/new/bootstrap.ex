@@ -28,6 +28,8 @@ defmodule Capstone.New.Bootstrap do
   alias Capstone.New.Options
   alias Capstone.New.Project
   alias Capstone.New.Shell
+  alias Capstone.Plugin.Install
+  alias Capstone.Plugin.Registry
 
   @type effects :: %{
           getenv: (-> %{optional(String.t()) => String.t()}),
@@ -50,8 +52,8 @@ defmodule Capstone.New.Bootstrap do
   end
 
   @doc "Runs the bootstrap. See this module's documentation for the ordering rules."
-  @spec run(Options.t(), effects()) :: :ok
-  def run(%Options{} = opts, effects) do
+  @spec run(Options.t(), effects(), Path.t()) :: :ok
+  def run(%Options{} = opts, effects, registry_dir \\ Registry.default_dir()) do
     Env.refuse_poisoned!(effects.getenv.())
 
     generator = Options.generator(opts)
@@ -60,6 +62,7 @@ defmodule Capstone.New.Bootstrap do
 
     patch_mix_exs!(opts)
     File.write!(Path.join(opts.name, "target.exs"), Project.render_config(opts))
+    apply_plugins!(opts, registry_dir)
 
     Shell.cmd!(["deps.get"], opts.name, effects.runner)
     Shell.cmd!(["deps.compile"], opts.name, effects.runner)
@@ -67,6 +70,10 @@ defmodule Capstone.New.Bootstrap do
     effects.shell.info("Generated #{opts.name}. Next: cd #{opts.name} && mix test")
 
     :ok
+  end
+
+  defp apply_plugins!(opts, registry_dir) do
+    Enum.each(opts.plugins, fn type -> Install.run(type, opts.name, registry_dir) end)
   end
 
   defp patch_mix_exs!(opts) do

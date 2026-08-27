@@ -53,6 +53,7 @@ defmodule Capstone.New.Integration.TargetProjectTest do
   alias Capstone.New.Factory
   alias Capstone.New.Options
   alias Capstone.New.TargetExsFixture
+  alias Capstone.Plugin.Package
 
   defmodule RecordingRunner do
     @moduledoc false
@@ -117,6 +118,30 @@ defmodule Capstone.New.Integration.TargetProjectTest do
     File.write!(path, TargetExsFixture.render(config))
 
     generate!(dir, Options.parse!(["--path", path]))
+  end
+
+  # Same as generate!/2, plus a plugin registry_dir threaded through to
+  # Bootstrap.run/3 — for the plugin-application test below.
+  defp generate!(dir, %Options{} = opts, registry_dir) do
+    Mix.Task.reenable("new")
+    Mix.Task.reenable("phx.new")
+
+    generator = fn task, task_argv ->
+      module = Mix.Task.get!(task)
+      module.run(task_argv)
+    end
+
+    effects = %{
+      Bootstrap.defaults()
+      | runner: {RecordingRunner, :cmd},
+        generator: generator
+    }
+
+    capture_io(fn ->
+      File.cd!(dir, fn -> assert Bootstrap.run(opts, effects, registry_dir) == :ok end)
+    end)
+
+    Path.join(dir, opts.name)
   end
 
   defp eval_config!(project) do
@@ -260,6 +285,48 @@ defmodule Capstone.New.Integration.TargetProjectTest do
         assert real_config.base == base
         assert real_config.project.name == "app_#{base}"
       end
+    end
+
+    @tag :toolchain
+    test "applies a real registry plugin to the project before deps.get/deps.compile",
+         %{dir: dir} do
+      # Same archive-restoration reason as the test above. This also needs
+      # phx.new specifically, not the :otp fast path the rest of this file's
+      # tests use: `Install.run/3` reads target.exs back through
+      # `Capstone.Config`, which has no `:otp` value, so a plugin can only be
+      # applied to a project whose base is :api, :web, or :both.
+      Mix.Local.append_archives()
+
+      registry = Path.join(dir, "registry")
+      plugin_dir = Path.join(dir, "meta_probe")
+      File.mkdir_p!(Path.join(plugin_dir, "files"))
+
+      File.write!(Path.join(plugin_dir, "manifest.exs"), """
+      %{name: :probe, version: "0.1.0", files: [{"README.probe.md", :sole_owner}], deps: []}
+      """)
+
+      File.write!(
+        Path.join(plugin_dir, "files/README.probe.md.eex"),
+        "installed by <%= @app %>\n"
+      )
+
+      {:ok, _path} = Package.run(:probe, plugin_dir, registry)
+
+      opts =
+        Factory.build(:options,
+          base: :api,
+          name: "app_probe",
+          app: :app_probe,
+          module: AppProbe,
+          plugins: [:probe]
+        )
+
+      project = generate!(dir, opts, registry)
+
+      assert File.read!(Path.join(project, "README.probe.md")) == "installed by app_probe\n"
+
+      real_config = Capstone.Config.read!(Path.join(project, "target.exs"))
+      assert real_config.plugins == [:probe]
     end
   end
 end
