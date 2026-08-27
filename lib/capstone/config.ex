@@ -36,7 +36,7 @@ defmodule Capstone.Config do
   @type t :: %__MODULE__{
           schema_version: pos_integer(),
           base: :api | :web | :both,
-          plugins: [],
+          plugins: [atom()],
           project: Project.t(),
           security: Security.t(),
           container: Container.t()
@@ -150,9 +150,16 @@ defmodule Capstone.Config do
 
   defp plugins_errors(term) do
     case Map.fetch(term, :plugins) do
-      {:ok, []} -> []
-      {:ok, other} -> [{:invalid_value, [:plugins], [[]], other}]
-      :error -> []
+      {:ok, plugins} when is_list(plugins) ->
+        if Enum.all?(plugins, &is_atom/1),
+          do: [],
+          else: [{:invalid_value, [:plugins], ["a list of atoms"], plugins}]
+
+      {:ok, other} ->
+        [{:invalid_value, [:plugins], ["a list of atoms"], other}]
+
+      :error ->
+        []
     end
   end
 end

@@ -97,11 +97,12 @@ defmodule Capstone.ConfigTest do
                Config.read_string(source)
     end
 
-    test "rejects a non-empty plugins list under schema_version 1" do
+    test "accepts a non-empty plugins list of atoms" do
       source =
         "%{schema_version: 1, base: :web, plugins: [:extra], project: [name: \"w\", github_org: \"acme\"]}"
 
-      assert {:error, [{:invalid_value, [:plugins], [[]], [:extra]}]} = Config.read_string(source)
+      assert {:ok, config} = Config.read_string(source)
+      assert config.plugins == [:extra]
     end
   end
 
@@ -165,6 +166,39 @@ defmodule Capstone.ConfigTest do
       assert_raise Capstone.Config.Error, ~r/missing_key.*schema_version/s, fn ->
         Config.read_string!("%{}")
       end
+    end
+  end
+
+  describe "plugins" do
+    test "a list of atoms is valid" do
+      config = build(:config, plugins: [:cache, :openapi])
+      source = TargetExsFixture.render(config)
+
+      assert {:ok, result} = Config.read_string(source)
+      assert result.plugins == [:cache, :openapi]
+    end
+
+    test "an empty list is still valid" do
+      config = build(:config, plugins: [])
+
+      assert {:ok, result} = Config.read_string(TargetExsFixture.render(config))
+      assert result.plugins == []
+    end
+
+    test "a non-atom entry is invalid" do
+      config = build(:config, plugins: ["cache"])
+      source = TargetExsFixture.render(config)
+
+      assert {:error, errors} = Config.read_string(source)
+      assert {:invalid_value, [:plugins], _, ["cache"]} = List.keyfind(errors, [:plugins], 1)
+    end
+
+    test "a non-list value is invalid" do
+      config = build(:config, plugins: :cache)
+      source = TargetExsFixture.render(config)
+
+      assert {:error, errors} = Config.read_string(source)
+      assert {:invalid_value, [:plugins], _, :cache} = List.keyfind(errors, [:plugins], 1)
     end
   end
 end

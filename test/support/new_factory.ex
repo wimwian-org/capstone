@@ -34,7 +34,8 @@ defmodule Capstone.New.Factory do
       module: MyApp,
       base: :otp,
       github_org: @default_github_org,
-      capstone: {:hex, "~> 0.1"}
+      capstone: {:hex, "~> 0.1"},
+      plugins: []
     }
   end
 

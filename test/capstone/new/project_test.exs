@@ -101,6 +101,21 @@ defmodule Capstone.New.ProjectTest do
     refute String.ends_with?(rendered, "\n\n")
   end
 
+  test "render_config/1 renders the options' plugins list" do
+    opts = Factory.build(:options, base: :web, plugins: [:cache, :openapi])
+    rendered = Project.render_config(opts)
+
+    assert {:ok, config} = Capstone.Config.read_string(rendered)
+    assert config.plugins == [:cache, :openapi]
+  end
+
+  test "render_config/1 still renders an empty list when there are no plugins" do
+    opts = Factory.build(:options, base: :web, plugins: [])
+
+    assert {:ok, config} = Capstone.Config.read_string(Project.render_config(opts))
+    assert config.plugins == []
+  end
+
   defp deps_of(source) do
     {ast, _binding} =
       source
