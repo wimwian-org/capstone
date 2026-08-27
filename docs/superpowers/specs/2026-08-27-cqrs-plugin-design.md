@@ -63,18 +63,20 @@ end
 defmodule <App>.Cache do
   alias <App>.Cache.Store
 
+  @miss :__cache_miss__
+
   @doc "Fetches `key`, computing it with `fun` on a miss. Never expires."
   def fetch(key, fun) when is_function(fun, 0), do: fetch(key, :infinity, fun)
 
   @doc "Fetches `key`, computing it with `fun` on a miss. Expires after `ttl` ms."
   def fetch(key, ttl, fun) when is_function(fun, 0) do
-    case Store.get(key) do
-      nil ->
+    case Store.get(key, @miss, []) do
+      {:ok, @miss} ->
         value = fun.()
-        Store.put(key, value, ttl: ttl)
+        :ok = Store.put(key, value, ttl: ttl)
         value
 
-      value ->
+      {:ok, value} ->
         value
     end
   end
@@ -84,7 +86,12 @@ end
 `ttl: :infinity` is Nebulex's own no-expiry value — `fetch/2`'s behavior is
 unchanged from today's caller's point of view (compute-on-miss, cached
 forever), only the backend moves from `:persistent_term` to a real,
-supervised cache.
+supervised cache. `get/3` (key, default, opts) and `put/3` (key, value,
+opts) are Nebulex 3.0's real signatures — both return-wrapped
+(`get/3` → `{:ok, value}`; `put/3` → `:ok | {:error, reason}`), verified
+against `Nebulex.Cache`'s 3.0.4 documentation. A local, private sentinel
+atom (`@miss`) distinguishes "no entry" from a legitimately cached `nil`,
+since `get/3`'s own default-value parameter would conflate the two.
 
 ### Wiring
 
@@ -168,11 +175,13 @@ defmodule <App>.CQRS.UniqueCheck do
     Enum.reduce_while(unique_fields, {:ok, changeset, []}, fn group, {:ok, cs, reserved} ->
       key = cache_key(schema, group, cs)
 
-      if Cache.put_new(key, true, ttl: @ttl) do
-        {:cont, {:ok, cs, [key | reserved]}}
-      else
-        Enum.each(reserved, &Cache.delete/1)
-        {:halt, {:error, Ecto.Changeset.add_error(cs, hd(group), "has already been taken")}}
+      case Cache.put_new(key, true, ttl: @ttl) do
+        {:ok, true} ->
+          {:cont, {:ok, cs, [key | reserved]}}
+
+        {:ok, false} ->
+          Enum.each(reserved, &Cache.delete(&1, []))
+          {:halt, {:error, Ecto.Changeset.add_error(cs, hd(group), "has already been taken")}}
       end
     end)
   end
@@ -180,7 +189,7 @@ defmodule <App>.CQRS.UniqueCheck do
   @doc "Releases every field group's reservation for `changeset`. Called after a lost race."
   def release(changeset, unique_fields) do
     schema = changeset.data.__struct__
-    Enum.each(unique_fields, &Cache.delete(cache_key(schema, &1, changeset)))
+    Enum.each(unique_fields, &Cache.delete(cache_key(schema, &1, changeset), []))
     changeset
   end
 
@@ -266,11 +275,16 @@ Documented convention (no code generated — capstone doesn't know a
 consuming project's schemas): a schema declares
 
 ```elixir
-@primary_key {:id, Uniq.UUID, autogenerate: true}
+@primary_key {:id, Uniq.UUID, autogenerate: true, version: 7, type: :binary_id}
 ```
 
-`{:uniq, "~> 0.6"}` is added to `deps`. `Uniq.UUID` implements `Ecto.Type`
-and generates version-7 UUIDs by default.
+`{:uniq, "~> 0.6"}` is added to `deps`. `Uniq.UUID` implements
+`Ecto.ParameterizedType`, not plain `Ecto.Type`, and defaults to `version:
+4` — the explicit `version: 7` is required, not decorative. `type:
+:binary_id` aligns the underlying dumped type with Postgres's native `uuid`
+column and Phoenix's standard `--binary-id` migration convention (`add :id,
+:binary_id, primary_key: true`); without it the default `dump: :raw`
+resolves to bare `:binary`.
 
 ### Wiring
 
