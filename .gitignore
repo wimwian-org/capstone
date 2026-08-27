@@ -30,3 +30,8 @@ capstone-*.tar
 .env
 .env.*
 
+# Nested git worktree checkouts (used for isolated feature-branch work).
+# Each one is its own separate checkout of this same repo — never a
+# subdirectory's worth of content this repo should track.
+/.claude/worktrees/
+
