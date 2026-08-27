@@ -298,9 +298,13 @@ defmodule Capstone.Manifest.Plugin do
   of it was applied, where that version came from, when it was applied, and
   every file it owns or contributes to.
 
-  `origin` is `{:hex, name, version}` or `{:path, relative}`. An ABSOLUTE path
-  is rejected: a manifest naming one machine's checkout is not portable to
-  another machine or to CI, which is SDD 4.1 defect 13.
+  `origin` is `{:hex, name, version}`, `{:path, relative}`, or
+  `{:registry, filename}`. An ABSOLUTE path is rejected: a manifest naming one
+  machine's checkout is not portable to another machine or to CI, which is
+  SDD 4.1 defect 13. `{:registry, filename}` names the packaged archive a
+  plugin was extracted from — recorded verbatim by whichever caller supplies
+  it, rather than derived here, since the extraction directory it came from
+  is a temporary one already gone by the time anything reads this field.
 
   `deps`, `aliases` and `project` record what the plugin changed in the
   TARGET's `mix.exs`. They are what lets an update flow attribute a dependency
@@ -330,7 +334,7 @@ defmodule Capstone.Manifest.Plugin do
     project: []
   ]
 
-  @type origin :: {:hex, String.t(), String.t()} | {:path, Path.t()}
+  @type origin :: {:hex, String.t(), String.t()} | {:path, Path.t()} | {:registry, String.t()}
 
   @type t :: %__MODULE__{
           aliases: keyword(),
@@ -416,9 +420,12 @@ defmodule Capstone.Manifest.Plugin do
       else: Manifest.invalid!("origin path must be relative, got the absolute #{relative}")
   end
 
+  defp validate_origin!({:registry, filename}) when is_binary(filename), do: :ok
+
   defp validate_origin!(other) do
     Manifest.invalid!(
-      "origin must be {:hex, name, version} or {:path, relative}, got: #{inspect(other)}"
+      "origin must be {:hex, name, version}, {:path, relative}, or " <>
+        "{:registry, filename}, got: #{inspect(other)}"
     )
   end
 end

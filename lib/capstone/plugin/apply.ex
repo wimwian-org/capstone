@@ -27,9 +27,14 @@ defmodule Capstone.Plugin.Apply do
   A target holding a `target.exs` also gets a `plugin.exs` recording what
   was written; one without is installed and records nothing. See
   `Capstone.Plugin.Record`.
+
+  `opts` is forwarded to `Capstone.Plugin.Record.run/5` verbatim. `opts[:origin]`
+  overrides the recorded origin — used when `component_dir` is a temporary
+  directory a packaged archive was extracted into, which would otherwise be
+  recorded as a `{:path, _}` pointing at a directory deleted moments later.
   """
-  @spec run(Path.t(), Path.t()) :: {:ok, map()}
-  def run(component_dir, target) do
+  @spec run(Path.t(), Path.t(), keyword()) :: {:ok, map()}
+  def run(component_dir, target, opts \\ []) do
     plugin = Plugin.read!(Path.join(component_dir, "manifest.exs"))
     names = names(target)
 
@@ -40,7 +45,7 @@ defmodule Capstone.Plugin.Apply do
     # these keys existed has neither, and must keep working untouched.
     put_aliases(target, Map.get(plugin, :aliases, []))
     put_project_keys(target, Map.get(plugin, :project, []))
-    Record.run(component_dir, target, plugin, names)
+    Record.run(component_dir, target, plugin, names, opts)
 
     {:ok, plugin}
   end

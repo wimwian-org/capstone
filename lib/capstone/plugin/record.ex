@@ -158,18 +158,29 @@ defmodule Capstone.Plugin.Record do
 
   `names` is the triple the files were rendered with, and is what resolves each
   declared path to the one actually on disk.
+
+  `opts[:origin]`, when given, is recorded VERBATIM instead of the computed
+  `{:path, _}` — the caller's opinion of where the plugin came from wins.
+  `Capstone.Plugin.Apply.run/3` passes `{:registry, filename}` here for a
+  plugin applied from a packaged archive's temporary extraction directory,
+  where `component_dir` names a directory that is deleted moments later and so
+  cannot be the recorded origin. The default is computed LAZILY so an override
+  never pays for a `Path.relative_to_cwd/1` call it discards.
   """
-  @spec run(Path.t(), Path.t(), map(), Template.names()) :: :ok
-  def run(component_dir, target_dir, plugin, names) do
+  @spec run(Path.t(), Path.t(), map(), Template.names(), keyword()) :: :ok
+  def run(component_dir, target_dir, plugin, names, opts \\ []) do
     if tracked?(target_dir) do
-      write(component_dir, Root.new!(target_dir), plugin, names)
+      write(component_dir, Root.new!(target_dir), plugin, names, opts)
     else
       :ok
     end
   end
 
-  defp write(component_dir, target, plugin, names) do
+  defp write(component_dir, target, plugin, names, opts) do
     now = Clock.now()
+
+    origin =
+      Keyword.get_lazy(opts, :origin, fn -> {:path, Path.relative_to_cwd(component_dir)} end)
 
     entry = %Manifest.Plugin{
       aliases: Map.get(plugin, :aliases, []),
@@ -177,7 +188,7 @@ defmodule Capstone.Plugin.Record do
       deps: Map.get(plugin, :deps, []),
       files: Enum.map(plugin.files, &file_entry(&1, target, names)),
       name: plugin.name,
-      origin: {:path, Path.relative_to_cwd(component_dir)},
+      origin: origin,
       project: Map.get(plugin, :project, []),
       version: plugin.version
     }
