@@ -13,6 +13,7 @@ defmodule Mix.Tasks.Capstone.Update do
   use Mix.Task
 
   alias Capstone.Plugin.Registry
+  alias Capstone.Plugin.Remote
   alias Capstone.Update
   alias Capstone.VersionGuard
 
@@ -20,24 +21,28 @@ defmodule Mix.Tasks.Capstone.Update do
   def run(argv), do: run(argv, Registry.default_dir())
 
   @doc """
-  `run/1` with the plugin registry directory injected.
+  `run/1` with the plugin registry directory (and, for tests, the sync
+  effect) injected.
 
-  The seam exists for tests: without it every test of this task resolves
-  against `Capstone.Plugin.Registry.default_dir/0`, which under `MIX_ENV=test`
-  is a symlink to this repository's own checked-in, hex-shipped
-  `priv/plugins/` — so a test that seeds a fixture archive seeds it into the
-  package.
+  The registry-dir seam exists so a test never resolves against
+  `Capstone.Plugin.Registry.default_dir/0` — the real, machine-global OS
+  cache directory, shared across every project using `capstone` on this
+  machine and across test runs. The sync seam exists for the same reason:
+  without it, every test that seeds a *local* fixture archive would still
+  reach out to the real GitHub release listing for that (never actually
+  published) type.
   """
-  @spec run([String.t()], Path.t()) :: :ok
-  def run([], registry_dir), do: do_run(".", registry_dir)
-  def run([target], registry_dir), do: do_run(target, registry_dir)
+  @spec run([String.t()], Path.t(), (atom(), Path.t() -> :ok)) :: :ok
+  def run(argv, registry_dir, sync \\ &Remote.sync!/2)
+  def run([], registry_dir, sync), do: do_run(".", registry_dir, sync)
+  def run([target], registry_dir, sync), do: do_run(target, registry_dir, sync)
 
-  def run(_argv, _registry_dir),
+  def run(_argv, _registry_dir, _sync),
     do: Mix.raise("capstone.update expects at most one target directory")
 
-  defp do_run(target, registry_dir) do
+  defp do_run(target, registry_dir, sync) do
     VersionGuard.verify!()
-    {:ok, applied} = Update.run(target, registry_dir)
+    {:ok, applied} = Update.run(target, registry_dir, sync)
 
     case applied do
       [] -> Mix.shell().info("nothing new to apply")

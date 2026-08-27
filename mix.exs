@@ -45,7 +45,7 @@ defmodule Capstone.MixProject do
   end
 
   # Run "mix help compile.app" to learn about applications.
-  def application, do: [extra_applications: [:logger]]
+  def application, do: [extra_applications: [:logger, :inets, :ssl]]
 
   # Vendored source lives under `lib/`, which hex ships by default. The custom
   # Credo checks are deliberately NOT here: they live at the repository root,
@@ -94,7 +94,6 @@ defmodule Capstone.MixProject do
       links: %{"GitHub" => @github},
       files: ~w(
         lib
-        priv/plugins
         mix.exs
         .formatter.exs
         .version

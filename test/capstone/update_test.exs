@@ -1,8 +1,16 @@
 defmodule Capstone.UpdateTest do
+  @moduledoc """
+  Every test fakes the `sync` effect: `:probe` is never actually published,
+  so the real `Capstone.Plugin.Remote.sync!/2` would just be an incidental,
+  unnecessary network round-trip for every run.
+  """
+
   use ExUnit.Case, async: false
 
   alias Capstone.Plugin.Package
   alias Capstone.Update
+
+  defp no_sync, do: fn _type, _dir -> :ok end
 
   @tag :tmp_dir
   test "applies only the plugin newly listed in target.exs", %{tmp_dir: tmp} do
@@ -33,7 +41,7 @@ defmodule Capstone.UpdateTest do
     File.write!(Path.join(plugin_dir, "files/README.probe.md.eex"), "installed by <%= @app %>\n")
     {:ok, _path} = Package.run(:probe, plugin_dir, registry)
 
-    assert {:ok, [:probe]} = Update.run(target, registry)
+    assert {:ok, [:probe]} = Update.run(target, registry, no_sync())
     assert File.read!(Path.join(target, "README.probe.md")) == "installed by my_app\n"
   end
 
@@ -66,10 +74,10 @@ defmodule Capstone.UpdateTest do
     File.write!(Path.join(plugin_dir, "files/README.probe.md.eex"), "installed by <%= @app %>\n")
     {:ok, _path} = Package.run(:probe, plugin_dir, registry)
 
-    assert {:ok, [:probe]} = Update.run(target, registry)
+    assert {:ok, [:probe]} = Update.run(target, registry, no_sync())
     File.write!(Path.join(target, "README.probe.md"), "hand-edited\n")
 
-    assert {:ok, []} = Update.run(target, registry)
+    assert {:ok, []} = Update.run(target, registry, no_sync())
     assert File.read!(Path.join(target, "README.probe.md")) == "hand-edited\n"
   end
 

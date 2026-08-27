@@ -7,9 +7,15 @@ defmodule Capstone.Plugin.Registry do
 
   alias Capstone.Source
 
-  @doc "The real registry directory: this package's own shipped `priv/plugins/`."
+  @doc """
+  The real registry directory: a local cache under the OS user-cache
+  directory, NOT this package's own `priv/plugins/` — archives are
+  downloaded on demand (`Capstone.Plugin.Remote.sync!/3`) rather than
+  shipped inside the hex package, so this stays a plain path and performs
+  no I/O of its own.
+  """
   @spec default_dir() :: Path.t()
-  def default_dir, do: Application.app_dir(:capstone, "priv/plugins")
+  def default_dir, do: :filename.basedir(:user_cache, "capstone/plugins")
 
   @doc """
   Resolves `type` to the best matching, non-retired archive in `registry_dir`.

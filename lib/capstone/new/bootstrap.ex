@@ -29,6 +29,11 @@ defmodule Capstone.New.Bootstrap do
   `Capstone.Config`; and it must precede `deps.get`/`deps.compile`, because a
   plugin's `deps:` are written into `mix.exs` there and would otherwise never
   be fetched.
+
+  Each plugin is synced (`effects.sync`, `Capstone.Plugin.Remote.sync!/2` by
+  default) immediately before it is installed, never once for the whole
+  batch up front — a later plugin's sync failure must not undo an earlier
+  plugin's already-completed install.
   """
 
   alias Capstone.New.Env
@@ -37,6 +42,7 @@ defmodule Capstone.New.Bootstrap do
   alias Capstone.New.Shell
   alias Capstone.Plugin.Install
   alias Capstone.Plugin.Registry
+  alias Capstone.Plugin.Remote
 
   @typedoc "Every side effect `run/3` performs, injected so each is fake-able in-process."
   @type effects :: %{
@@ -44,7 +50,8 @@ defmodule Capstone.New.Bootstrap do
           lookup: Shell.lookup(),
           generator: (String.t(), [String.t()] -> any()),
           runner: Shell.runner(),
-          shell: module()
+          shell: module(),
+          sync: (atom(), Path.t() -> :ok)
         }
 
   @doc "The real effects."
@@ -55,7 +62,8 @@ defmodule Capstone.New.Bootstrap do
       lookup: &Mix.Task.get/1,
       generator: &Mix.Task.run/2,
       runner: {System, :cmd},
-      shell: Mix.shell()
+      shell: Mix.shell(),
+      sync: &Remote.sync!/2
     }
   end
 
@@ -70,7 +78,7 @@ defmodule Capstone.New.Bootstrap do
 
     patch_mix_exs!(opts)
     File.write!(Path.join(opts.name, "target.exs"), Project.render_config(opts))
-    apply_plugins!(opts, registry_dir)
+    apply_plugins!(opts, registry_dir, effects.sync)
 
     Shell.cmd!(["deps.get"], opts.name, effects.runner)
     Shell.cmd!(["deps.compile"], opts.name, effects.runner)
@@ -80,8 +88,11 @@ defmodule Capstone.New.Bootstrap do
     :ok
   end
 
-  defp apply_plugins!(opts, registry_dir) do
-    Enum.each(opts.plugins, fn type -> Install.run(type, opts.name, registry_dir) end)
+  defp apply_plugins!(opts, registry_dir, sync) do
+    Enum.each(opts.plugins, fn type ->
+      sync.(type, registry_dir)
+      Install.run(type, opts.name, registry_dir)
+    end)
   end
 
   defp patch_mix_exs!(opts) do

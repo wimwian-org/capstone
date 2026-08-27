@@ -89,4 +89,4 @@ config :devops, :repo,
   scs: :github,
   owner: "wimwian-org",
   name: "capstone",
-  visibility: :private
+  visibility: :public
