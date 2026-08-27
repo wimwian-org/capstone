@@ -14,19 +14,22 @@ defmodule Capstone.Integration.PluginLifecycleTest do
   uses `:api`, exactly as `test/integration/target_project_test.exs`'s own
   plugin-application test does.
 
-  ## Why `:openapi` and not `:cache`
+  ## Why every test here checks for an absent marker AND a real `mix compile`
 
-  `priv/baselines.exs` records `openapi: %{derived_from: :api, ...}`, and
-  `:api` is a base `mix capstone.new` can actually produce. A plugin derived
-  against a base this generator CANNOT produce is unapplicable in practice:
-  `:cache` is `derived_from: :otp`, and its `:manual` anchor is text that
-  exists only in the otp baseline's `lib/new_otp_app.ex`, so against the only
-  bases `Capstone.Config` accepts the anchor never matches and
-  `Capstone.Plugin.Apply.place/6` falls back to an unresolved conflict region
-  at the end of a file that then will not compile. The two assertions below
-  that check for an absent marker and a real `mix compile` are what keep that
-  failure mode from passing silently again — `File.exists?/1` on a
-  `:sole_owner` file alone does not notice it.
+  `:cache` was originally derived against the `:otp` baseline, whose
+  `:manual` anchor is text (`lib/new_otp_app.ex`'s "hello world" moduledoc)
+  that exists only there — `:otp` is not a base `mix capstone.new` can
+  produce (`Capstone.Config`'s `@valid_bases` has no `:otp` value), so
+  against every base the generator actually produces the anchor never
+  matched and `Capstone.Plugin.Apply.place/6` fell back to an unresolved
+  conflict region at the end of a file that then would not compile. `:cache`
+  is now derived against `:api` instead (`priv/meta/cache_component`,
+  matching `priv/baselines.exs`'s `derived_from: :api`), whose own moduledoc
+  supplies a real anchor. The failure mode this fixed was SILENT — apply
+  returns `:ok`, writes every `:sole_owner` file, and leaves the `:manual`
+  hunk unresolved — so `File.exists?/1` on a `:sole_owner` file alone would
+  never have noticed it, which is why every test below also asserts on both
+  an absent conflict marker and a real `mix compile`.
 
   `Options.name` is also the value `Capstone.Config.Project` writes and
   re-validates as `project.name` — it must be a bare lowercase OTP app name
@@ -100,7 +103,8 @@ defmodule Capstone.Integration.PluginLifecycleTest do
     # i.e. "with_openapi" here.
     assert File.exists?(Path.join(project, "lib/with_openapi_web/api_spec.ex"))
 
-    assert_placed_not_marked(project)
+    router = "lib/#{name}_web/router.ex"
+    assert_placed_not_marked(project, router, "OpenApiSpex")
     # Bootstrap already ran deps.get and deps.compile, open_api_spex included,
     # so this is the app's own sources against the deps the plugin declared.
     Shell.cmd!(["compile"], project)
@@ -136,22 +140,52 @@ defmodule Capstone.Integration.PluginLifecycleTest do
     assert {:ok, [:openapi]} = Update.run(project, Registry.default_dir())
     assert File.exists?(Path.join(project, "lib/no_openapi_yet_web/api_spec.ex"))
 
-    assert_placed_not_marked(project)
+    router = "lib/no_openapi_yet_web/router.ex"
+    assert_placed_not_marked(project, router, "OpenApiSpex")
     # The plugin added {:open_api_spex, ...} to a mix.exs whose deps were
     # already fetched, so this path needs its own deps.get before compiling.
     Shell.cmd!(["deps.get"], project)
     Shell.cmd!(["compile"], project)
   end
 
-  # The failure mode Fix 1 exists for is SILENT: apply returns :ok, writes
+  @tag :toolchain
+  test "mix capstone.new applies plugins: [:cache] from target.exs", %{tmp_dir: tmp} do
+    capstone_path = File.cwd!()
+    name = "with_cache"
+
+    opts = %Options{
+      name: name,
+      app: :with_cache,
+      module: WithCache,
+      base: :api,
+      github_org: "acme",
+      capstone: {:path, capstone_path},
+      plugins: [:cache]
+    }
+
+    File.cd!(tmp, fn -> assert :ok = Bootstrap.run(opts, Bootstrap.defaults()) end)
+
+    project = Path.join(tmp, name)
+    assert File.exists?(Path.join(project, "target.exs"))
+    # priv/meta/meta_cache/manifest.exs records "lib/APP/cache.ex" as
+    # :sole_owner; APP resolves to the target's own `app:` (Capstone.Template),
+    # i.e. "with_cache" here.
+    assert File.exists?(Path.join(project, "lib/with_cache/cache.ex"))
+
+    top_level = "lib/#{name}.ex"
+    assert_placed_not_marked(project, top_level, "defdelegate fetch")
+    # Bootstrap already ran deps.get and deps.compile, nebulex included, so
+    # this is the app's own sources against the deps the plugin declared.
+    Shell.cmd!(["compile"], project)
+  end
+
+  # The failure mode this guards against is SILENT: apply returns :ok, writes
   # every :sole_owner file, and leaves the :manual hunk in an unresolved
   # conflict region at the end of a file that no longer compiles. So assert on
-  # both halves — the hunk landed at its anchor, and no marker was written
-  # anywhere in the generated tree.
-  defp assert_placed_not_marked(project) do
-    router = Path.join(project, "lib/#{Path.basename(project)}_web/router.ex")
-
-    assert File.read!(router) =~ "OpenApiSpex"
+  # both halves — the hunk landed at its anchor (`relative_file` contains
+  # `expected`), and no marker was written anywhere in the generated tree.
+  defp assert_placed_not_marked(project, relative_file, expected) do
+    assert File.read!(Path.join(project, relative_file)) =~ expected
 
     marked =
       project

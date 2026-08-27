@@ -56,13 +56,13 @@ defmodule Mix.Tasks.Capstone.CheckTest do
 
     test "applies a plugin and reports the positional entries", %{dir: dir} do
       target = Path.join(dir, "target")
-      File.cp_r!("priv/meta/baseline_otp", target)
+      File.cp_r!("priv/meta/baseline_api", target)
 
       output = capture_io(fn -> ApplyTask.run(["cache", target]) end)
 
       assert output =~ "applied cache to #{target}: 3 files"
       assert output =~ "positional entr(ies): [:cache_app]"
-      assert File.exists?(Path.join(target, "lib/new_otp_app/cache.ex"))
+      assert File.exists?(Path.join(target, "lib/new_api_app/cache.ex"))
     end
 
     test "an underived plugin names the task that would create it", %{dir: dir} do

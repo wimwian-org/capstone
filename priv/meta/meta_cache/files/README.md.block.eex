@@ -1,4 +1,4 @@
-
 ## Cache
 
 Read-through caching is provided by `<%= @module %>.Cache`.
+

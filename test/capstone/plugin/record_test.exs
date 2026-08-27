@@ -11,10 +11,10 @@ defmodule Capstone.Plugin.RecordTest do
   alias Capstone.Plugin.Record
   alias Capstone.Root
 
-  @baseline "priv/meta/baseline_otp"
+  @baseline "priv/meta/baseline_api"
   @plugin "priv/meta/meta_cache"
-  @owned "lib/new_otp_app/cache.ex"
-  @positional "lib/new_otp_app.ex"
+  @owned "lib/new_api_app/cache.ex"
+  @positional "lib/new_api_app.ex"
 
   setup do
     dir = Path.join(System.tmp_dir!(), "record-#{System.unique_integer([:positive])}")
@@ -24,10 +24,9 @@ defmodule Capstone.Plugin.RecordTest do
     {:ok, dir: dir, target: Root.new!(dir)}
   end
 
-  # `base: :api` here, not the umbrella's `:otp` -- this package's own
-  # Capstone.Config only accepts :api/:web/:both. A literal target.exs
-  # rather than a :config_map factory build, since that factory is shaped
-  # for the excluded 14-module schema this package doesn't have.
+  # A literal target.exs rather than a :config_map factory build, since that
+  # factory is shaped for the excluded 14-module schema this package doesn't
+  # have.
   defp declare!(target, attrs \\ [base: :api]) do
     base = Keyword.get(attrs, :base, :api)
 
@@ -38,7 +37,7 @@ defmodule Capstone.Plugin.RecordTest do
         schema_version: 1,
         base: #{inspect(base)},
         plugins: [],
-        project: [name: "new_otp_app", github_org: "acme"]
+        project: [name: "new_api_app", github_org: "acme"]
       }
       """
     )
@@ -159,7 +158,7 @@ defmodule Capstone.Plugin.RecordTest do
 
       {:ok, _} = Apply.run(@plugin, dir)
 
-      assert entry(target).deps == [~s|{:nebulex, "~> 2.6"}|]
+      assert entry(target).deps == [~s|{:nebulex, "~> 3.0"}|]
     end
 
     test "records no aliases or project keys when the plugin contributes none",
@@ -215,7 +214,7 @@ defmodule Capstone.Plugin.RecordTest do
       # apply, because a second apply short-circuits on the marker already being
       # there and would report nothing.
       declare!(t)
-      File.write!(Path.join(d, @positional), "defmodule NewOtpApp do\nend\n")
+      File.write!(Path.join(d, @positional), "defmodule NewApiApp do\nend\n")
 
       {:ok, _component} = Apply.run(@plugin, d)
 

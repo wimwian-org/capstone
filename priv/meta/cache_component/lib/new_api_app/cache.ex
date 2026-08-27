@@ -1,6 +1,6 @@
-defmodule NewOtpApp.Cache do
+defmodule NewApiApp.Cache do
   @moduledoc """
-  A tiny read-through cache for NewOtpApp.
+  A tiny read-through cache for NewApiApp.
   """
 
   @doc "Fetches `key`, computing it with `fun` on a miss."
