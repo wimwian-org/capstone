@@ -16,4 +16,6 @@ jobs:
           otp-version: "29"
           elixir-version: "1.20.3"
       - run: mix deps.get
-      - run: mix devops.quality
+      - run: mix format --check-formatted
+      - run: mix credo --strict
+      - run: mix doctor

@@ -1,7 +1,5 @@
 defmodule Mix.Tasks.Capstone.Plugin.Package do
-  # DELIBERATELY no @shortdoc, for the reason given in capstone.check: lib/**
-  # ships in the hex package, so this task installs into every consuming
-  # project, where it is meaningless (there is no priv/meta/meta_<name> there).
+  @shortdoc "Packages a derived plugin into priv/plugins/"
   @moduledoc """
   Packages a derived plugin into `priv/plugins/` (SDD-adjacent; see
   docs/superpowers/specs/2026-08-26-plugin-ecosystem-design.md).

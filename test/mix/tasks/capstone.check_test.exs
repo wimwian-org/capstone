@@ -49,9 +49,9 @@ defmodule Mix.Tasks.Capstone.CheckTest do
   end
 
   describe "capstone.plugin.apply" do
-    test "neither task exposes a @shortdoc, keeping both out of mix help" do
-      assert Check.__info__(:attributes)[:shortdoc] == nil
-      assert ApplyTask.__info__(:attributes)[:shortdoc] == nil
+    test "both tasks expose a @shortdoc" do
+      assert Mix.Task.shortdoc(Check) =~ "unresolved"
+      assert Mix.Task.shortdoc(ApplyTask) =~ "derived plugin"
     end
 
     test "applies a plugin and reports the positional entries", %{dir: dir} do
