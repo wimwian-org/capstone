@@ -1,8 +1,5 @@
 defmodule Mix.Tasks.Capstone.Baseline.Compose do
-  # DELIBERATELY no @shortdoc. `lib/**` is in package_files/0, so this task is
-  # installed into every project depending on :capstone, where it is
-  # meaningless. Without @shortdoc it stays out of `mix help`'s listing while
-  # remaining runnable here.
+  @shortdoc "Builds a derived baseline from a generator baseline plus a plugin"
   @moduledoc """
   Builds a DERIVED baseline from a generator baseline plus a plugin.
 

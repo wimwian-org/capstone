@@ -1,8 +1,5 @@
 defmodule Mix.Tasks.Capstone.Plugin.Derive do
-  # DELIBERATELY no @shortdoc. `lib/**` is in package_files/0, so this task is
-  # installed into every project depending on :capstone, where it is
-  # meaningless. Without @shortdoc it stays out of `mix help`'s listing while
-  # remaining runnable here.
+  @shortdoc "Derives a plugin from a raw working project"
   @moduledoc """
   Derives a plugin from a raw working project (SDD 10).
 
