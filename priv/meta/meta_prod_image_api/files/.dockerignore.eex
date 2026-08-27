@@ -39,6 +39,11 @@
 # Generated on crash by the VM
 erl_crash.dump
 
+# Local secrets — GITHUB_TOKEN, HEX_API_KEY, etc. Never committed.
+.env
+.env.*
+!/.env.sample
+
 # Static artifacts - These should be fetched and built inside the Docker image
 # https://phoenix.hexdocs.pm/Mix.Tasks.Phx.Gen.Release.html#module-docker
 /assets/node_modules/

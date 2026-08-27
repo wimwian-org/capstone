@@ -178,10 +178,10 @@
     tree_digest: "sha256:5357ecb72a5dcb1aa6f43fe2959e03fc0e8cbc0a520b4b53bc7cbc939d7efab8"
   },
   prod_image_api: %{
-    archive_sha256: "c36d192ba272f3716248c40dd58821a728df309d6d8b3fd68cb77b73827a98f4",
+    archive_sha256: "d3e1d647bbe8d610582113c6290cbb4cf802f7432e21c00caf590229ba7216ab",
     derived_from: :api,
     files: %{
-      ".dockerignore" => "b8765fa97bc2e2e158489e3635f6cf9a9b0111d6094f4a900e3f8298c49b49bb",
+      ".dockerignore" => "96ef59dfd23e25d21295fa16a72846fa536d35bd43f09df5218929e93798ba92",
       ".formatter.exs" => "a44a43d777033eb6c64e0101b7469611c2def3b377b04c9d6b2a8620a347d385",
       ".gitignore" => "62ee1d39760528ade9087a64430331c1362541232b1213cdae98a25cce8888ed",
       "AGENTS.md" => "00f6f1bdb914d6eb925e9f1abaae89b10fe7b7245323df8e7bdf6c6b65fd31a4",
@@ -250,6 +250,6 @@
       {:removed, ".git/"}
     ],
     path: "priv/meta/prod_image_api_component",
-    tree_digest: "sha256:e9492a10acfe46612bc23963188875c24338f3937f4be88adda19e5acaf95311"
+    tree_digest: "sha256:32f90697087995e7072ff150fc9eeeef6c5268b541cd7052fe69b13e1dd12402"
   }
 }

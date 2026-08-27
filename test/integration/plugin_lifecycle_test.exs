@@ -1,8 +1,8 @@
 defmodule Capstone.Integration.PluginLifecycleTest do
   @moduledoc """
   Exercises the real registry seeded in priv/plugins/ end to end: a project
-  generated with plugins: [:cache] carries the cache plugin's files from the
-  first `mix capstone.new`, and a second project generated with no plugins
+  generated with plugins: [:openapi] carries the openapi plugin's files from
+  the first `mix capstone.new`, and a second project generated with no plugins
   gains them afterward via `mix capstone.update`.
 
   Both projects use `base: :api`, not `:otp`: `Capstone.Plugin.Install` reads
@@ -14,6 +14,20 @@ defmodule Capstone.Integration.PluginLifecycleTest do
   uses `:api`, exactly as `test/integration/target_project_test.exs`'s own
   plugin-application test does.
 
+  ## Why `:openapi` and not `:cache`
+
+  `priv/baselines.exs` records `openapi: %{derived_from: :api, ...}`, and
+  `:api` is a base `mix capstone.new` can actually produce. A plugin derived
+  against a base this generator CANNOT produce is unapplicable in practice:
+  `:cache` is `derived_from: :otp`, and its `:manual` anchor is text that
+  exists only in the otp baseline's `lib/new_otp_app.ex`, so against the only
+  bases `Capstone.Config` accepts the anchor never matches and
+  `Capstone.Plugin.Apply.place/6` falls back to an unresolved conflict region
+  at the end of a file that then will not compile. The two assertions below
+  that check for an absent marker and a real `mix compile` are what keep that
+  failure mode from passing silently again — `File.exists?/1` on a
+  `:sole_owner` file alone does not notice it.
+
   `Options.name` is also the value `Capstone.Config.Project` writes and
   re-validates as `project.name` — it must be a bare lowercase OTP app name
   (`Capstone.Config.Project`'s `@name_pattern`), never a path. So each project
@@ -23,18 +37,18 @@ defmodule Capstone.Integration.PluginLifecycleTest do
 
   Fixtures live under `System.tmp_dir!()` rather than ExUnit's `@tag :tmp_dir`
   (which nests them under this repo's own `tmp/`, i.e. under `File.cwd!()`).
-  The `:cache` plugin patches `lib/APP.ex`, leaving a genuine unresolved
-  `:manual` region a human is meant to resolve by hand — correct plugin
-  behavior, but `capstone.check_test.exs`'s "defaults to the current
-  directory" test scans the whole cwd recursively for exactly that, and would
-  sweep up these leftover fixtures if they lived inside the repo tree. Same
-  convention as `test/integration/target_project_test.exs`.
+  `capstone.check_test.exs`'s "defaults to the current directory" test scans
+  the whole cwd recursively for conflict markers and would sweep up these
+  leftover fixtures if they lived inside the repo tree. Same convention as
+  `test/integration/target_project_test.exs`.
   """
 
   use ExUnit.Case, async: false
 
   alias Capstone.New.Bootstrap
   alias Capstone.New.Options
+  alias Capstone.New.Shell
+  alias Capstone.Plugin.Apply
   alias Capstone.Plugin.Registry
   alias Capstone.Update
 
@@ -63,28 +77,33 @@ defmodule Capstone.Integration.PluginLifecycleTest do
   end
 
   @tag :toolchain
-  test "mix capstone.new applies plugins: [:cache] from target.exs", %{tmp_dir: tmp} do
+  test "mix capstone.new applies plugins: [:openapi] from target.exs", %{tmp_dir: tmp} do
     capstone_path = File.cwd!()
-    name = "with_cache"
+    name = "with_openapi"
 
     opts = %Options{
       name: name,
-      app: :with_cache,
-      module: WithCache,
+      app: :with_openapi,
+      module: WithOpenapi,
       base: :api,
       github_org: "acme",
       capstone: {:path, capstone_path},
-      plugins: [:cache]
+      plugins: [:openapi]
     }
 
     File.cd!(tmp, fn -> assert :ok = Bootstrap.run(opts, Bootstrap.defaults()) end)
 
     project = Path.join(tmp, name)
     assert File.exists?(Path.join(project, "target.exs"))
-    # priv/meta/meta_cache/manifest.exs records "lib/APP/cache.ex" as
+    # priv/meta/meta_openapi/manifest.exs records "lib/APP_web/api_spec.ex" as
     # :sole_owner; APP resolves to the target's own `app:` (Capstone.Template),
-    # i.e. "with_cache" here.
-    assert File.exists?(Path.join(project, "lib/with_cache/cache.ex"))
+    # i.e. "with_openapi" here.
+    assert File.exists?(Path.join(project, "lib/with_openapi_web/api_spec.ex"))
+
+    assert_placed_not_marked(project)
+    # Bootstrap already ran deps.get and deps.compile, open_api_spex included,
+    # so this is the app's own sources against the deps the plugin declared.
+    Shell.cmd!(["compile"], project)
   end
 
   @tag :toolchain
@@ -92,12 +111,12 @@ defmodule Capstone.Integration.PluginLifecycleTest do
     tmp_dir: tmp
   } do
     capstone_path = File.cwd!()
-    name = "no_cache_yet"
+    name = "no_openapi_yet"
 
     opts = %Options{
       name: name,
-      app: :no_cache_yet,
-      module: NoCacheYet,
+      app: :no_openapi_yet,
+      module: NoOpenapiYet,
       base: :api,
       github_org: "acme",
       capstone: {:path, capstone_path},
@@ -111,10 +130,39 @@ defmodule Capstone.Integration.PluginLifecycleTest do
 
     File.write!(
       target_exs,
-      String.replace(File.read!(target_exs), "plugins: []", "plugins: [:cache]")
+      String.replace(File.read!(target_exs), "plugins: []", "plugins: [:openapi]")
     )
 
-    assert {:ok, [:cache]} = Update.run(project, Registry.default_dir())
-    assert File.exists?(Path.join(project, "lib/no_cache_yet/cache.ex"))
+    assert {:ok, [:openapi]} = Update.run(project, Registry.default_dir())
+    assert File.exists?(Path.join(project, "lib/no_openapi_yet_web/api_spec.ex"))
+
+    assert_placed_not_marked(project)
+    # The plugin added {:open_api_spex, ...} to a mix.exs whose deps were
+    # already fetched, so this path needs its own deps.get before compiling.
+    Shell.cmd!(["deps.get"], project)
+    Shell.cmd!(["compile"], project)
+  end
+
+  # The failure mode Fix 1 exists for is SILENT: apply returns :ok, writes
+  # every :sole_owner file, and leaves the :manual hunk in an unresolved
+  # conflict region at the end of a file that no longer compiles. So assert on
+  # both halves — the hunk landed at its anchor, and no marker was written
+  # anywhere in the generated tree.
+  defp assert_placed_not_marked(project) do
+    router = Path.join(project, "lib/#{Path.basename(project)}_web/router.ex")
+
+    assert File.read!(router) =~ "OpenApiSpex"
+
+    marked =
+      project
+      |> Path.join("**")
+      |> Path.wildcard(match_dot: true)
+      |> Enum.reject(&(File.dir?(&1) or &1 =~ ~r{/(deps|_build)/}))
+      |> Enum.filter(fn file ->
+        contents = File.read!(file)
+        String.valid?(contents) and String.contains?(contents, Apply.marker_prefix(""))
+      end)
+
+    assert marked == []
   end
 end
