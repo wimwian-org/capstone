@@ -33,7 +33,9 @@ defmodule Capstone.Plugin.InstallTest do
 
     {:ok, _path} = Package.run(:probe, plugin_dir, registry)
 
+    before = File.ls!(System.tmp_dir!())
     {:ok, _plugin} = Install.run(:probe, target, registry)
+    after_success = File.ls!(System.tmp_dir!())
 
     assert File.read!(Path.join(target, "README.probe.md")) == "installed by my_app\n"
 
@@ -42,6 +44,9 @@ defmodule Capstone.Plugin.InstallTest do
     assert entry.name == :probe
     assert {:registry, filename} = entry.origin
     assert String.starts_with?(filename, "probe-")
+
+    # Verify no temp directory was left behind on success
+    assert after_success -- before == []
   end
 
   @tag :tmp_dir
