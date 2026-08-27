@@ -76,4 +76,37 @@ defmodule Capstone.Plugin.RegistryTest do
     assert Registry.resolve!(:cache, "1.20.3", "0.1.0", dir) ==
              Path.join(dir, "cache-1.20.3-0.1.0-aaaaaaaaaaaa.tar.gz")
   end
+
+  describe "retire!/2" do
+    @tag :tmp_dir
+    test "creates retired.exs when none exists", %{tmp_dir: dir} do
+      Registry.retire!("cache-1.20.3-0.1.0-aaaaaaaaaaaa.tar.gz", dir)
+
+      assert File.read!(Path.join(dir, "retired.exs")) =~
+               "cache-1.20.3-0.1.0-aaaaaaaaaaaa.tar.gz"
+    end
+
+    @tag :tmp_dir
+    test "appends to an existing retired.exs without duplicating", %{tmp_dir: dir} do
+      Registry.retire!("cache-1.20.3-0.1.0-aaaaaaaaaaaa.tar.gz", dir)
+      Registry.retire!("cache-1.20.3-0.1.0-aaaaaaaaaaaa.tar.gz", dir)
+      Registry.retire!("openapi-1.20.3-0.1.0-bbbbbbbbbbbb.tar.gz", dir)
+
+      file = Path.join(dir, "retired.exs")
+      retired = file |> File.read!() |> Capstone.Source.decode!(file) |> Map.fetch!(:retired)
+
+      assert Enum.sort(retired) == [
+               "cache-1.20.3-0.1.0-aaaaaaaaaaaa.tar.gz",
+               "openapi-1.20.3-0.1.0-bbbbbbbbbbbb.tar.gz"
+             ]
+    end
+
+    @tag :tmp_dir
+    test "a retired archive is never resolved again", %{tmp_dir: dir} do
+      File.write!(Path.join(dir, "cache-1.20.3-0.1.0-aaaaaaaaaaaa.tar.gz"), "")
+      Registry.retire!("cache-1.20.3-0.1.0-aaaaaaaaaaaa.tar.gz", dir)
+
+      assert_raise Mix.Error, fn -> Registry.resolve!(:cache, "1.20.3", "0.1.0", dir) end
+    end
+  end
 end

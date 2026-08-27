@@ -87,6 +87,23 @@ defmodule Capstone.Plugin.Registry do
     {major, minor, patch}
   end
 
+  @doc """
+  Retires `filename` in `registry_dir`'s `retired.exs`, creating the ledger if
+  it does not exist yet. Idempotent: retiring an already-retired filename
+  changes nothing.
+  """
+  @spec retire!(String.t(), Path.t()) :: :ok
+  def retire!(filename, registry_dir) do
+    file = Path.join(registry_dir, "retired.exs")
+    current = retired(registry_dir)
+
+    if filename in current do
+      :ok
+    else
+      File.write!(file, Source.encode!(%{retired: Enum.sort([filename | current])}))
+    end
+  end
+
   defp retired(registry_dir) do
     file = Path.join(registry_dir, "retired.exs")
 
