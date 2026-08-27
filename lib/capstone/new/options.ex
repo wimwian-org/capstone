@@ -13,7 +13,14 @@ defmodule Capstone.New.Options do
   @enforce_keys [:app, :base, :github_org, :module, :name, :capstone, :plugins]
   defstruct [:app, :base, :github_org, :module, :name, :capstone, :plugins]
 
+  @typedoc """
+  Which stock project `generator/1` produces: `:otp` runs plain `mix new`;
+  `:api`, `:web` and `:both` all run `mix phx.new` against the same stock
+  tree (see `generator_argv/1` for why the three don't diverge here).
+  """
   @type base :: :otp | :api | :web | :both
+
+  @typedoc "Where `mix capstone.new` fetches its own `:capstone` dev dependency from — hex, or a local path for development."
   @type dep_source :: {:hex, String.t()} | {:path, Path.t()}
   @type t :: %__MODULE__{
           app: atom(),

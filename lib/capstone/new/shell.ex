@@ -17,7 +17,10 @@ defmodule Capstone.New.Shell do
 
   alias Capstone.New.Env
 
+  @typedoc "The injected seam `cmd!/3` calls instead of `System.cmd/3` directly, so a failure branch is reachable in-process."
   @type runner :: {module(), atom()}
+
+  @typedoc "The injected seam `ensure_task_available!/2` calls instead of `Mix.Task.get/1` directly, for the same reason `runner/0` is injected."
   @type lookup :: (String.t() -> module() | nil)
 
   @doc "Runs `mix ARGS` in `cd`, raising with the captured output on any non-zero exit."

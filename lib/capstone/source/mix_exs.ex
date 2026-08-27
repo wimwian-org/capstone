@@ -22,6 +22,7 @@ defmodule Capstone.Source.MixExs do
   alias Capstone.Vendor.Sourceror.Patch
   alias Capstone.Vendor.Sourceror.Zipper
 
+  @typedoc "Every reason locating or patching a `mix.exs` construct can fail."
   @type error ::
           {:no_deps_list, :not_found | :not_a_literal}
           | {:no_project_function, :not_found}

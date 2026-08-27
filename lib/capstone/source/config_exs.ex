@@ -24,6 +24,7 @@ defmodule Capstone.Source.ConfigExs do
   alias Capstone.Vendor.Sourceror.Patch
   alias Capstone.Vendor.Sourceror.Zipper
 
+  @typedoc "Every reason placing a contribution inside a `config/*.exs` can fail."
   @type error ::
           {:no_env_guard, atom()}
           | {:no_statement, [atom() | module()]}

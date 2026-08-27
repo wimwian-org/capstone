@@ -17,6 +17,7 @@ defmodule Capstone.Template do
   checking. Three normalisers with three different jobs.
   """
 
+  @typedoc "The meta-project's own identity — what `capture/2` matches against and `render/2` substitutes."
   @type names :: %{module: String.t(), app: String.t(), name: String.t()}
 
   @doc """
