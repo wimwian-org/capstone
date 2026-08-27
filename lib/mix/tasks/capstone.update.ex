@@ -1,5 +1,7 @@
 defmodule Mix.Tasks.Capstone.Update do
-  @shortdoc "Applies newly-declared plugins to an existing Capstone project"
+  # DELIBERATELY no @shortdoc: lib/** ships in the hex package, so this task is
+  # installed into every consuming project. Without @shortdoc it stays out of
+  # `mix help`'s listing while remaining runnable.
   @moduledoc """
   Applies whatever plugins `target.exs` newly lists (SDD-adjacent; see
   docs/superpowers/specs/2026-08-26-plugin-ecosystem-design.md).
