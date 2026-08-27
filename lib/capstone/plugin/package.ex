@@ -42,7 +42,7 @@ defmodule Capstone.Plugin.Package do
 
   defp build_tar(entries) do
     tmp = tar_scratch_path(entries)
-    {:ok, tar} = :erl_tar.open(String.to_charlist(tmp), [:write])
+    tar = open_scratch!(tmp)
 
     Enum.each(entries, fn {relative, content} ->
       :ok = :erl_tar.add(tar, {String.to_charlist(relative), content}, mtime: 0, uid: 0, gid: 0)
@@ -52,6 +52,22 @@ defmodule Capstone.Plugin.Package do
     bytes = File.read!(tmp)
     File.rm!(tmp)
     bytes
+  end
+
+  # Removed and re-created EXCLUSIVELY before `:erl_tar.open/2` gets it. The
+  # path below is content-derived and therefore PREDICTABLE, and opening it
+  # for writing follows a symlink — so on a shared machine the scratch tar
+  # could be redirected wherever someone else pointed the path. `:exclusive`
+  # fails with `:eexist` if anything recreates it in the window after the
+  # `rm_rf!`, which the match below turns into a raise rather than a silent
+  # write into a hijacked path.
+  defp open_scratch!(path) do
+    File.rm_rf!(path)
+    {:ok, device} = File.open(path, [:write, :exclusive])
+    :ok = File.close(device)
+    {:ok, tar} = :erl_tar.open(String.to_charlist(path), [:write])
+
+    tar
   end
 
   # Deterministic scratch name derived from the entries themselves — never

@@ -1,6 +1,8 @@
 defmodule Capstone.Plugin.RegistryTest do
   use ExUnit.Case, async: true
 
+  import ExUnit.CaptureIO
+
   alias Capstone.Plugin.Registry
 
   defp put(dir, filename), do: File.write!(Path.join(dir, filename), "")
@@ -71,10 +73,64 @@ defmodule Capstone.Plugin.RegistryTest do
   @tag :tmp_dir
   test "a filename that doesn't parse is skipped, not raised on", %{tmp_dir: dir} do
     File.write!(Path.join(dir, "not-a-plugin-archive"), "")
+    put(dir, "cache-0.1.0-aaaaaaaaaaaa.tar.gz")
     put(dir, "cache-1.20.3-0.1.0-aaaaaaaaaaaa.tar.gz")
 
-    assert Registry.resolve!(:cache, "1.20.3", "0.1.0", dir) ==
-             Path.join(dir, "cache-1.20.3-0.1.0-aaaaaaaaaaaa.tar.gz")
+    assert capture_io(fn ->
+             assert Registry.resolve!(:cache, "1.20.3", "0.1.0", dir) ==
+                      Path.join(dir, "cache-1.20.3-0.1.0-aaaaaaaaaaaa.tar.gz")
+           end) =~ "skipping cache-0.1.0-aaaaaaaaaaaa.tar.gz"
+  end
+
+  # The right-count-WRONG-CONTENT path, which is the one that used to escape
+  # `parse/1` and raise `Version.InvalidVersionError` from deep inside the
+  # filter chain — breaking resolution for the whole type rather than for the
+  # one stray file.
+  @tag :tmp_dir
+  test "a malformed Elixir version segment is skipped, not raised on", %{tmp_dir: dir} do
+    put(dir, "cache-notaversion-0.1.0-aaaaaaaaaaaa.tar.gz")
+
+    capture_io(fn ->
+      assert_raise Mix.Error, ~r/:cache/, fn ->
+        Registry.resolve!(:cache, "1.20.3", "0.1.0", dir)
+      end
+    end)
+  end
+
+  @tag :tmp_dir
+  test "a malformed capstone version segment is skipped, not raised on", %{tmp_dir: dir} do
+    put(dir, "cache-1.20.3-notaversion-aaaaaaaaaaaa.tar.gz")
+
+    capture_io(fn ->
+      assert_raise Mix.Error, ~r/:cache/, fn ->
+        Registry.resolve!(:cache, "1.20.3", "0.1.0", dir)
+      end
+    end)
+  end
+
+  @tag :tmp_dir
+  test "resolution still succeeds when a valid archive sits beside a malformed one",
+       %{tmp_dir: dir} do
+    put(dir, "cache-notaversion-0.1.0-aaaaaaaaaaaa.tar.gz")
+    put(dir, "cache-1.20.3-notaversion-bbbbbbbbbbbb.tar.gz")
+    put(dir, "cache-1.20.3-0.1.0-cccccccccccc.tar.gz")
+
+    capture_io(fn ->
+      assert Registry.resolve!(:cache, "1.20.3", "0.1.0", dir) ==
+               Path.join(dir, "cache-1.20.3-0.1.0-cccccccccccc.tar.gz")
+    end)
+  end
+
+  @tag :tmp_dir
+  test "a malformed archive is skipped with a named Mix.shell().info warning", %{tmp_dir: dir} do
+    put(dir, "cache-notaversion-0.1.0-aaaaaaaaaaaa.tar.gz")
+    put(dir, "cache-1.20.3-0.1.0-cccccccccccc.tar.gz")
+
+    output =
+      capture_io(fn -> Registry.resolve!(:cache, "1.20.3", "0.1.0", dir) end)
+
+    assert output =~ "skipping cache-notaversion-0.1.0-aaaaaaaaaaaa.tar.gz"
+    refute output =~ "cache-1.20.3-0.1.0-cccccccccccc.tar.gz"
   end
 
   describe "retire!/2" do

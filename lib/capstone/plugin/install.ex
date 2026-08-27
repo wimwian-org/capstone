@@ -20,7 +20,13 @@ defmodule Capstone.Plugin.Install do
     tmp = extraction_dir(archive)
 
     try do
-      File.mkdir_p!(tmp)
+      # rm_rf! then mkdir!, never mkdir_p!. The path below is content-derived
+      # and therefore PREDICTABLE, and mkdir_p! succeeds against an existing
+      # directory — or a symlink to one — so on a shared machine it would
+      # happily extract the archive wherever someone else pointed the path.
+      # mkdir!/1 raises on :eexist instead, which is the loud answer.
+      File.rm_rf!(tmp)
+      File.mkdir!(tmp)
       extract!(archive, tmp)
       Apply.run(tmp, target, origin: {:registry, Path.basename(archive)})
     after
