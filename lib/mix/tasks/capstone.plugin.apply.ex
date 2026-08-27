@@ -1,5 +1,5 @@
 defmodule Mix.Tasks.Capstone.Plugin.Apply do
-  # DELIBERATELY no @shortdoc, for the reason given in capstone.check.
+  @shortdoc "Applies a derived plugin to a target project"
   @moduledoc """
   Applies a derived plugin to a target project.
 

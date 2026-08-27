@@ -8,10 +8,8 @@ defmodule Mix.Tasks.Capstone.Plugin.DeriveTest do
 
   @out "priv/meta/meta_cache"
 
-  test "the task module exposes no @shortdoc, keeping it out of mix help" do
-    # lib/** ships in the hex package, so this task is installed into every
-    # consuming project. Omitting @shortdoc hides it from `mix help`.
-    assert Derive.__info__(:attributes)[:shortdoc] == nil
+  test "the task module exposes a @shortdoc" do
+    assert Mix.Task.shortdoc(Derive) =~ "raw working project"
   end
 
   test "re-deriving reproduces the checked-in plugin byte for byte" do

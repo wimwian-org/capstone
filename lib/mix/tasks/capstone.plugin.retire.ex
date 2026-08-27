@@ -1,5 +1,5 @@
 defmodule Mix.Tasks.Capstone.Plugin.Retire do
-  # DELIBERATELY no @shortdoc, for the reason given in capstone.check.
+  @shortdoc "Retires a plugin archive so future resolutions skip it"
   @moduledoc """
   Retires a plugin archive so future resolutions skip it (SDD-adjacent; see
   docs/superpowers/specs/2026-08-26-plugin-ecosystem-design.md).

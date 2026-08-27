@@ -1,7 +1,5 @@
 defmodule Mix.Tasks.Capstone.Check do
-  # DELIBERATELY no @shortdoc: lib/** ships in the hex package, so this task is
-  # installed into every consuming project. Without @shortdoc it stays out of
-  # `mix help`'s listing while remaining runnable.
+  @shortdoc "Fails while any unresolved manual region remains"
   @moduledoc """
   Fails while any unresolved `:manual` region remains.
 
