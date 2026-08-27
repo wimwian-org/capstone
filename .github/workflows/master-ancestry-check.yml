@@ -14,10 +14,19 @@ jobs:
         with:
           fetch-depth: 0
       - name: master must never be ahead of dev
+        env:
+          # On a pull_request event, actions/checkout's default HEAD is
+          # GitHub's synthetic preview-merge commit (PR head merged into PR
+          # base) — a new commit that is never itself an ancestor of dev,
+          # even when the merge would be a pure fast-forward. The check that
+          # actually matters is whether the PR's real head commit (the
+          # branch being merged in) is an ancestor of dev; on a direct push
+          # to master, HEAD already is that real commit.
+          CHECK_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
         run: |
           git fetch origin dev
-          if git merge-base --is-ancestor HEAD origin/dev; then
-            echo "OK: this ref is an ancestor of (or equal to) origin/dev"
+          if git merge-base --is-ancestor "$CHECK_SHA" origin/dev; then
+            echo "OK: $CHECK_SHA is an ancestor of (or equal to) origin/dev"
           else
             echo "FAIL: this would move master ahead of dev — merge to dev first, then fast-forward master"
             exit 1
