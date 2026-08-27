@@ -76,6 +76,16 @@ Pre-1.0 and under active development. The API is not yet stable — see
 A single `.version` file holds one bare `x.y.z` line, read by `mix.exs` at
 compile time.
 
+`mix devops.bump_version` bumps it based on `HEAD`'s Conventional Commit
+type (`feat` → minor, `fix` → patch, `chore`/`test`/`build`/`ci` → no
+bump — see `config :devops, :commit_types` in `config/devops.exs` for the
+full table) and amends that bump into the commit it describes. Run it by
+hand, or activate it as a `post-commit` hook once per checkout:
+
+```bash
+git config core.hooksPath scripts/hooks
+```
+
 ## Gates
 
 Every commit is expected to satisfy:
