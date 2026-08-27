@@ -13,21 +13,27 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: master must never be ahead of dev
+      - name: master must never carry content dev doesn't have
         env:
           # On a pull_request event, actions/checkout's default HEAD is
           # GitHub's synthetic preview-merge commit (PR head merged into PR
-          # base) — a new commit that is never itself an ancestor of dev,
-          # even when the merge would be a pure fast-forward. The check that
-          # actually matters is whether the PR's real head commit (the
-          # branch being merged in) is an ancestor of dev; on a direct push
-          # to master, HEAD already is that real commit.
+          # base). On a push (a PR landing, or any other update to master),
+          # github.sha is the new commit itself.
+          #
+          # Either way, commit-graph ANCESTRY is the wrong check: GitHub's
+          # merge button always creates a brand-new merge commit, even when
+          # the merge is fast-forward-eligible, so master's tip is never
+          # literally an ancestor of dev after a normal PR merge — even
+          # though its tree content is identical. What must hold is TREE
+          # equality: master is only ever meant to be synced to match dev's
+          # current tip exactly, never to carry content dev lacks.
           CHECK_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
         run: |
           git fetch origin dev
-          if git merge-base --is-ancestor "$CHECK_SHA" origin/dev; then
-            echo "OK: $CHECK_SHA is an ancestor of (or equal to) origin/dev"
+          if git diff --quiet "$CHECK_SHA" origin/dev; then
+            echo "OK: $CHECK_SHA's tree matches origin/dev exactly"
           else
-            echo "FAIL: this would move master ahead of dev — merge to dev first, then fast-forward master"
+            echo "FAIL: this ref's tree differs from origin/dev — master may only be synced to match dev's current tip exactly"
+            git diff --stat "$CHECK_SHA" origin/dev
             exit 1
           fi
