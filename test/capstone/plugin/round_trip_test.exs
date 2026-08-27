@@ -5,7 +5,7 @@ defmodule Capstone.Plugin.RoundTripTest do
   alias Capstone.Baseline
   alias Capstone.Plugin.Apply
 
-  @baseline "priv/meta/baseline_otp"
+  @baseline "priv/meta/baseline_api"
   @plugin "priv/meta/meta_cache"
   @raw "priv/meta/cache_component"
 
@@ -17,7 +17,7 @@ defmodule Capstone.Plugin.RoundTripTest do
     {:ok, target: target}
   end
 
-  test "applying meta_cache to baseline_otp reproduces cache_component", %{target: target} do
+  test "applying meta_cache to baseline_api reproduces cache_component", %{target: target} do
     {:ok, _component} = Apply.run(@plugin, target)
 
     expected = Baseline.tree(@raw)
@@ -36,20 +36,20 @@ defmodule Capstone.Plugin.RoundTripTest do
   test "the :manual hunk is placed, not marked", %{target: target} do
     {:ok, _component} = Apply.run(@plugin, target)
 
-    contents = File.read!(Path.join(target, "lib/new_otp_app.ex"))
+    contents = File.read!(Path.join(target, "lib/new_api_app.ex"))
 
-    assert contents == File.read!(Path.join(@raw, "lib/new_otp_app.ex"))
+    assert contents == File.read!(Path.join(@raw, "lib/new_api_app.ex"))
     refute contents =~ Apply.marker_prefix("")
   end
 
   test "an anchor that cannot be located marks instead of guessing", %{target: target} do
     # Strip the anchor's distinguishing context. A wrong placement would be
     # silent; a marker is loud, and mix capstone.check gates it.
-    File.write!(Path.join(target, "lib/new_otp_app.ex"), "defmodule NewOtpApp do\nend\n")
+    File.write!(Path.join(target, "lib/new_api_app.ex"), "defmodule NewApiApp do\nend\n")
 
     {:ok, _component} = Apply.run(@plugin, target)
 
-    assert File.read!(Path.join(target, "lib/new_otp_app.ex")) =~ Apply.marker_prefix(:cache_app)
+    assert File.read!(Path.join(target, "lib/new_api_app.ex")) =~ Apply.marker_prefix(:cache_app)
   end
 
   test "applying twice is a no-op", %{target: target} do
@@ -71,13 +71,13 @@ defmodule Capstone.Plugin.RoundTripTest do
     # file that carries it. Renaming only mix.exs would leave lib/other_app.ex
     # absent, which is a broken project rather than a differently named one.
     mix = Path.join(other, "mix.exs")
-    File.write!(mix, String.replace(File.read!(mix), ":new_otp_app", ":other_app"))
+    File.write!(mix, String.replace(File.read!(mix), ":new_api_app", ":other_app"))
 
-    root = Path.join(other, "lib/new_otp_app.ex")
+    root = Path.join(other, "lib/new_api_app.ex")
 
     File.write!(
       Path.join(other, "lib/other_app.ex"),
-      String.replace(File.read!(root), "NewOtpApp", "OtherApp")
+      String.replace(File.read!(root), "NewApiApp", "OtherApp")
     )
 
     File.rm!(root)
@@ -86,6 +86,6 @@ defmodule Capstone.Plugin.RoundTripTest do
 
     # The whole point of templating: paths AND content follow the target.
     assert File.read!(Path.join(other, "lib/other_app/cache.ex")) =~ "defmodule OtherApp.Cache"
-    refute File.exists?(Path.join(other, "lib/new_otp_app/cache.ex"))
+    refute File.exists?(Path.join(other, "lib/new_api_app/cache.ex"))
   end
 end

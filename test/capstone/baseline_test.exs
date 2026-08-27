@@ -217,7 +217,7 @@ defmodule Capstone.BaselineTest do
 
     refute Map.has_key?(cache, :argv)
     refute Map.has_key?(cache, :generator)
-    assert cache.derived_from == :otp
+    assert cache.derived_from == :api
   end
 
   defp assert_same_tree(expected, actual) do

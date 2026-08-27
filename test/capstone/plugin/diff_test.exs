@@ -48,7 +48,7 @@ defmodule Capstone.Plugin.DiffTest do
         )
 
       # Three lines, not one: a single preceding line is routinely ambiguous —
-      # in cache_component's lib/new_otp_app.ex it is `  """`, which matches twice.
+      # in cache_component's lib/new_api_app.ex it is `  """`, which matches twice.
       assert hunk.anchor == [
                "defmodule App.Application do",
                "  def start(_, _) do",
