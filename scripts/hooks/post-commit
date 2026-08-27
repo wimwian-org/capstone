@@ -1,0 +1,17 @@
+#!/bin/sh
+# Bumps .version at the project root based on HEAD's commit's Conventional
+# Commit type (feat -> minor, fix -> patch, etc. — see `config :devops,
+# :commit_types` in config/devops.exs for the full table), then amends that
+# bump into HEAD so the number never drifts from the commit it describes.
+#
+# All of the actual logic lives in Devops.Version.bump!/1 (deps/devops) —
+# this hook only wires it in. That includes the recursion guard: the amend
+# this performs re-fires this same hook, and Devops.Version.bump!/1 already
+# no-ops on the second pass via DEVOPS_BUMPING=1, so nothing extra is
+# needed here.
+#
+# Not installed automatically — activate it once per checkout with:
+#   git config core.hooksPath scripts/hooks
+
+cd "$(git rev-parse --show-toplevel)" || exit 1
+mix devops.bump_version
