@@ -223,6 +223,11 @@
     path: "priv/meta/cqrs_component",
     tree_digest: "sha256:eee9c6ee61ea50b8ac6792c5898f807c3a2f3c93418be781a5891cac1a21efde"
   },
+  grpc: %{
+    derived_from: :api,
+    names: %{app: "new_api_app", module: "NewApiApp", name: "new_api_app"},
+    path: "priv/meta/grpc_component"
+  },
   openapi: %{
     archive_sha256: "92c66ce84c9731d95bf3d9ae98882e89d0fe3ffd605d4024acd5f62e98b013c7",
     derived_from: :api,
