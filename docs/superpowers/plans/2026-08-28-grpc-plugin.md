@@ -13,7 +13,8 @@
 ## Global Constraints
 
 - The plugin is built via the existing pipeline: hand-edit `priv/meta/grpc_component/`, then `mix capstone.plugin.derive grpc` diffs it against `priv/meta/baseline_api/` into `priv/meta/meta_grpc/manifest.exs`. Never hand-edit files under `priv/meta/meta_grpc/` directly.
-- Deps: `{:grpc, "~> 1.0"}`, `{:grpc_server, "~> 1.0"}`, `{:protobuf, "~> 0.13"}` — no `x509`. `grpc_core` is a transitive dependency of `grpc`; never add it directly.
+- Deps: `{:grpc, "~> 1.0"}`, `{:grpc_server, "~> 1.0"}`, `{:protobuf, "~> 0.13"}`, `{:mint, "~> 1.9"}` — no `x509`, no `:gun`. `grpc_core` is a transitive dependency of `grpc`; never add it directly. `:mint` is an EXPLICIT dependency, not left to an accidental transitive pull-in: `grpc`'s default client adapter (`GRPC.Client.Adapters.Gun`) needs `:gun`, which this plugin doesn't install — `NewApiApp.GRPC.Client` explicitly selects `GRPC.Client.Adapters.Mint` instead (see Task 3), so `:mint` must be a real, declared dependency, confirmed against `grpc`'s own real hex requirements (`mint ~> 1.9`, an optional peer dep grpc expects the consumer to add if they want this adapter).
+- `NewApiApp.GRPC.Credentials.client_credential/0` MUST include a `verify_fun` that accepts ONLY `{:bad_cert, :selfsigned_peer}` and fails every other bad-cert reason — OTP's `:ssl`/`:public_key` classifies ANY single self-signed certificate as `{bad_cert, :selfsigned_peer}` (confirmed against real OTP 29 `ssl_certificate.erl` source; long-standing, documented behavior, not version-specific), and `:verify_peer` treats this as fatal by default. Without this, the shipped test (and any real client, including a developer's own) can never successfully connect to this plugin's self-signed dev/test cert. This is a narrow, dev-cert-specific exception — never blanket-accept all bad-cert reasons, which would defeat the point of using TLS.
 - `GRPC.Server.Supervisor`'s TLS credential goes under `adapter_opts: [cred: ...]` — NOT a bare top-level `cred:` key (verified against real, current `grpc_server` source; several older tutorials show the stale bare-key form). `GRPC.Stub.connect/2`'s credential (client side) IS a top-level `cred:` key — this asymmetry between server and client is real and confirmed, not a bug to "fix" into consistency.
 - `application.ex` adds exactly ONE supervision child (`GRPC.Server.Supervisor`) — this should hit the existing single-child auto-detection (`Derive.added_child/2`, extended to N children by earlier, unrelated work on this branch) cleanly, landing as `:contributes`+`child:`, never `:manual`. Verify this in Task 7, don't assume it.
 - The shipped test does **not** call `start_supervised!` on `GRPC.Server.Supervisor` or anything else `application.ex` already starts unconditionally in every env including `:test` — a real bug of exactly this shape was found and fixed the hard way in a separate, earlier plan on this branch (`:cqrs`'s Task 9). `mix test` already boots the full OTP application (server running) before any test body executes; the shipped test just calls `NewApiApp.GRPC.Client.connect/1` against the already-running server.
@@ -66,7 +67,7 @@
 cp -r priv/meta/baseline_api priv/meta/grpc_component
 ```
 
-- [ ] **Step 2: Add the three new deps to `mix.exs`**
+- [ ] **Step 2: Add the four new deps to `mix.exs`**
 
 Find the existing `deps/0` list (ends with `{:bandit, "~> 1.5"}`). Append:
 
@@ -74,8 +75,16 @@ Find the existing `deps/0` list (ends with `{:bandit, "~> 1.5"}`). Append:
       {:bandit, "~> 1.5"},
       {:grpc, "~> 1.0"},
       {:grpc_server, "~> 1.0"},
-      {:protobuf, "~> 0.13"}
+      {:protobuf, "~> 0.13"},
+      {:mint, "~> 1.9"}
 ```
+
+`{:mint, "~> 1.9"}` is required EXPLICITLY (not left to an accidental transitive pull-in from an
+unrelated dep): `grpc`'s default client adapter (`GRPC.Client.Adapters.Gun`) needs the `:gun`
+package, which this plugin doesn't install; `NewApiApp.GRPC.Client` (Task 3) explicitly selects
+`GRPC.Client.Adapters.Mint` instead, so `:mint` must be a real, declared dependency — confirmed
+against `grpc`'s own real hex requirements (`mint ~> 1.9`, one of its two optional adapter peer
+deps, the other being `gun`).
 
 - [ ] **Step 3: Create `lib/new_api_app/grpc/credentials.ex`**
 
@@ -100,12 +109,36 @@ defmodule NewApiApp.GRPC.Credentials do
     )
   end
 
-  @doc "Client-side credential: trusts the given CA when calling another service."
+  @doc """
+  Client-side credential: trusts the given CA when calling another service.
+
+  Includes a verify_fun accepting ONLY the {:bad_cert, :selfsigned_peer}
+  reason — OTP's :ssl/:public_key classifies ANY single self-signed
+  certificate presented by a peer this way (confirmed against real OTP 29
+  ssl_certificate.erl source; long-standing, documented :public_key
+  behavior, not version-specific), and :verify_peer treats it as fatal by
+  default. Without this, no client — including this plugin's own shipped
+  test — can ever connect to the self-signed dev/test cert this plugin
+  ships. Every OTHER bad-cert reason still fails: this is a narrow,
+  dev-cert-specific exception, never a blanket bypass.
+  """
   @spec client_credential() :: GRPC.Credential.t()
   def client_credential do
     config = Application.fetch_env!(:new_api_app, __MODULE__)
 
-    GRPC.Credential.new(ssl: [cacertfile: Keyword.fetch!(config, :cacertfile)])
+    GRPC.Credential.new(
+      ssl: [
+        cacertfile: Keyword.fetch!(config, :cacertfile),
+        verify_fun:
+          {fn
+             _, {:bad_cert, :selfsigned_peer}, state -> {:valid, state}
+             _, {:bad_cert, _} = reason, _ -> {:fail, reason}
+             _, {:extension, _}, state -> {:unknown, state}
+             _, :valid, state -> {:valid, state}
+             _, :valid_peer, state -> {:valid, state}
+           end, []}
+      ]
+    )
   end
 end
 ```
@@ -237,7 +270,7 @@ element:
       NewApiAppWeb.Endpoint,
       {GRPC.Server.Supervisor,
        endpoint: NewApiApp.GRPC.Endpoint,
-       port: Application.compile_env!(:new_api_app, [NewApiApp.GRPC.Endpoint, :port]),
+       port: Application.fetch_env!(:new_api_app, NewApiApp.GRPC.Endpoint)[:port],
        start_server: true,
        adapter_opts: [cred: NewApiApp.GRPC.Credentials.server_credential()]}
     ]
@@ -292,10 +325,17 @@ defmodule NewApiApp.GRPC.Client do
   @doc "Connects to `address` (e.g. \"other-service.internal:50051\")."
   @spec connect(binary()) :: {:ok, GRPC.Channel.t()} | {:error, term()}
   def connect(address) do
-    GRPC.Stub.connect(address, cred: NewApiApp.GRPC.Credentials.client_credential())
+    GRPC.Stub.connect(address,
+      cred: NewApiApp.GRPC.Credentials.client_credential(),
+      adapter: GRPC.Client.Adapters.Mint
+    )
   end
 end
 ```
+
+`adapter: GRPC.Client.Adapters.Mint` is required explicitly — `grpc`'s own default
+(`GRPC.Client.Adapters.Gun`) needs the `:gun` package, which this plugin doesn't install (see
+Task 1's `:mint` dependency note).
 
 - [ ] **Step 2: Verify it compiles**
 

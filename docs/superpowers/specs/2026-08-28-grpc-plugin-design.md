@@ -40,8 +40,17 @@ Full deps list added to `priv/meta/grpc_component/mix.exs`, appended after the e
 ```elixir
 {:grpc, "~> 1.0"},
 {:grpc_server, "~> 1.0"},
-{:protobuf, "~> 0.13"}
+{:protobuf, "~> 0.13"},
+{:mint, "~> 1.9"}
 ```
+
+`{:mint, "~> 1.9"}` is required explicitly, not left to an accidental transitive pull-in: `grpc`'s
+default client adapter (`GRPC.Client.Adapters.Gun`) needs the `:gun` package, which this plugin
+doesn't install — the Client section below explicitly selects `GRPC.Client.Adapters.Mint`
+instead, confirmed against `grpc`'s own real hex requirements (`mint ~> 1.9`, one of its two
+optional adapter peer deps, the other being `gun`). Discovered empirically during implementation
+(the first real shipped-test run failed with `GRPC.Client.Adapters.Gun.connect/2 is undefined`)
+and folded back into this spec.
 
 **No `x509` dependency** — see the Cert tooling section below. Phoenix's own `mix phx.gen.cert`
 (the explicit precedent this plugin's cert task mirrors) does NOT use the `x509` package;
@@ -138,11 +147,36 @@ defmodule NewApiApp.GRPC.Credentials do
     )
   end
 
-  @doc "Client-side credential: trusts the given CA when calling another service."
+  @doc """
+  Client-side credential: trusts the given CA when calling another service.
+
+  Includes a verify_fun accepting ONLY {:bad_cert, :selfsigned_peer} —
+  OTP's :ssl/:public_key classifies ANY single self-signed certificate a
+  peer presents this way (verified against real OTP 29 ssl_certificate.erl
+  source; long-standing, documented behavior, not version-specific), and
+  :verify_peer treats it as fatal by default. Without this, no client can
+  ever connect to this plugin's own self-signed dev/test cert. Every OTHER
+  bad-cert reason still fails — a narrow, dev-cert-specific exception, not
+  a blanket bypass. Discovered empirically when the plugin's own shipped
+  test first tried to connect and was rejected with
+  {:tls_alert, {:bad_certificate, ...}}.
+  """
   def client_credential do
     config = Application.fetch_env!(:new_api_app, __MODULE__)
 
-    GRPC.Credential.new(ssl: [cacertfile: Keyword.fetch!(config, :cacertfile)])
+    GRPC.Credential.new(
+      ssl: [
+        cacertfile: Keyword.fetch!(config, :cacertfile),
+        verify_fun:
+          {fn
+             _, {:bad_cert, :selfsigned_peer}, state -> {:valid, state}
+             _, {:bad_cert, _} = reason, _ -> {:fail, reason}
+             _, {:extension, _}, state -> {:unknown, state}
+             _, :valid, state -> {:valid, state}
+             _, :valid_peer, state -> {:valid, state}
+           end, []}
+      ]
+    )
   end
 end
 ```
@@ -179,10 +213,15 @@ auto-detection cleanly — no `:manual`/removal-hunk risk):
 ```elixir
 {GRPC.Server.Supervisor,
  endpoint: NewApiApp.GRPC.Endpoint,
- port: Application.compile_env!(:new_api_app, [NewApiApp.GRPC.Endpoint, :port]),
+ port: Application.fetch_env!(:new_api_app, NewApiApp.GRPC.Endpoint)[:port],
  start_server: true,
  adapter_opts: [cred: NewApiApp.GRPC.Credentials.server_credential()]}
 ```
+
+(`Application.fetch_env!/2`, not `compile_env!/2` — discovered empirically that `compile_env!/2`
+cannot be called inside a function body, only at module top level; `fetch_env!/2` is also the
+semantically better choice regardless, since it reads config at boot time and correctly picks up
+`config/runtime.exs` overrides, unlike `compile_env!/2` which would bake in a compile-time value.)
 
 **Verified against real, current source, not assumed** (`grpc_server/lib/grpc/server/supervisor.ex`):
 `GRPC.Server.Supervisor`'s accepted top-level options are exactly `:endpoint, :servers,
@@ -207,10 +246,19 @@ defmodule NewApiApp.GRPC.Client do
 
   @spec connect(binary()) :: {:ok, GRPC.Channel.t()} | {:error, term()}
   def connect(address) do
-    GRPC.Stub.connect(address, cred: NewApiApp.GRPC.Credentials.client_credential())
+    GRPC.Stub.connect(address,
+      cred: NewApiApp.GRPC.Credentials.client_credential(),
+      adapter: GRPC.Client.Adapters.Mint
+    )
   end
 end
 ```
+
+`adapter: GRPC.Client.Adapters.Mint` is required explicitly — discovered empirically when the
+plugin's own shipped test first tried to connect and failed with
+`** (UndefinedFunctionError) function GRPC.Client.Adapters.Gun.connect/2 is undefined`. `grpc`
+defaults to `GRPC.Client.Adapters.Gun`, which needs the `:gun` package (not installed by this
+plugin, see Dependencies above); `:mint` is the explicitly-declared alternative instead.
 
 `GRPC.Stub.connect/2`'s `cred:` option (verified against the real, current `grpc` client source)
 is the correct, TOP-level key for the CLIENT side — this is deliberately different from the
