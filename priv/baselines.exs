@@ -134,7 +134,7 @@
     tree_digest: "sha256:e3c197a333749f149a7b1e0a7a530d41841a6f6f43565762d27f3cabd1e88733"
   },
   cqrs: %{
-    archive_sha256: "82d19f35562256028e2709cbbac3479d8ade77278aba693724f7bddc767d18ab",
+    archive_sha256: "339855623665d4323f0abb5329cf0ea398094ca116fb922dc63f0a2e492e71cd",
     derived_from: :api,
     files: %{
       ".formatter.exs" => "a44a43d777033eb6c64e0101b7469611c2def3b377b04c9d6b2a8620a347d385",
@@ -187,7 +187,7 @@
         "18f68f5eec8914616c88bebbe9fa840b59e979c088328163989081269afce4b4",
       "lib/new_api_app_web/telemetry.ex" =>
         "545604fa4abecf9644ca57b1d495f587c9e19884d1d7c1c703dcd6513da7cce6",
-      "mix.exs" => "2ef770c588fcbeaec85cbd72cde579187d43a9cbe4f69c55adddda40190c4f51",
+      "mix.exs" => "25dfcb585ed8a1beede018339cc25bfee299653846855e6b7326df5b5550aab1",
       "priv/gettext/en/LC_MESSAGES/errors.po" =>
         "7965ec884cd9c0dd4f13b268b485e1e3edc13d8f2574eee6f11b35bf3175d05b",
       "priv/gettext/errors.pot" =>
@@ -215,7 +215,7 @@
     },
     names: %{app: "new_api_app", module: "NewApiApp", name: "new_api_app"},
     path: "priv/meta/cqrs_component",
-    tree_digest: "sha256:88e61ac7b21cd64a3a4c74d8aa6854c47de6c182b41f41e3271804e970252df0"
+    tree_digest: "sha256:d2aa036167273d066801ba75a02a6943e717a863cf32c9b51fd2877fdcc76ff8"
   },
   openapi: %{
     archive_sha256: "92c66ce84c9731d95bf3d9ae98882e89d0fe3ffd605d4024acd5f62e98b013c7",
