@@ -43,12 +43,22 @@ defmodule Capstone.Plugin.CqrsRoundTripTest do
              Apply.marker_prefix(:cqrs_application)
   end
 
-  test "application.ex's removal hunk always marks a conflict on a fresh target — it never reaches the anchor-based placement path that :cache's :manual entries use",
+  test "application.ex's conflict region shows both the removed old line and the added new lines, not just a bare marker",
        %{target: target} do
     {:ok, _component} = Apply.run(@plugin, target)
 
-    assert File.read!(Path.join(target, "lib/new_api_app/application.ex")) =~
-             Apply.marker_prefix(:cqrs_application)
+    contents = File.read!(Path.join(target, "lib/new_api_app/application.ex"))
+
+    # `mark_removal/6`'s private `halves/2` builds the region as
+    # "------- remove\n#{removed}\n------- add\n#{block}" (apply.ex:286), so a
+    # fresh apply's conflict region literally contains the OLD un-comma'd last
+    # line under "------- remove" AND the NEW comma'd lines under
+    # "------- add" — not merely a marker with no diff content.
+    assert contents =~ "------- remove\n      NewApiAppWeb.Endpoint\n------- add\n"
+    assert contents =~ "      NewApiAppWeb.Endpoint,\n"
+    assert contents =~ "      NewApiApp.EventStore,\n"
+    assert contents =~ "      NewApiApp.CQRS.App,\n"
+    assert contents =~ "      NewApiApp.CQRS.Cache\n"
   end
 
   test "applying twice is a no-op", %{target: target} do
