@@ -167,16 +167,36 @@ defmodule Capstone.Integration.PluginLifecycleTest do
 
     project = Path.join(tmp, name)
     assert File.exists?(Path.join(project, "target.exs"))
-    # priv/meta/meta_cache/manifest.exs records "lib/APP/cache.ex" as
-    # :sole_owner; APP resolves to the target's own `app:` (Capstone.Template),
-    # i.e. "with_cache" here.
+    # priv/meta/meta_cache/manifest.exs records "lib/APP/cache.ex" and
+    # "lib/APP/cache/store.ex" as :sole_owner; APP resolves to the target's
+    # own `app:` (Capstone.Template), i.e. "with_cache" here.
     assert File.exists?(Path.join(project, "lib/with_cache/cache.ex"))
+    assert File.exists?(Path.join(project, "lib/with_cache/cache/store.ex"))
 
     top_level = "lib/#{name}.ex"
     assert_placed_not_marked(project, top_level, "defdelegate fetch")
     # Bootstrap already ran deps.get and deps.compile, nebulex included, so
     # this is the app's own sources against the deps the plugin declared.
     Shell.cmd!(["compile"], project)
+
+    smoke_test = """
+    {:ok, _} = Application.ensure_all_started(:with_cache)
+    calls = :counters.new(1, [])
+    compute = fn -> :counters.add(calls, 1, 1); :counters.get(calls, 1) end
+
+    1 = WithCache.fetch("k", compute)
+    1 = WithCache.fetch("k", compute)
+    IO.puts("fetch/2 caches: PASS")
+
+    2 = WithCache.fetch("ttl-k", 50, compute)
+    Process.sleep(100)
+    3 = WithCache.fetch("ttl-k", 50, compute)
+    IO.puts("fetch/3 expires: PASS")
+    """
+
+    output = Shell.cmd!(["run", "-e", smoke_test], project)
+    assert output =~ "fetch/2 caches: PASS"
+    assert output =~ "fetch/3 expires: PASS"
   end
 
   # The failure mode this guards against is SILENT: apply returns :ok, writes
