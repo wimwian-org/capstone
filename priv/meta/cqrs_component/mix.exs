@@ -54,7 +54,10 @@ defmodule NewApiApp.MixProject do
       {:bandit, "~> 1.5"},
       {:nebulex, "~> 3.0"},
       {:nebulex_local, "~> 3.0"},
-      {:uniq, "~> 0.6"}
+      {:uniq, "~> 0.6"},
+      {:commanded, "~> 1.4"},
+      {:commanded_eventstore_adapter, "~> 1.4"},
+      {:eventstore, "~> 1.4"}
     ]
   end
 
