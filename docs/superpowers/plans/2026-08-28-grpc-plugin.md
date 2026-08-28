@@ -69,14 +69,22 @@ cp -r priv/meta/baseline_api priv/meta/grpc_component
 
 - [ ] **Step 2: Add the four new deps to `mix.exs`**
 
-Find the existing `deps/0` list (ends with `{:bandit, "~> 1.5"}`). Append:
+**Prepend, do not append** — `Capstone.Plugin.Apply.add_deps/2` always PREPENDS a new dependency
+when replaying a derived manifest (documented, deliberate behavior; `cache_component`'s and
+`cqrs_component`'s own mix.exs both have their plugin-added deps at the TOP of the list, before
+`:phoenix`, for exactly this reason). Appending after `:bandit` instead — the mistake an earlier
+draft of this plan made, and which an identical mistake on a different plan on this branch
+already required a real fix round to correct — makes the round-trip test fail with
+`differing == ["mix.exs"]`, since replay never reproduces an appended order.
+
+Find the existing `deps/0` list (starts with `{:phoenix, "~> 1.8.9"}`). Prepend:
 
 ```elixir
-      {:bandit, "~> 1.5"},
       {:grpc, "~> 1.0"},
       {:grpc_server, "~> 1.0"},
       {:protobuf, "~> 0.13"},
-      {:mint, "~> 1.9"}
+      {:mint, "~> 1.9"},
+      {:phoenix, "~> 1.8.9"},
 ```
 
 `{:mint, "~> 1.9"}` is required EXPLICITLY (not left to an accidental transitive pull-in from an
