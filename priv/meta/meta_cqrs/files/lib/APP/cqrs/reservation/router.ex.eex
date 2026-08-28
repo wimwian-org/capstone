@@ -1,0 +1,12 @@
+defmodule <%= @module %>.CQRS.Reservation.Router do
+  use Commanded.Commands.Router
+
+  dispatch(
+    [
+      <%= @module %>.CQRS.Reservation.Commands.Reserve,
+      <%= @module %>.CQRS.Reservation.Commands.Release
+    ],
+    to: <%= @module %>.CQRS.Reservation,
+    identity: :reservation_id
+  )
+end

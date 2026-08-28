@@ -1,0 +1,9 @@
+defmodule <%= @module %>.CQRS.Reservation.Commands.Reserve do
+  @enforce_keys [:reservation_id]
+  defstruct [:reservation_id]
+end
+
+defmodule <%= @module %>.CQRS.Reservation.Commands.Release do
+  @enforce_keys [:reservation_id]
+  defstruct [:reservation_id]
+end

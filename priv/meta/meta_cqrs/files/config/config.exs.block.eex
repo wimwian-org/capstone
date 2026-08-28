@@ -1,0 +1,15 @@
+# Configure the CQRS event store
+config :<%= @app %>, <%= @module %>.EventStore,
+  serializer: Commanded.Serialization.JsonSerializer,
+  username: "postgres",
+  password: "postgres",
+  database: "<%= @app %>_eventstore_#{config_env()}",
+  hostname: "localhost"
+
+# Configure the CQRS Commanded application
+config :<%= @app %>, <%= @module %>.CQRS.App,
+  event_store: [
+    adapter: Commanded.EventStore.Adapters.EventStore,
+    event_store: <%= @module %>.EventStore
+  ]
+
