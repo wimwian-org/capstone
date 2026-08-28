@@ -9,6 +9,9 @@ defmodule NewApiApp.GRPC.Client do
   @doc "Connects to `address` (e.g. \"other-service.internal:50051\")."
   @spec connect(binary()) :: {:ok, GRPC.Channel.t()} | {:error, term()}
   def connect(address) do
-    GRPC.Stub.connect(address, cred: NewApiApp.GRPC.Credentials.client_credential())
+    GRPC.Stub.connect(address,
+      cred: NewApiApp.GRPC.Credentials.client_credential(),
+      adapter: GRPC.Client.Adapters.Mint
+    )
   end
 end

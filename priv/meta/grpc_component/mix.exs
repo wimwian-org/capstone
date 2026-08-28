@@ -54,7 +54,8 @@ defmodule NewApiApp.MixProject do
       {:bandit, "~> 1.5"},
       {:grpc, "~> 1.0"},
       {:grpc_server, "~> 1.0"},
-      {:protobuf, "~> 0.13"}
+      {:protobuf, "~> 0.13"},
+      {:mint, "~> 1.9"}
     ]
   end
 

@@ -18,11 +18,32 @@ defmodule NewApiApp.GRPC.Credentials do
     )
   end
 
-  @doc "Client-side credential: trusts the given CA when calling another service."
+  @doc """
+  Client-side credential: trusts the given CA when calling another service.
+
+  Includes a verify_fun accepting ONLY {:bad_cert, :selfsigned_peer} — OTP's
+  :ssl/:public_key classifies ANY single self-signed certificate a peer
+  presents this way, and :verify_peer treats it as fatal by default.
+  Without this, no client can ever connect to this plugin's own
+  self-signed dev/test cert. Every OTHER bad-cert reason still fails — a
+  narrow, dev-cert-specific exception, not a blanket bypass.
+  """
   @spec client_credential() :: GRPC.Credential.t()
   def client_credential do
     config = Application.fetch_env!(:new_api_app, __MODULE__)
 
-    GRPC.Credential.new(ssl: [cacertfile: Keyword.fetch!(config, :cacertfile)])
+    GRPC.Credential.new(
+      ssl: [
+        cacertfile: Keyword.fetch!(config, :cacertfile),
+        verify_fun:
+          {fn
+             _, {:bad_cert, :selfsigned_peer}, state -> {:valid, state}
+             _, {:bad_cert, _} = reason, _ -> {:fail, reason}
+             _, {:extension, _}, state -> {:unknown, state}
+             _, :valid, state -> {:valid, state}
+             _, :valid_peer, state -> {:valid, state}
+           end, []}
+      ]
+    )
   end
 end
