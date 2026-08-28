@@ -47,6 +47,13 @@ config :new_api_app, NewApiApp.EventStore,
   database: "new_api_app_eventstore_#{config_env()}",
   hostname: "localhost"
 
+# Configure the CQRS Commanded application
+config :new_api_app, NewApiApp.CQRS.App,
+  event_store: [
+    adapter: Commanded.EventStore.Adapters.EventStore,
+    event_store: NewApiApp.EventStore
+  ]
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

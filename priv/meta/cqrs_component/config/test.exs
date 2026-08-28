@@ -35,3 +35,10 @@ config :phoenix, :plug_init_mode, :runtime
 # Sort query params output of verified routes for robust url comparisons
 config :phoenix,
   sort_verified_routes_query_params: true
+
+# The plugin's own shipped tests (and a generated project's default test
+# suite) use Commanded's in-memory event store adapter — no real Postgres
+# event store needed. Dev/prod use the real adapter configured in
+# config/config.exs.
+config :new_api_app, NewApiApp.CQRS.App,
+  event_store: [adapter: Commanded.EventStore.Adapters.InMemory]
