@@ -1,0 +1,63 @@
+defmodule NewApiApp.CQRS.UniqueCheckTest do
+  use ExUnit.Case, async: false
+
+  alias Commanded.EventStore.Adapters.InMemory
+  alias NewApiApp.CQRS.App
+  alias NewApiApp.CQRS.Cache
+  alias NewApiApp.CQRS.UniqueCheck
+
+  setup do
+    InMemory.reset!(App)
+    :ok
+  end
+
+  describe "reserve/3" do
+    test "reserves every group's key when all groups are free" do
+      values = %{
+        email: "a-#{System.unique_integer([:positive])}@example.com",
+        org_id: 1,
+        username: "alice"
+      }
+
+      assert {:ok, reserved} =
+               UniqueCheck.reserve(:widget, [[:email], [:org_id, :username]], values)
+
+      assert length(reserved) == 2
+    end
+
+    test "fast-rejects and rolls back earlier groups when a later group is taken" do
+      taken_username = "taken-#{System.unique_integer([:positive])}"
+
+      first_values = %{
+        email: "b1-#{System.unique_integer([:positive])}@example.com",
+        org_id: 1,
+        username: taken_username
+      }
+
+      assert {:ok, _reserved} = UniqueCheck.reserve(:widget, [[:org_id, :username]], first_values)
+
+      email = "b2-#{System.unique_integer([:positive])}@example.com"
+      second_values = %{email: email, org_id: 1, username: taken_username}
+
+      assert {:error, [:org_id, :username]} =
+               UniqueCheck.reserve(:widget, [[:email], [:org_id, :username]], second_values)
+
+      # The :email group, reserved before the :org_id/:username group lost
+      # the race, must have been rolled back — cache AND ground truth —
+      # not left dangling.
+      retry_values = %{email: email, org_id: 99, username: "someone-else"}
+      assert {:ok, _reserved} = UniqueCheck.reserve(:widget, [[:email]], retry_values)
+    end
+  end
+
+  describe "release/3" do
+    test "frees every group's reservation so a later reserve for the same values succeeds" do
+      values = %{email: "c-#{System.unique_integer([:positive])}@example.com"}
+      unique_fields = [[:email]]
+
+      assert {:ok, _reserved} = UniqueCheck.reserve(:widget, unique_fields, values)
+      assert :ok = UniqueCheck.release(:widget, unique_fields, values)
+      assert {:ok, _reserved} = UniqueCheck.reserve(:widget, unique_fields, values)
+    end
+  end
+end

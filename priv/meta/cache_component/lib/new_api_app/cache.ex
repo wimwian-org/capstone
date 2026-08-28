@@ -1,17 +1,24 @@
 defmodule NewApiApp.Cache do
   @moduledoc """
-  A tiny read-through cache for NewApiApp.
+  A read-through cache for NewApiApp, backed by `NewApiApp.Cache.Store`.
   """
 
-  @doc "Fetches `key`, computing it with `fun` on a miss."
-  def fetch(key, fun) when is_function(fun, 0) do
-    case :persistent_term.get({__MODULE__, key}, :miss) do
-      :miss ->
+  alias NewApiApp.Cache.Store
+
+  @miss :__cache_miss__
+
+  @doc "Fetches `key`, computing it with `fun` on a miss. Never expires."
+  def fetch(key, fun) when is_function(fun, 0), do: fetch(key, :infinity, fun)
+
+  @doc "Fetches `key`, computing it with `fun` on a miss. Expires after `ttl` ms."
+  def fetch(key, ttl, fun) when is_function(fun, 0) do
+    case Store.get(key, @miss, []) do
+      {:ok, @miss} ->
         value = fun.()
-        :persistent_term.put({__MODULE__, key}, value)
+        :ok = Store.put(key, value, ttl: ttl)
         value
 
-      value ->
+      {:ok, value} ->
         value
     end
   end

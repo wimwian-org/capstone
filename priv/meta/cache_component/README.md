@@ -18,5 +18,6 @@ Ready to run in production? Please [check our deployment guides](https://phoenix
 * Source: https://github.com/phoenixframework/phoenix
 ## Cache
 
-Read-through caching is provided by `NewApiApp.Cache`.
+Read-through caching is provided by `NewApiApp.Cache`. `fetch/2` caches
+forever; `fetch/3` takes a TTL in milliseconds.
 

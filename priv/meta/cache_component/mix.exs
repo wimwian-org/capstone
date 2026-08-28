@@ -40,6 +40,7 @@ defmodule NewApiApp.MixProject do
   defp deps do
     [
       {:nebulex, "~> 3.0"},
+      {:nebulex_local, "~> 3.0"},
       {:phoenix, "~> 1.8.9"},
       {:phoenix_ecto, "~> 4.5"},
       {:ecto_sql, "~> 3.13"},

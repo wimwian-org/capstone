@@ -1,4 +1,5 @@
 ## Cache
 
-Read-through caching is provided by `<%= @module %>.Cache`.
+Read-through caching is provided by `<%= @module %>.Cache`. `fetch/2` caches
+forever; `fetch/3` takes a TTL in milliseconds.
 

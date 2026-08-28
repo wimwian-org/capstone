@@ -68,23 +68,25 @@
     tree_digest: "sha256:3459dcc09d6bffe7a67570d65e5227003974628bf7273e63b95cd67f91431f69"
   },
   cache: %{
-    archive_sha256: "6756a65224947e1c48c48bbda0604fc079bb907742e4c870075ecedf58366299",
+    archive_sha256: "9cdf5fa1599d1378b40f21fd34a9b37b0afece9cae506e6482c010ec11e900bd",
     derived_from: :api,
     files: %{
       ".formatter.exs" => "a44a43d777033eb6c64e0101b7469611c2def3b377b04c9d6b2a8620a347d385",
       ".gitignore" => "62ee1d39760528ade9087a64430331c1362541232b1213cdae98a25cce8888ed",
       "AGENTS.md" => "00f6f1bdb914d6eb925e9f1abaae89b10fe7b7245323df8e7bdf6c6b65fd31a4",
-      "README.md" => "7fa5188001caf7081c06a82e449770f460029c3881ab6d47ff80ef3ffac98963",
-      "config/config.exs" => "6a7734a2b5f00eea9206414cb2c72524c86e7da1ca3a9827e6aae218c1eec155",
+      "README.md" => "8f67e2ad92bab7614ee5587eadeec09def9ae81b7cbb8245acf196c80028e99c",
+      "config/config.exs" => "9d7912d5c4aa81b7458941206bd0dcc733067c47768fd751976c2a2a7417904a",
       "config/dev.exs" => "105066f4897d1acf4ed57806f2fe950010e2898a1216c77203cdb08249872d49",
       "config/prod.exs" => "4d305ac8156d0e4bb49de00f219c7d4ecd553d762d484da994ea598b2e79ba90",
       "config/runtime.exs" => "3f29f4cdd20a6b406ffa68f56108e8966f98e908b31d893a5126818db8a9fb85",
       "config/test.exs" => "a20ca71cf45c0b51a81a452f3263f2711cb7336b67e556376127fe6341d509cf",
-      "lib/new_api_app.ex" => "93287d12318850a59c12446b58033095bae63fec79cd58c4eb92c369b0b999fe",
+      "lib/new_api_app.ex" => "4f36a0b3a63fbf72434e98177f35a6c0e799f719de5ef17d1ad7594178bc0449",
       "lib/new_api_app/application.ex" =>
-        "dfd81ddd6c46736e5db861086841be7f2892336f7575511649f141c5a7934842",
+        "acfde448815b36430b3208ab3965f1d5cbb10651ffb4565aff92604c71c78505",
       "lib/new_api_app/cache.ex" =>
-        "c2382c6552521eaad0a9ec179f4462085641907a7806e4cc25dc1f365e0a9daf",
+        "318e4ce28cc50b95c8f9b7973e17b793b5dcf8b96bcac30541a65b68495f197d",
+      "lib/new_api_app/cache/store.ex" =>
+        "19d611332429921fde4092168bbb034635adca7585e23bf89aeeeae167768294",
       "lib/new_api_app/mailer.ex" =>
         "c607a46ffca95ab2e63c5c0c1078b1e9eb2f61640b845526a68bbd84c2e742dc",
       "lib/new_api_app/repo.ex" =>
@@ -101,7 +103,7 @@
         "18f68f5eec8914616c88bebbe9fa840b59e979c088328163989081269afce4b4",
       "lib/new_api_app_web/telemetry.ex" =>
         "545604fa4abecf9644ca57b1d495f587c9e19884d1d7c1c703dcd6513da7cce6",
-      "mix.exs" => "7a13a47598112a524b1ee88dcf4c76cd51c32e9de75181f3f0f7f14a66bf2585",
+      "mix.exs" => "6d005a3b0d1cb2be586c9a960be828c4c94aab3fe033954c4adf04fe1218f96c",
       "priv/gettext/en/LC_MESSAGES/errors.po" =>
         "7965ec884cd9c0dd4f13b268b485e1e3edc13d8f2574eee6f11b35bf3175d05b",
       "priv/gettext/errors.pot" =>
@@ -129,7 +131,175 @@
       {:secret, "lib/new_api_app_web/endpoint.ex", :signing_salt}
     ],
     path: "priv/meta/cache_component",
-    tree_digest: "sha256:2852460d5e6fee5bac091c2ba188e1150bcfce42018d9d20eac9bb1bb4c61d2b"
+    tree_digest: "sha256:e3c197a333749f149a7b1e0a7a530d41841a6f6f43565762d27f3cabd1e88733"
+  },
+  cqrs: %{
+    archive_sha256: "a7bcc8f298c9473443fb52e88605770d0a9457c18d8bf422596ac67c08f408d8",
+    derived_from: :api,
+    files: %{
+      ".formatter.exs" => "a44a43d777033eb6c64e0101b7469611c2def3b377b04c9d6b2a8620a347d385",
+      ".gitignore" => "62ee1d39760528ade9087a64430331c1362541232b1213cdae98a25cce8888ed",
+      "AGENTS.md" => "00f6f1bdb914d6eb925e9f1abaae89b10fe7b7245323df8e7bdf6c6b65fd31a4",
+      "README.md" => "06a584c7841862c39515ffd9bc649d2f355a2c33be85f65fbce16903de1685f2",
+      "config/config.exs" => "136b808c9a34986f898d72e0411ff37ac0627506b8ea22a58b29b63fc9d49931",
+      "config/dev.exs" => "105066f4897d1acf4ed57806f2fe950010e2898a1216c77203cdb08249872d49",
+      "config/prod.exs" => "4d305ac8156d0e4bb49de00f219c7d4ecd553d762d484da994ea598b2e79ba90",
+      "config/runtime.exs" => "3f29f4cdd20a6b406ffa68f56108e8966f98e908b31d893a5126818db8a9fb85",
+      "config/test.exs" => "05e0a771602eae47a0d85affc2228f0a2d322cf9f2d794e1753846a3f8b0bb1c",
+      "lib/new_api_app.ex" => "0bbd7d634a418a9abb5fb9f93e53fe0a332ad85b220f1397439b091e1c1a4c02",
+      "lib/new_api_app/application.ex" =>
+        "ed9e99f9e0dcd50b311c909e4b6d6df3d8704e1f18ec8c77fb5e896f73eda626",
+      "lib/new_api_app/cqrs/app.ex" =>
+        "b4ac1ee7fc62eb6789bdc194629b3e31bde9d7fb67c380c268b1058d89d9c0d3",
+      "lib/new_api_app/cqrs/cache.ex" =>
+        "7ca94ccb90fadaaa1405d419dd60753e94b9d71c1896520fd4ee077b6a5603a5",
+      "lib/new_api_app/cqrs/command.ex" =>
+        "417e8c3d57653b67c4b8dcfde280bb645d47efb7612d22833814083710c71429",
+      "lib/new_api_app/cqrs/dispatcher.ex" =>
+        "786406bbf965c71fc16608eb98730b62395d992121369fe3adfe6bfe14c0881b",
+      "lib/new_api_app/cqrs/query.ex" =>
+        "1fc8c0813f95852364645c8c87172643e53cc605eacfb81692af2c9c2554cbde",
+      "lib/new_api_app/cqrs/reservation.ex" =>
+        "9836e5dc246cf8e8fc4dcdda75f46b3eaedfd3314108f8c3a742bc21b72462b9",
+      "lib/new_api_app/cqrs/reservation/commands.ex" =>
+        "6c304612e8bd957035d879c6dcb847105e21ce6cf914e2c210d74af5da8cba2a",
+      "lib/new_api_app/cqrs/reservation/events.ex" =>
+        "0b62c1f49efc895f26750b511ae4b4bb560232f9bc49dacf61819c5fc1596828",
+      "lib/new_api_app/cqrs/reservation/router.ex" =>
+        "85a79141140a71d0bca2f8e950c01a6e7c2aa9c959d88aa367beca78fcf2e3cc",
+      "lib/new_api_app/cqrs/unique_check.ex" =>
+        "7284c9ea04843103e9087ecf18a3e161ca125139045193360ebc10b0a65ed61b",
+      "lib/new_api_app/event_store.ex" =>
+        "0c4c12a0dd603adec911364252d90f8796197262e0b4f8c0a8a3ecae43014e02",
+      "lib/new_api_app/mailer.ex" =>
+        "c607a46ffca95ab2e63c5c0c1078b1e9eb2f61640b845526a68bbd84c2e742dc",
+      "lib/new_api_app/repo.ex" =>
+        "6b171e503d4e1b7734e5e1cc91cfd52219d80dc7a9cd75e73cdf2eebe2db3f24",
+      "lib/new_api_app_web.ex" =>
+        "d4ded48aa07fd27fc19fb5e082f4959cf9728e44fa08ca1fa96326122473d1f1",
+      "lib/new_api_app_web/controllers/error_json.ex" =>
+        "ba767ae62030f0f759c245ada6ccb8d865b00ac4a4e4c3d5bce5845e8aaa4d0d",
+      "lib/new_api_app_web/endpoint.ex" =>
+        "6a730a529c3b812af2929cf33c7df9b3bb53308d5620e8b4a09830261163d42c",
+      "lib/new_api_app_web/gettext.ex" =>
+        "0606b29e602f87bde9c10670522e2a873d74910cd1f4e915ec6fa9f80c2c1818",
+      "lib/new_api_app_web/router.ex" =>
+        "18f68f5eec8914616c88bebbe9fa840b59e979c088328163989081269afce4b4",
+      "lib/new_api_app_web/telemetry.ex" =>
+        "545604fa4abecf9644ca57b1d495f587c9e19884d1d7c1c703dcd6513da7cce6",
+      "mix.exs" => "25dfcb585ed8a1beede018339cc25bfee299653846855e6b7326df5b5550aab1",
+      "priv/gettext/en/LC_MESSAGES/errors.po" =>
+        "7965ec884cd9c0dd4f13b268b485e1e3edc13d8f2574eee6f11b35bf3175d05b",
+      "priv/gettext/errors.pot" =>
+        "e2ba1a9a3fd94ac18f7d60d8a03fdfcd0c306aa7b34c5c679f10d356fa42d358",
+      "priv/repo/migrations/.formatter.exs" =>
+        "0214526079b381af52379d2b1fff614512fe4f5bb9a04394ef3246e5b1f61c87",
+      "priv/repo/seeds.exs" => "82a007edef590351038659089cc5840ff011c5af7bc38659242922047122b472",
+      "priv/static/favicon.ico" =>
+        "01723aeae3ce3b5195a8f42e3eb6e9018a8c08b7acda4ed382b31341811f0a8a",
+      "priv/static/robots.txt" =>
+        "f994bfae2c1db1221ac049f1097776b444048e0b0a7705d33ea511b610bed115",
+      "test/cqrs/dispatcher_test.exs" =>
+        "6a4f8683d0071441bd381a33345fe1903ada06c5f6d01c07a053b174846a8edd",
+      "test/cqrs/reservation_test.exs" =>
+        "4d65ed17dc9692d5a9057e7e3a91a4303a784e151d969a8264a58139a94fc6d7",
+      "test/cqrs/unique_check_test.exs" =>
+        "41be159a5d1e2632a48025723e60e1345916d71d5b2e0effa41ecf3b3d8db2e6",
+      "test/new_api_app_web/controllers/error_json_test.exs" =>
+        "2af6dd41cde5382eaa3e3ffc7d052596b7334f05cffa911df85419617cd513ff",
+      "test/support/conn_case.ex" =>
+        "1398686968936337abc0d883180d75fcc8227fb3a5b7d4855161a8e28d8a3c61",
+      "test/support/data_case.ex" =>
+        "031590471b16158509060d1de434a2640e2e1838ed1f9e0cc7c3ba8fbdde3f4f",
+      "test/test_helper.exs" => "70b2e16f8bc7ff44754829b35847cee6522b027df423f7080828f635b0846c9c"
+    },
+    names: %{app: "new_api_app", module: "NewApiApp", name: "new_api_app"},
+    normalisations: [
+      {:secret, "config/config.exs", :signing_salt},
+      {:secret, "config/dev.exs", :secret_key_base},
+      {:secret, "config/test.exs", :secret_key_base},
+      {:secret, "lib/new_api_app_web/endpoint.ex", :signing_salt}
+    ],
+    path: "priv/meta/cqrs_component",
+    tree_digest: "sha256:eee9c6ee61ea50b8ac6792c5898f807c3a2f3c93418be781a5891cac1a21efde"
+  },
+  grpc: %{
+    archive_sha256: "308618ed9a34c41ce4adf897c38d4acf473a10b739c74efafcdd9cc398580d8b",
+    derived_from: :api,
+    files: %{
+      ".formatter.exs" => "a44a43d777033eb6c64e0101b7469611c2def3b377b04c9d6b2a8620a347d385",
+      ".gitignore" => "62ee1d39760528ade9087a64430331c1362541232b1213cdae98a25cce8888ed",
+      "AGENTS.md" => "00f6f1bdb914d6eb925e9f1abaae89b10fe7b7245323df8e7bdf6c6b65fd31a4",
+      "README.md" => "cfe8e531a2b5c990f4bae46447baa2e1886276f17953b52934ccb48b1183f903",
+      "config/config.exs" => "3c0b1f0e5cefb4dd30f0496dc186d5515eb2c107d2db52f96ace6f3fa58047d6",
+      "config/dev.exs" => "105066f4897d1acf4ed57806f2fe950010e2898a1216c77203cdb08249872d49",
+      "config/prod.exs" => "4d305ac8156d0e4bb49de00f219c7d4ecd553d762d484da994ea598b2e79ba90",
+      "config/runtime.exs" => "3f29f4cdd20a6b406ffa68f56108e8966f98e908b31d893a5126818db8a9fb85",
+      "config/test.exs" => "a20ca71cf45c0b51a81a452f3263f2711cb7336b67e556376127fe6341d509cf",
+      "lib/mix/tasks/new_api_app.grpc.gen.cert.ex" =>
+        "4aa3e065e8bf1fc80f0f8283df3f95aa6687a246acda07aa1dcfbbd8932a1294",
+      "lib/mix/tasks/new_api_app.grpc.gen.ex" =>
+        "bf1d81a978247aee04fdde9697e998930599c4e24accce496bd4bab819413269",
+      "lib/new_api_app.ex" => "0bbd7d634a418a9abb5fb9f93e53fe0a332ad85b220f1397439b091e1c1a4c02",
+      "lib/new_api_app/application.ex" =>
+        "cfe7ac26842bf460aa3f766118c2509638af12d3d49189a124a6fb25d10847a4",
+      "lib/new_api_app/grpc/client.ex" =>
+        "471f6372e8083e4beaa70dc60dd13b5e9de1482dc56601428e84090be0badea7",
+      "lib/new_api_app/grpc/credentials.ex" =>
+        "0cde112665c7065c5a030c7ab3475d42df3863b594e94cbd81e23860b686b48e",
+      "lib/new_api_app/grpc/endpoint.ex" =>
+        "08c513def2d389e6abfd4a30e6600245776dc07dda3f8833d39329f8a00a8c66",
+      "lib/new_api_app/mailer.ex" =>
+        "c607a46ffca95ab2e63c5c0c1078b1e9eb2f61640b845526a68bbd84c2e742dc",
+      "lib/new_api_app/repo.ex" =>
+        "6b171e503d4e1b7734e5e1cc91cfd52219d80dc7a9cd75e73cdf2eebe2db3f24",
+      "lib/new_api_app_web.ex" =>
+        "d4ded48aa07fd27fc19fb5e082f4959cf9728e44fa08ca1fa96326122473d1f1",
+      "lib/new_api_app_web/controllers/error_json.ex" =>
+        "ba767ae62030f0f759c245ada6ccb8d865b00ac4a4e4c3d5bce5845e8aaa4d0d",
+      "lib/new_api_app_web/endpoint.ex" =>
+        "6a730a529c3b812af2929cf33c7df9b3bb53308d5620e8b4a09830261163d42c",
+      "lib/new_api_app_web/gettext.ex" =>
+        "0606b29e602f87bde9c10670522e2a873d74910cd1f4e915ec6fa9f80c2c1818",
+      "lib/new_api_app_web/router.ex" =>
+        "18f68f5eec8914616c88bebbe9fa840b59e979c088328163989081269afce4b4",
+      "lib/new_api_app_web/telemetry.ex" =>
+        "545604fa4abecf9644ca57b1d495f587c9e19884d1d7c1c703dcd6513da7cce6",
+      "mix.exs" => "25840a0f552618761dca88d16a22485bb5573ebc7faae0c127d848351b7c11d9",
+      "priv/cert/grpc_selfsigned.pem" =>
+        "ec3401b7bad5361fee93b6f43cb6a3f1d9a599c2a93ee3c59a81b438d9479b7b",
+      "priv/cert/grpc_selfsigned_key.pem" =>
+        "7d883bd29e442e2da753a0d3c90b5d8275e8aa99aa049c12581a03ceb72588dc",
+      "priv/gettext/en/LC_MESSAGES/errors.po" =>
+        "7965ec884cd9c0dd4f13b268b485e1e3edc13d8f2574eee6f11b35bf3175d05b",
+      "priv/gettext/errors.pot" =>
+        "e2ba1a9a3fd94ac18f7d60d8a03fdfcd0c306aa7b34c5c679f10d356fa42d358",
+      "priv/repo/migrations/.formatter.exs" =>
+        "0214526079b381af52379d2b1fff614512fe4f5bb9a04394ef3246e5b1f61c87",
+      "priv/repo/seeds.exs" => "82a007edef590351038659089cc5840ff011c5af7bc38659242922047122b472",
+      "priv/static/favicon.ico" =>
+        "01723aeae3ce3b5195a8f42e3eb6e9018a8c08b7acda4ed382b31341811f0a8a",
+      "priv/static/robots.txt" =>
+        "f994bfae2c1db1221ac049f1097776b444048e0b0a7705d33ea511b610bed115",
+      "test/grpc/client_test.exs" =>
+        "5ab852d9a403bff2d15ff2cbe951c83342fc751e504ca56bcfb2d9955b59c098",
+      "test/new_api_app_web/controllers/error_json_test.exs" =>
+        "2af6dd41cde5382eaa3e3ffc7d052596b7334f05cffa911df85419617cd513ff",
+      "test/support/conn_case.ex" =>
+        "1398686968936337abc0d883180d75fcc8227fb3a5b7d4855161a8e28d8a3c61",
+      "test/support/data_case.ex" =>
+        "031590471b16158509060d1de434a2640e2e1838ed1f9e0cc7c3ba8fbdde3f4f",
+      "test/test_helper.exs" => "70b2e16f8bc7ff44754829b35847cee6522b027df423f7080828f635b0846c9c"
+    },
+    names: %{app: "new_api_app", module: "NewApiApp", name: "new_api_app"},
+    normalisations: [
+      {:secret, "config/config.exs", :signing_salt},
+      {:secret, "config/dev.exs", :secret_key_base},
+      {:secret, "config/test.exs", :secret_key_base},
+      {:secret, "lib/new_api_app_web/endpoint.ex", :signing_salt}
+    ],
+    path: "priv/meta/grpc_component",
+    tree_digest: "sha256:9ff36b9171688ad77824c2bba5b3aabfcb8317a01b9c89493e6a927296a4a1a9"
   },
   openapi: %{
     archive_sha256: "92c66ce84c9731d95bf3d9ae98882e89d0fe3ffd605d4024acd5f62e98b013c7",

@@ -170,14 +170,19 @@ defmodule Capstone.Plugin.Apply do
   located: a plugin whose process is never started did nothing, and saying
   `:ok` for it is the silent-success shape this subsystem exists to remove.
   """
-  @spec add_supervision_child(Path.t(), Path.t(), binary(), Template.names()) :: :ok
+  @spec add_supervision_child(Path.t(), Path.t(), binary() | [binary()], Template.names()) :: :ok
   def add_supervision_child(target, path, child, names) do
     file = Path.join(target, Template.resolve_path(path, names))
 
-    case ApplicationEx.add_child(File.read!(file), Template.render(child, names)) do
-      {:ok, patched} -> File.write!(file, patched)
-      {:error, reason} -> raise ApplicationEx.Error, "#{file}: #{inspect(reason)}"
-    end
+    patched =
+      Enum.reduce(List.wrap(child), File.read!(file), fn one_child, source ->
+        case ApplicationEx.add_child(source, Template.render(one_child, names)) do
+          {:ok, patched} -> patched
+          {:error, reason} -> raise ApplicationEx.Error, "#{file}: #{inspect(reason)}"
+        end
+      end)
+
+    File.write!(file, patched)
   end
 
   @doc """

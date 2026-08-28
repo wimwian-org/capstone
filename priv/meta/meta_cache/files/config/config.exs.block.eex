@@ -1,0 +1,3 @@
+# Configure the read-through cache
+config :<%= @app %>, <%= @module %>.Cache.Store, adapter: Nebulex.Adapters.Local
+

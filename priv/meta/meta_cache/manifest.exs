@@ -1,8 +1,10 @@
 %{
-  deps: ["{:nebulex, \"~> 3.0\"}"],
+  deps: ["{:nebulex, \"~> 3.0\"}", "{:nebulex_local, \"~> 3.0\"}"],
   files: [
     {"lib/APP/cache.ex", :sole_owner},
+    {"lib/APP/cache/store.ex", :sole_owner},
     {"README.md", :contributes, [key: :cache_readme]},
+    {"config/config.exs", :contributes, [key: :cache_config, at: :before_import]},
     {"lib/APP.ex", :manual,
      [
        after: [
@@ -11,7 +13,9 @@
          "  \"\"\""
        ],
        key: :cache_app
-     ]}
+     ]},
+    {"lib/APP/application.ex", :contributes,
+     [key: :cache_application, child: "<%= @module %>.Cache.Store"]}
   ],
   name: :cache,
   version: "0.1.0"

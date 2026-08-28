@@ -1,0 +1,17 @@
+defmodule NewApiApp.GRPC.Client do
+  @moduledoc """
+  Connects to another gRPC service, presenting this app's own client
+  certificate machinery. Stateless — the caller holds and manages the
+  returned channel's lifetime. No connection pooling in this version; a
+  project needing a pooled/supervised channel manager builds one itself.
+  """
+
+  @doc "Connects to `address` (e.g. \"other-service.internal:50051\")."
+  @spec connect(binary()) :: {:ok, GRPC.Channel.t()} | {:error, term()}
+  def connect(address) do
+    GRPC.Stub.connect(address,
+      cred: NewApiApp.GRPC.Credentials.client_credential(),
+      adapter: GRPC.Client.Adapters.Mint
+    )
+  end
+end

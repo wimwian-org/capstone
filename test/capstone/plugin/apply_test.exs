@@ -403,6 +403,38 @@ defmodule Capstone.Plugin.ApplyTest do
       assert {:ok, _ast} = Code.string_to_quoted(contents)
     end
 
+    test "appends a list of children in order and writes no marker", %{
+      target: t,
+      names: names
+    } do
+      file = seed(t, "lib/tgt_app/application.ex", Factory.build(:application_shape).source)
+
+      Apply.add_supervision_child(
+        t,
+        "lib/APP/application.ex",
+        ["<%= @module %>.Cache", "<%= @module %>.Worker"],
+        names
+      )
+
+      contents = File.read!(file)
+      assert contents =~ "TgtApp.Cache"
+      assert contents =~ "TgtApp.Worker"
+      assert String.split(contents, "TgtApp.Cache") |> List.last() =~ "TgtApp.Worker"
+      refute contents =~ Apply.marker_prefix("")
+      assert {:ok, _ast} = Code.string_to_quoted(contents)
+    end
+
+    test "applying a list twice adds each child once", %{target: t, names: names} do
+      file = seed(t, "lib/tgt_app/application.ex", Factory.build(:application_shape).source)
+      children = ["<%= @module %>.Cache", "<%= @module %>.Worker"]
+
+      Apply.add_supervision_child(t, "lib/APP/application.ex", children, names)
+      once = File.read!(file)
+      Apply.add_supervision_child(t, "lib/APP/application.ex", children, names)
+
+      assert File.read!(file) == once
+    end
+
     test "raises when the list cannot be located", %{target: t, names: names} do
       seed(
         t,

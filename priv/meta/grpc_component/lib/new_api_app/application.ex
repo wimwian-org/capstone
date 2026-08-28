@@ -1,0 +1,39 @@
+defmodule NewApiApp.Application do
+  # See https://elixir.hexdocs.pm/Application.html
+  # for more information on OTP Applications
+  @moduledoc false
+
+  use Application
+
+  @impl true
+  def start(_type, _args) do
+    children = [
+      NewApiAppWeb.Telemetry,
+      NewApiApp.Repo,
+      {DNSCluster, query: Application.get_env(:new_api_app, :dns_cluster_query) || :ignore},
+      {Phoenix.PubSub, name: NewApiApp.PubSub},
+      # Start a worker by calling: NewApiApp.Worker.start_link(arg)
+      # {NewApiApp.Worker, arg},
+      # Start to serve requests, typically the last entry
+      NewApiAppWeb.Endpoint,
+      {GRPC.Server.Supervisor,
+       endpoint: NewApiApp.GRPC.Endpoint,
+       port: Application.fetch_env!(:new_api_app, NewApiApp.GRPC.Endpoint)[:port],
+       start_server: true,
+       adapter_opts: [cred: NewApiApp.GRPC.Credentials.server_credential()]}
+    ]
+
+    # See https://elixir.hexdocs.pm/Supervisor.html
+    # for other strategies and supported options
+    opts = [strategy: :one_for_one, name: NewApiApp.Supervisor]
+    Supervisor.start_link(children, opts)
+  end
+
+  # Tell Phoenix to update the endpoint configuration
+  # whenever the application is updated.
+  @impl true
+  def config_change(changed, _new, removed) do
+    NewApiAppWeb.Endpoint.config_change(changed, removed)
+    :ok
+  end
+end

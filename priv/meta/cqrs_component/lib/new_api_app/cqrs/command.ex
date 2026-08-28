@@ -1,0 +1,13 @@
+defmodule NewApiApp.CQRS.Command do
+  @moduledoc """
+  The contract a CQRS command module implements. `build/1` returns a
+  plain command struct (no Ecto.Changeset involved) — command
+  validation, if any, is the developer's own concern inside `build/1` or
+  the aggregate's own `execute/2`. `unique_fields/0` and `schema_tag/0`
+  feed NewApiApp.CQRS.UniqueCheck.
+  """
+
+  @callback build(params :: map()) :: struct()
+  @callback schema_tag() :: atom()
+  @callback unique_fields() :: [[atom()]]
+end

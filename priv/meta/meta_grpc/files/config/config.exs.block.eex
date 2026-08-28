@@ -1,0 +1,9 @@
+# Configure gRPC TLS credentials (server and client share these)
+config :<%= @app %>, <%= @module %>.GRPC.Credentials,
+  certfile: "priv/cert/grpc_selfsigned.pem",
+  keyfile: "priv/cert/grpc_selfsigned_key.pem",
+  cacertfile: "priv/cert/grpc_selfsigned.pem"
+
+# Configure the gRPC server's port
+config :<%= @app %>, <%= @module %>.GRPC.Endpoint, port: 50051
+

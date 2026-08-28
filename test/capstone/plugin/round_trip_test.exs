@@ -82,6 +82,16 @@ defmodule Capstone.Plugin.RoundTripTest do
 
     File.rm!(root)
 
+    # A real `mix new other_app` also renames the app's own lib/<app>/ subdirectory
+    # (application.ex, mailer.ex, repo.ex, ...) and rewrites the module name inside
+    # each file. Plugins that need lib/APP/application.ex to already exist (e.g.
+    # :cache's supervision-child injection) depend on this being a faithful rename.
+    File.rename!(Path.join(other, "lib/new_api_app"), Path.join(other, "lib/other_app"))
+
+    for file <- Path.wildcard(Path.join(other, "lib/other_app/**/*.ex")) do
+      File.write!(file, String.replace(File.read!(file), "NewApiApp", "OtherApp"))
+    end
+
     {:ok, _} = Apply.run(@plugin, other)
 
     # The whole point of templating: paths AND content follow the target.

@@ -33,7 +33,8 @@ defmodule Mix.Tasks.Capstone.Baseline.RecordTest do
     # some well-formed name appeared somewhere in the output.
     assert output =~ ~r/(api): 30 files -> \1_\d+\.\d+\.\d+_[0-9a-f]{8}\.tar\.gz/
     assert output =~ ~r/(otp): 7 files -> \1_\d+\.\d+\.\d+_[0-9a-f]{8}\.tar\.gz/
-    assert output =~ ~r/(cache): 31 files -> \1_\d+\.\d+\.\d+_[0-9a-f]{8}\.tar\.gz/
+    assert output =~ ~r/(cache): 32 files -> \1_\d+\.\d+\.\d+_[0-9a-f]{8}\.tar\.gz/
+    assert output =~ ~r/(cqrs): 44 files -> \1_\d+\.\d+\.\d+_[0-9a-f]{8}\.tar\.gz/
     assert output =~ ~r/(openapi): 34 files -> \1_\d+\.\d+\.\d+_[0-9a-f]{8}\.tar\.gz/
     assert output =~ ~r/(prod_image_api): 37 files -> \1_\d+\.\d+\.\d+_[0-9a-f]{8}\.tar\.gz/
 

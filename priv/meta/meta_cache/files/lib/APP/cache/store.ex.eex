@@ -1,0 +1,7 @@
+defmodule <%= @module %>.Cache.Store do
+  @moduledoc """
+  The real Nebulex cache `<%= @module %>.Cache` reads and writes through.
+  """
+
+  use Nebulex.Cache, otp_app: :<%= @app %>, adapter: Nebulex.Adapters.Local
+end

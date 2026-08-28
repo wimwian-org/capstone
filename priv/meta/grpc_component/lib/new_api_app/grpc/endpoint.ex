@@ -1,0 +1,10 @@
+defmodule NewApiApp.GRPC.Endpoint do
+  @moduledoc """
+  This project's gRPC server endpoint. Ships empty — add your own service
+  modules to the `run` list below (see the README's worked example).
+  """
+
+  use GRPC.Endpoint
+
+  run []
+end

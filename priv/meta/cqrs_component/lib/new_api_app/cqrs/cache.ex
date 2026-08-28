@@ -1,0 +1,12 @@
+defmodule NewApiApp.CQRS.Cache do
+  @moduledoc """
+  Fast, non-authoritative pre-check for uniqueness reservations. The
+  authoritative guard is NewApiApp.CQRS.Reservation, an event-sourced
+  aggregate whose deterministic stream identity makes a duplicate create
+  provably fail via the event store's own atomic per-stream append —
+  this cache only avoids a wasted round-trip to the event store for the
+  common case.
+  """
+
+  use Nebulex.Cache, otp_app: :new_api_app, adapter: Nebulex.Adapters.Local
+end

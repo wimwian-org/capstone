@@ -167,16 +167,155 @@ defmodule Capstone.Integration.PluginLifecycleTest do
 
     project = Path.join(tmp, name)
     assert File.exists?(Path.join(project, "target.exs"))
-    # priv/meta/meta_cache/manifest.exs records "lib/APP/cache.ex" as
-    # :sole_owner; APP resolves to the target's own `app:` (Capstone.Template),
-    # i.e. "with_cache" here.
+    # priv/meta/meta_cache/manifest.exs records "lib/APP/cache.ex" and
+    # "lib/APP/cache/store.ex" as :sole_owner; APP resolves to the target's
+    # own `app:` (Capstone.Template), i.e. "with_cache" here.
     assert File.exists?(Path.join(project, "lib/with_cache/cache.ex"))
+    assert File.exists?(Path.join(project, "lib/with_cache/cache/store.ex"))
 
     top_level = "lib/#{name}.ex"
     assert_placed_not_marked(project, top_level, "defdelegate fetch")
     # Bootstrap already ran deps.get and deps.compile, nebulex included, so
     # this is the app's own sources against the deps the plugin declared.
     Shell.cmd!(["compile"], project)
+
+    smoke_test = """
+    {:ok, _} = Application.ensure_all_started(:with_cache)
+    calls = :counters.new(1, [])
+    compute = fn -> :counters.add(calls, 1, 1); :counters.get(calls, 1) end
+
+    1 = WithCache.fetch("k", compute)
+    1 = WithCache.fetch("k", compute)
+    IO.puts("fetch/2 caches: PASS")
+
+    2 = WithCache.fetch("ttl-k", 50, compute)
+    Process.sleep(100)
+    3 = WithCache.fetch("ttl-k", 50, compute)
+    IO.puts("fetch/3 expires: PASS")
+    """
+
+    output = Shell.cmd!(["run", "-e", smoke_test], project)
+    assert output =~ "fetch/2 caches: PASS"
+    assert output =~ "fetch/3 expires: PASS"
+  end
+
+  @tag :toolchain
+  test "mix capstone.new applies plugins: [:cqrs] from target.exs", %{tmp_dir: tmp} do
+    capstone_path = File.cwd!()
+    name = "with_cqrs"
+
+    opts = %Options{
+      name: name,
+      app: :with_cqrs,
+      module: WithCqrs,
+      base: :api,
+      github_org: "acme",
+      capstone: {:path, capstone_path},
+      plugins: [:cqrs]
+    }
+
+    File.cd!(tmp, fn -> assert :ok = Bootstrap.run(opts, Bootstrap.defaults()) end)
+
+    project = Path.join(tmp, name)
+    assert File.exists?(Path.join(project, "target.exs"))
+    assert File.exists?(Path.join(project, "lib/with_cqrs/cqrs/dispatcher.ex"))
+    assert File.exists?(Path.join(project, "lib/with_cqrs/cqrs/reservation.ex"))
+    assert File.exists?(Path.join(project, "lib/with_cqrs/event_store.ex"))
+
+    application = File.read!(Path.join(project, "lib/with_cqrs/application.ex"))
+    assert application =~ "WithCqrs.CQRS.App"
+    assert application =~ "WithCqrs.CQRS.Cache"
+
+    Shell.cmd!(["compile"], project)
+  end
+
+  # The design spec's "Composability with :cache" section claims :cqrs and
+  # :cache can both be applied to one project without conflict — this is
+  # the only test that actually applies both together and proves it.
+  @tag :toolchain
+  @tag timeout: :timer.minutes(3)
+  test "mix capstone.new applies plugins: [:cache, :cqrs] together without conflict", %{
+    tmp_dir: tmp
+  } do
+    capstone_path = File.cwd!()
+    name = "with_cache_and_cqrs"
+
+    opts = %Options{
+      name: name,
+      app: :with_cache_and_cqrs,
+      module: WithCacheAndCqrs,
+      base: :api,
+      github_org: "acme",
+      capstone: {:path, capstone_path},
+      plugins: [:cache, :cqrs]
+    }
+
+    File.cd!(tmp, fn -> assert :ok = Bootstrap.run(opts, Bootstrap.defaults()) end)
+
+    project = Path.join(tmp, name)
+    assert File.exists?(Path.join(project, "lib/with_cache_and_cqrs/cache.ex"))
+    assert File.exists?(Path.join(project, "lib/with_cache_and_cqrs/cqrs/dispatcher.ex"))
+
+    application = File.read!(Path.join(project, "lib/with_cache_and_cqrs/application.ex"))
+    assert application =~ "WithCacheAndCqrs.Cache.Store"
+    assert application =~ "WithCacheAndCqrs.CQRS.App"
+    assert application =~ "WithCacheAndCqrs.CQRS.Cache"
+
+    config = File.read!(Path.join(project, "config/config.exs"))
+    assert config =~ "WithCacheAndCqrs.Cache.Store"
+    assert config =~ "WithCacheAndCqrs.EventStore"
+    assert config =~ "WithCacheAndCqrs.CQRS.App"
+
+    Shell.cmd!(["compile"], project)
+
+    # config/test.exs already overrides CQRS.App to the InMemory adapter.
+    # `mix test` (unlike `mix run`) runs under :test env via Mix's own
+    # preferred_cli_env regardless of Shell's MIX_ENV-scrubbing for child
+    # processes, so this genuinely exercises the InMemory-backed
+    # supervision tree — including the real, Nebulex-backed :cache Store —
+    # without needing a real Postgres-backed event store. mix test itself
+    # fails loudly (Shell.cmd! raises on non-zero exit) if the application
+    # can't start during test setup, which is exactly what this proves.
+    Shell.cmd!(["test"], project)
+  end
+
+  @tag :toolchain
+  @tag timeout: :timer.minutes(3)
+  test "mix capstone.new applies plugins: [:grpc] from target.exs", %{tmp_dir: tmp} do
+    capstone_path = File.cwd!()
+    name = "with_grpc"
+
+    opts = %Options{
+      name: name,
+      app: :with_grpc,
+      module: WithGrpc,
+      base: :api,
+      github_org: "acme",
+      capstone: {:path, capstone_path},
+      plugins: [:grpc]
+    }
+
+    File.cd!(tmp, fn -> assert :ok = Bootstrap.run(opts, Bootstrap.defaults()) end)
+
+    project = Path.join(tmp, name)
+    assert File.exists?(Path.join(project, "target.exs"))
+    assert File.exists?(Path.join(project, "lib/with_grpc/grpc/endpoint.ex"))
+    assert File.exists?(Path.join(project, "lib/with_grpc/grpc/client.ex"))
+    assert File.exists?(Path.join(project, "priv/cert/grpc_selfsigned.pem"))
+
+    application = "lib/#{name}/application.ex"
+    assert_placed_not_marked(project, application, "WithGrpc.GRPC.Endpoint")
+
+    Shell.cmd!(["compile"], project)
+
+    # config/test.exs is inherited unchanged from baseline_api (this plugin
+    # has no InMemory-vs-real split the way :cqrs does — the server either
+    # runs or doesn't, and the committed test cert is real either way), so
+    # `mix test` genuinely starts the whole supervision tree, including the
+    # real, TLS-wrapped GRPC.Server.Supervisor, under real :test env — per
+    # this branch's own hard-won lesson (:cqrs's Task 9), `mix test` (not
+    # `mix run -e`) is the only way Shell.cmd! reliably reaches :test env.
+    Shell.cmd!(["test"], project)
   end
 
   # The failure mode this guards against is SILENT: apply returns :ok, writes

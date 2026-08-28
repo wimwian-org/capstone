@@ -1,0 +1,10 @@
+defmodule <%= @module %>.CQRS.Query do
+  @moduledoc """
+  The contract a CQRS query module implements. No caching, no
+  uniqueness — `run/1` is a direct pass-through, dispatched only so
+  callers have one entry point (`<%= @module %>.CQRS.Dispatcher`) for both
+  commands and queries.
+  """
+
+  @callback run(params :: map()) :: {:ok, term()} | {:error, term()}
+end

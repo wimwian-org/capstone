@@ -252,6 +252,7 @@ defmodule Capstone.Factory do
       to the end of the file.
     * `:aliasing` — a meta project whose `mix.exs` adds an alias, not a dep.
     * `:supervised` — one added supervision child and nothing else.
+    * `:supervised_multi` — three added supervision children and nothing else.
     * `:supervised_and_strategy` — that, plus a change the guard must catch.
     * `:configuring` — a contribution sitting above `config.exs`'s import.
     * `:configuring_runtime` — one inside `runtime.exs`'s production guard.
@@ -350,6 +351,22 @@ defmodule Capstone.Factory do
          "mix.exs" => "defmodule Myapp.MixProject do\n  def project, do: [app: :myapp]\nend\n",
          "lib/myapp/application.ex" =>
            "defmodule Myapp.Application do\n  use Application\n\n  def start(_type, _args) do\n    children = [\n      Myapp.Repo,\n      Myapp.Cache\n    ]\n\n    Supervisor.start_link(children, strategy: :one_for_one)\n  end\nend\n"
+       }}
+
+  # A meta project whose only change is THREE added supervision children — the
+  # shape the :cqrs plugin's application.ex edit produces, which the N-child
+  # auto-detection must also recognise, not just the one-child case above.
+  defp meta_pair_files(:supervised_multi),
+    do:
+      {%{
+         "mix.exs" => "defmodule Myapp.MixProject do\n  def project, do: [app: :myapp]\nend\n",
+         "lib/myapp/application.ex" =>
+           "defmodule Myapp.Application do\n  use Application\n\n  def start(_type, _args) do\n    children = [\n      Myapp.Repo\n    ]\n\n    Supervisor.start_link(children, strategy: :one_for_one)\n  end\nend\n"
+       },
+       %{
+         "mix.exs" => "defmodule Myapp.MixProject do\n  def project, do: [app: :myapp]\nend\n",
+         "lib/myapp/application.ex" =>
+           "defmodule Myapp.Application do\n  use Application\n\n  def start(_type, _args) do\n    children = [\n      Myapp.Repo,\n      Myapp.Cache,\n      Myapp.Worker,\n      Myapp.Scheduler\n    ]\n\n    Supervisor.start_link(children, strategy: :one_for_one)\n  end\nend\n"
        }}
 
   # The same, plus a change beyond the children list. The guard must still
