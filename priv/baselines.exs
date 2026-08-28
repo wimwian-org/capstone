@@ -292,6 +292,12 @@
       "test/test_helper.exs" => "70b2e16f8bc7ff44754829b35847cee6522b027df423f7080828f635b0846c9c"
     },
     names: %{app: "new_api_app", module: "NewApiApp", name: "new_api_app"},
+    normalisations: [
+      {:secret, "config/config.exs", :signing_salt},
+      {:secret, "config/dev.exs", :secret_key_base},
+      {:secret, "config/test.exs", :secret_key_base},
+      {:secret, "lib/new_api_app_web/endpoint.ex", :signing_salt}
+    ],
     path: "priv/meta/grpc_component",
     tree_digest: "sha256:9ff36b9171688ad77824c2bba5b3aabfcb8317a01b9c89493e6a927296a4a1a9"
   },
