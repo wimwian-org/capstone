@@ -312,8 +312,20 @@ defmodule Capstone.Plugin.Derive do
   defp replay_add_children(source, children) do
     Enum.reduce_while(children, {:ok, source}, fn child, {:ok, acc} ->
       case ApplicationEx.add_child(acc, child) do
-        {:ok, new_acc} -> {:cont, {:ok, new_acc}}
-        error -> {:halt, error}
+        {:ok, new_acc} ->
+          {:cont, {:ok, new_acc}}
+
+        # coveralls-ignore-start
+        # `children` comes only from `after_ -- before` in added_child/2, a
+        # list ApplicationEx.children/1 already parsed successfully out of
+        # meta_source — and the FIRST add_child/2 replays the same parse path
+        # that just succeeded for `before`, on the unmodified baseline. There
+        # is no reachable diff that makes a later element in that same list
+        # fail here; the clause exists to honour add_child/2's documented
+        # error contract instead of pattern-match-crashing if it ever did.
+        error ->
+          {:halt, error}
+          # coveralls-ignore-stop
       end
     end)
   end

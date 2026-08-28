@@ -8,9 +8,10 @@ defmodule Mix.Tasks.Capstone.Check do
   D12 forbids resolving a conflict with a prompt, so apply writes a marked
   region and this task is the gate that keeps it from being forgotten.
 
-  Meant to run inside a GENERATED project. Pointed at this repository it
-  reports the example markers in `docs/`, which are documentation rather than
-  unresolved work.
+  Meant to run inside a GENERATED project. Pointed at this repository, prose
+  that quotes the marker prefix verbatim (to explain what apply writes) would
+  otherwise read as unresolved work -- see `@pruned` below for where that is
+  excluded.
   """
   use Mix.Task
 
@@ -21,7 +22,13 @@ defmodule Mix.Tasks.Capstone.Check do
   # thousands of .beam files out of a language server's own build directory --
   # not a correctness bug, but seconds of I/O for a directory that can hold no
   # marker.
-  @pruned ~w(.git deps _build .elixir_ls .expert)
+  #
+  # `.superpowers` is the subagent-driven-development skill's own scratch
+  # workspace (ledgers, dispatch briefs, review reports) -- gitignored, never
+  # shipped, and its prose routinely QUOTES the marker prefix verbatim to
+  # explain what apply writes. Without the prune, that quoting reads as an
+  # unresolved region and fails this task against its own authors' notes.
+  @pruned ~w(.git deps _build .elixir_ls .expert .superpowers)
 
   @impl Mix.Task
   def run(argv) do

@@ -158,7 +158,7 @@ defmodule Capstone.Plugin.RecordTest do
 
       {:ok, _} = Apply.run(@plugin, dir)
 
-      assert entry(target).deps == [~s|{:nebulex, "~> 3.0"}|]
+      assert entry(target).deps == [~s|{:nebulex, "~> 3.0"}|, ~s|{:nebulex_local, "~> 3.0"}|]
     end
 
     test "records no aliases or project keys when the plugin contributes none",

@@ -41,7 +41,7 @@ defmodule Mix.Tasks.Capstone.Plugin.DeriveTest do
     output = capture_io(fn -> Derive.run(["cache"]) end)
 
     assert output =~ "wrote #{@out}/manifest.exs"
-    assert output =~ ~r/files: 3, deps: 1/
+    assert output =~ ~r/files: 6, deps: 2/
   end
 
   test "an unknown plugin names the manifest" do

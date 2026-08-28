@@ -60,7 +60,7 @@ defmodule Mix.Tasks.Capstone.CheckTest do
 
       output = capture_io(fn -> ApplyTask.run(["cache", target]) end)
 
-      assert output =~ "applied cache to #{target}: 3 files"
+      assert output =~ "applied cache to #{target}: 6 files"
       assert output =~ "positional entr(ies): [:cache_app]"
       assert File.exists?(Path.join(target, "lib/new_api_app/cache.ex"))
     end
@@ -85,7 +85,7 @@ defmodule Mix.Tasks.Capstone.CheckTest do
 
     test "reports an untracked target, and records nothing", %{dir: dir} do
       target = Path.join(dir, "plain")
-      File.cp_r!("priv/meta/baseline_otp", target)
+      File.cp_r!("priv/meta/baseline_api", target)
 
       output = capture_io(fn -> ApplyTask.run(["cache", target]) end)
 
@@ -96,7 +96,7 @@ defmodule Mix.Tasks.Capstone.CheckTest do
 
     test "says nothing about recording when the target is declared", %{dir: dir} do
       target = Path.join(dir, "declared")
-      File.cp_r!("priv/meta/baseline_otp", target)
+      File.cp_r!("priv/meta/baseline_api", target)
       declared = Root.new!(target)
 
       # A minimal target.exs valid against this package's own Capstone.Config
