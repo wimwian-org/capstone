@@ -131,6 +131,11 @@
     path: "priv/meta/cache_component",
     tree_digest: "sha256:2852460d5e6fee5bac091c2ba188e1150bcfce42018d9d20eac9bb1bb4c61d2b"
   },
+  cqrs: %{
+    derived_from: :api,
+    names: %{app: "new_api_app", module: "NewApiApp", name: "new_api_app"},
+    path: "priv/meta/cqrs_component"
+  },
   openapi: %{
     archive_sha256: "92c66ce84c9731d95bf3d9ae98882e89d0fe3ffd605d4024acd5f62e98b013c7",
     derived_from: :api,
