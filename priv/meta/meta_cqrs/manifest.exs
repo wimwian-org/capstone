@@ -25,14 +25,14 @@
     {"README.md", :contributes, [key: :cqrs_readme]},
     {"config/config.exs", :contributes, [key: :cqrs_config, at: :before_import]},
     {"config/test.exs", :contributes, [key: :cqrs_test]},
-    {"lib/APP/application.ex", :manual,
+    {"lib/APP/application.ex", :contributes,
      [
-       after: [
-         "      # Start a worker by calling: <%= @module %>.Worker.start_link(arg)",
-         "      # {<%= @module %>.Worker, arg},",
-         "      # Start to serve requests, typically the last entry"
-       ],
-       key: :cqrs_application
+       key: :cqrs_application,
+       child: [
+         "<%= @module %>.EventStore",
+         "<%= @module %>.CQRS.App",
+         "<%= @module %>.CQRS.Cache"
+       ]
      ]}
   ],
   name: :cqrs,

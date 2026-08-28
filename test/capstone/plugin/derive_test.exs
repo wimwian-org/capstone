@@ -193,6 +193,23 @@ defmodule Capstone.Plugin.DeriveTest do
       assert Path.wildcard(Path.join(out, "files/**/application.ex.removed.eex")) == []
     end
 
+    test "emits a child: entry with a list for three added children" do
+      # The :cqrs shape: three children appended in one edit. The old
+      # exactly-one-child guard fell through to :manual here; the N-child
+      # replay must recognise it as cleanly as the single-child case.
+      {plugin, out} = derive_variety(:supervised_multi, :cqrs)
+
+      assert [{"lib/APP/application.ex", :contributes, opts}] = plugin.files
+
+      assert Keyword.fetch!(opts, :child) == [
+               "<%= @module %>.Cache",
+               "<%= @module %>.Worker",
+               "<%= @module %>.Scheduler"
+             ]
+
+      assert Path.wildcard(Path.join(out, "files/**/application.ex.removed.eex")) == []
+    end
+
     test "ships no block payload for a child: entry" do
       {_component, out} = derive_variety(:supervised, :cache)
 

@@ -1,4 +1,0 @@
-      <%= @module %>Web.Endpoint,
-      <%= @module %>.EventStore,
-      <%= @module %>.CQRS.App,
-      <%= @module %>.CQRS.Cache

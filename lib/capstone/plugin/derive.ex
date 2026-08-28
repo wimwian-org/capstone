@@ -301,12 +301,27 @@ defmodule Capstone.Plugin.Derive do
   defp added_child({baseline_source, meta_source, _block}, names) do
     with {:ok, before} <- ApplicationEx.children(baseline_source),
          {:ok, after_} <- ApplicationEx.children(meta_source),
-         [child] <- after_ -- before,
-         {:ok, ^meta_source} <- ApplicationEx.add_child(baseline_source, child) do
-      if names, do: capture!(child, names), else: child
+         new_children when new_children != [] <- after_ -- before,
+         {:ok, ^meta_source} <- replay_add_children(baseline_source, new_children) do
+      render_children(new_children, names)
     else
       _no_match -> nil
     end
+  end
+
+  defp replay_add_children(source, children) do
+    Enum.reduce_while(children, {:ok, source}, fn child, {:ok, acc} ->
+      case ApplicationEx.add_child(acc, child) do
+        {:ok, new_acc} -> {:cont, {:ok, new_acc}}
+        error -> {:halt, error}
+      end
+    end)
+  end
+
+  defp render_children([child], names), do: if(names, do: capture!(child, names), else: child)
+
+  defp render_children(children, names) do
+    if names, do: Enum.map(children, &capture!(&1, names)), else: children
   end
 
   # A proven placement outranks Classify's column-0 rule. That rule exists
