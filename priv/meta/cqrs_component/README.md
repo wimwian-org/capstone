@@ -160,8 +160,16 @@ store's atomic per-stream append is the race guard, and the DB unique index here
 data-integrity backstop for the read model itself). Use UUIDv7 for your own entity identity:
 
 ```elixir
-@primary_key {:id, Uniq.UUID, autogenerate: true, version: 7, type: :binary_id}
+@primary_key {:id, Uniq.UUID, autogenerate: true, version: 7, type: :binary_id, dump: :default}
 ```
+
+`dump: :default` is required alongside `type: :binary_id`, not decorative: Ecto's Postgres
+adapter runs a two-stage dump for `:binary_id` (`[Uniq.UUID, Ecto.UUID]`), and `Ecto.UUID.dump/1`
+only accepts the canonical dashed-string form — `Uniq.UUID`'s own default (`dump: :raw`) would
+hand it raw bytes instead, and `insert` fails with `Ecto.ChangeError`. Verified against the real
+`uniq` and `ecto` package source (traced through `Ecto.Type.adapter_dump/3` and
+`Ecto.Adapters.Postgres.dumpers/2`) while building this plugin's own real-Postgres integration
+test.
 
 Dispatch a create or an update through the same entry point:
 
