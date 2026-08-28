@@ -134,13 +134,13 @@
     tree_digest: "sha256:e3c197a333749f149a7b1e0a7a530d41841a6f6f43565762d27f3cabd1e88733"
   },
   cqrs: %{
-    archive_sha256: "c0349e635edc10d099c406cca7021c91aa4ee7c651b08706163e80148d06f181",
+    archive_sha256: "fd957b87dd0edf24ddad059a382cc121836214de95dcad3de25d7878b1eb66e0",
     derived_from: :api,
     files: %{
       ".formatter.exs" => "a44a43d777033eb6c64e0101b7469611c2def3b377b04c9d6b2a8620a347d385",
       ".gitignore" => "62ee1d39760528ade9087a64430331c1362541232b1213cdae98a25cce8888ed",
       "AGENTS.md" => "00f6f1bdb914d6eb925e9f1abaae89b10fe7b7245323df8e7bdf6c6b65fd31a4",
-      "README.md" => "1bd54545e1b57f401d8ba1d446d03598ae85d69d626f0299cef000391b8eebbe",
+      "README.md" => "06a584c7841862c39515ffd9bc649d2f355a2c33be85f65fbce16903de1685f2",
       "config/config.exs" => "136b808c9a34986f898d72e0411ff37ac0627506b8ea22a58b29b63fc9d49931",
       "config/dev.exs" => "105066f4897d1acf4ed57806f2fe950010e2898a1216c77203cdb08249872d49",
       "config/prod.exs" => "4d305ac8156d0e4bb49de00f219c7d4ecd553d762d484da994ea598b2e79ba90",
@@ -215,7 +215,7 @@
     },
     names: %{app: "new_api_app", module: "NewApiApp", name: "new_api_app"},
     path: "priv/meta/cqrs_component",
-    tree_digest: "sha256:7da7f5d7382fb63f34cd8e0e3baa6f4c11db888669ebf3074c83af748fbc941a"
+    tree_digest: "sha256:4e524e162f2743b1b0d88ac14da9379c3d560f1a7cd4b5fec12b462877bd3f74"
   },
   openapi: %{
     archive_sha256: "92c66ce84c9731d95bf3d9ae98882e89d0fe3ffd605d4024acd5f62e98b013c7",
