@@ -23,42 +23,10 @@ defmodule Capstone.Plugin.CqrsRoundTripTest do
     expected = Baseline.tree(@raw)
     actual = Baseline.tree(target)
 
-    # lib/new_api_app/application.ex excluded: its hunk both ADDS and REMOVES
-    # lines, so `place_manual/5` routes it through `Apply.mark_removal/6`
-    # rather than `Apply.place/6` — and `mark_removal/6`'s own docs say a
-    # removal hunk is "always" marked as a conflict region, never anchored.
-    # Applying to a fresh target can therefore never byte-for-byte reproduce
-    # cqrs_component's already-resolved application.ex; the marker below is
-    # the actual, by-design outcome.
-    differing =
-      for {path, hash} <- expected,
-          path != "lib/new_api_app/application.ex",
-          actual[path] != hash,
-          do: path
+    differing = for {path, hash} <- expected, actual[path] != hash, do: path
 
     assert differing == []
     assert Enum.sort(Map.keys(actual)) == Enum.sort(Map.keys(expected))
-
-    assert File.read!(Path.join(target, "lib/new_api_app/application.ex")) =~
-             Apply.marker_prefix(:cqrs_application)
-  end
-
-  test "application.ex's conflict region shows both the removed old line and the added new lines, not just a bare marker",
-       %{target: target} do
-    {:ok, _component} = Apply.run(@plugin, target)
-
-    contents = File.read!(Path.join(target, "lib/new_api_app/application.ex"))
-
-    # `mark_removal/6`'s private `halves/2` builds the region as
-    # "------- remove\n#{removed}\n------- add\n#{block}" (apply.ex:286), so a
-    # fresh apply's conflict region literally contains the OLD un-comma'd last
-    # line under "------- remove" AND the NEW comma'd lines under
-    # "------- add" — not merely a marker with no diff content.
-    assert contents =~ "------- remove\n      NewApiAppWeb.Endpoint\n------- add\n"
-    assert contents =~ "      NewApiAppWeb.Endpoint,\n"
-    assert contents =~ "      NewApiApp.EventStore,\n"
-    assert contents =~ "      NewApiApp.CQRS.App,\n"
-    assert contents =~ "      NewApiApp.CQRS.Cache\n"
   end
 
   test "applying twice is a no-op", %{target: target} do
