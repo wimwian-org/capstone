@@ -224,7 +224,7 @@
     tree_digest: "sha256:eee9c6ee61ea50b8ac6792c5898f807c3a2f3c93418be781a5891cac1a21efde"
   },
   grpc: %{
-    archive_sha256: "54efb8c626269a87d9caacdbb3428ac02db9ca56de9cbd8d90cf6e5799c2abe6",
+    archive_sha256: "308618ed9a34c41ce4adf897c38d4acf473a10b739c74efafcdd9cc398580d8b",
     derived_from: :api,
     files: %{
       ".formatter.exs" => "a44a43d777033eb6c64e0101b7469611c2def3b377b04c9d6b2a8620a347d385",
@@ -265,7 +265,7 @@
         "18f68f5eec8914616c88bebbe9fa840b59e979c088328163989081269afce4b4",
       "lib/new_api_app_web/telemetry.ex" =>
         "545604fa4abecf9644ca57b1d495f587c9e19884d1d7c1c703dcd6513da7cce6",
-      "mix.exs" => "ead1788aa88fe8041b35fa6262341d9135acdcddc17093fa1cf5f863bf9afcec",
+      "mix.exs" => "25840a0f552618761dca88d16a22485bb5573ebc7faae0c127d848351b7c11d9",
       "priv/cert/grpc_selfsigned.pem" =>
         "ec3401b7bad5361fee93b6f43cb6a3f1d9a599c2a93ee3c59a81b438d9479b7b",
       "priv/cert/grpc_selfsigned_key.pem" =>
@@ -293,7 +293,7 @@
     },
     names: %{app: "new_api_app", module: "NewApiApp", name: "new_api_app"},
     path: "priv/meta/grpc_component",
-    tree_digest: "sha256:8e4e2ab5ad309496dba6c56c5ad8614576a0702c0fcc5f97cb5df12177a03657"
+    tree_digest: "sha256:9ff36b9171688ad77824c2bba5b3aabfcb8317a01b9c89493e6a927296a4a1a9"
   },
   openapi: %{
     archive_sha256: "92c66ce84c9731d95bf3d9ae98882e89d0fe3ffd605d4024acd5f62e98b013c7",
