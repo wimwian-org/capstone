@@ -15,7 +15,10 @@ defmodule NewApiApp.Application do
       # Start a worker by calling: NewApiApp.Worker.start_link(arg)
       # {NewApiApp.Worker, arg},
       # Start to serve requests, typically the last entry
-      NewApiAppWeb.Endpoint
+      NewApiAppWeb.Endpoint,
+      NewApiApp.EventStore,
+      NewApiApp.CQRS.App,
+      NewApiApp.CQRS.Cache
     ]
 
     # See https://elixir.hexdocs.pm/Supervisor.html
