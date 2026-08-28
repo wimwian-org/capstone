@@ -7,7 +7,6 @@ defmodule <%= @module %>.CQRS.ReservationTest do
   alias <%= @module %>.CQRS.Reservation.Commands.Reserve
 
   setup do
-    start_supervised!(App)
     InMemory.reset!(App)
     :ok
   end

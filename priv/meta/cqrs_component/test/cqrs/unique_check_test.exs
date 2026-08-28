@@ -7,8 +7,6 @@ defmodule NewApiApp.CQRS.UniqueCheckTest do
   alias NewApiApp.CQRS.UniqueCheck
 
   setup do
-    start_supervised!(App)
-    start_supervised!(Cache)
     InMemory.reset!(App)
     :ok
   end

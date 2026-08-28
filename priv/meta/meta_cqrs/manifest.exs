@@ -28,11 +28,7 @@
     {"lib/APP/application.ex", :contributes,
      [
        key: :cqrs_application,
-       child: [
-         "<%= @module %>.EventStore",
-         "<%= @module %>.CQRS.App",
-         "<%= @module %>.CQRS.Cache"
-       ]
+       child: ["<%= @module %>.CQRS.App", "<%= @module %>.CQRS.Cache"]
      ]}
   ],
   name: :cqrs,

@@ -16,7 +16,6 @@ defmodule NewApiApp.Application do
       # {NewApiApp.Worker, arg},
       # Start to serve requests, typically the last entry
       NewApiAppWeb.Endpoint,
-      NewApiApp.EventStore,
       NewApiApp.CQRS.App,
       NewApiApp.CQRS.Cache
     ]

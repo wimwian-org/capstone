@@ -134,7 +134,7 @@
     tree_digest: "sha256:e3c197a333749f149a7b1e0a7a530d41841a6f6f43565762d27f3cabd1e88733"
   },
   cqrs: %{
-    archive_sha256: "339855623665d4323f0abb5329cf0ea398094ca116fb922dc63f0a2e492e71cd",
+    archive_sha256: "c0349e635edc10d099c406cca7021c91aa4ee7c651b08706163e80148d06f181",
     derived_from: :api,
     files: %{
       ".formatter.exs" => "a44a43d777033eb6c64e0101b7469611c2def3b377b04c9d6b2a8620a347d385",
@@ -148,7 +148,7 @@
       "config/test.exs" => "05e0a771602eae47a0d85affc2228f0a2d322cf9f2d794e1753846a3f8b0bb1c",
       "lib/new_api_app.ex" => "0bbd7d634a418a9abb5fb9f93e53fe0a332ad85b220f1397439b091e1c1a4c02",
       "lib/new_api_app/application.ex" =>
-        "2df1514bd8286bc1eab9d5046f38fe56710224460b115882ed99cd06e3a45cdf",
+        "ed9e99f9e0dcd50b311c909e4b6d6df3d8704e1f18ec8c77fb5e896f73eda626",
       "lib/new_api_app/cqrs/app.ex" =>
         "b4ac1ee7fc62eb6789bdc194629b3e31bde9d7fb67c380c268b1058d89d9c0d3",
       "lib/new_api_app/cqrs/cache.ex" =>
@@ -200,11 +200,11 @@
       "priv/static/robots.txt" =>
         "f994bfae2c1db1221ac049f1097776b444048e0b0a7705d33ea511b610bed115",
       "test/cqrs/dispatcher_test.exs" =>
-        "4c67b39edff1ae9541436865d7b67231892801ff27398943c4796531c55f962c",
+        "6a4f8683d0071441bd381a33345fe1903ada06c5f6d01c07a053b174846a8edd",
       "test/cqrs/reservation_test.exs" =>
-        "9e167a147ae0e5e7b1e331024ae0c9ef31bb34b0671eed87de15c3a002ca0e18",
+        "4d65ed17dc9692d5a9057e7e3a91a4303a784e151d969a8264a58139a94fc6d7",
       "test/cqrs/unique_check_test.exs" =>
-        "57f1ddd46e01d7720d24d432e8a173c01af26b1770f637573dfb69f382a5ca49",
+        "41be159a5d1e2632a48025723e60e1345916d71d5b2e0effa41ecf3b3d8db2e6",
       "test/new_api_app_web/controllers/error_json_test.exs" =>
         "2af6dd41cde5382eaa3e3ffc7d052596b7334f05cffa911df85419617cd513ff",
       "test/support/conn_case.ex" =>
@@ -215,7 +215,7 @@
     },
     names: %{app: "new_api_app", module: "NewApiApp", name: "new_api_app"},
     path: "priv/meta/cqrs_component",
-    tree_digest: "sha256:d2aa036167273d066801ba75a02a6943e717a863cf32c9b51fd2877fdcc76ff8"
+    tree_digest: "sha256:7da7f5d7382fb63f34cd8e0e3baa6f4c11db888669ebf3074c83af748fbc941a"
   },
   openapi: %{
     archive_sha256: "92c66ce84c9731d95bf3d9ae98882e89d0fe3ffd605d4024acd5f62e98b013c7",

@@ -23,8 +23,6 @@ defmodule NewApiApp.CQRS.DispatcherTest do
   end
 
   setup do
-    start_supervised!(App)
-    start_supervised!(Cache)
     InMemory.reset!(App)
     :ok
   end

@@ -7,8 +7,6 @@ defmodule <%= @module %>.CQRS.UniqueCheckTest do
   alias <%= @module %>.CQRS.UniqueCheck
 
   setup do
-    start_supervised!(App)
-    start_supervised!(Cache)
     InMemory.reset!(App)
     :ok
   end

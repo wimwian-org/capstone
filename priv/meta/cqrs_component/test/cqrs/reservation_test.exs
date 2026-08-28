@@ -7,7 +7,6 @@ defmodule NewApiApp.CQRS.ReservationTest do
   alias NewApiApp.CQRS.Reservation.Commands.Reserve
 
   setup do
-    start_supervised!(App)
     InMemory.reset!(App)
     :ok
   end

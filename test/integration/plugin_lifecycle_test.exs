@@ -199,6 +199,86 @@ defmodule Capstone.Integration.PluginLifecycleTest do
     assert output =~ "fetch/3 expires: PASS"
   end
 
+  @tag :toolchain
+  test "mix capstone.new applies plugins: [:cqrs] from target.exs", %{tmp_dir: tmp} do
+    capstone_path = File.cwd!()
+    name = "with_cqrs"
+
+    opts = %Options{
+      name: name,
+      app: :with_cqrs,
+      module: WithCqrs,
+      base: :api,
+      github_org: "acme",
+      capstone: {:path, capstone_path},
+      plugins: [:cqrs]
+    }
+
+    File.cd!(tmp, fn -> assert :ok = Bootstrap.run(opts, Bootstrap.defaults()) end)
+
+    project = Path.join(tmp, name)
+    assert File.exists?(Path.join(project, "target.exs"))
+    assert File.exists?(Path.join(project, "lib/with_cqrs/cqrs/dispatcher.ex"))
+    assert File.exists?(Path.join(project, "lib/with_cqrs/cqrs/reservation.ex"))
+    assert File.exists?(Path.join(project, "lib/with_cqrs/event_store.ex"))
+
+    application = File.read!(Path.join(project, "lib/with_cqrs/application.ex"))
+    assert application =~ "WithCqrs.CQRS.App"
+    assert application =~ "WithCqrs.CQRS.Cache"
+
+    Shell.cmd!(["compile"], project)
+  end
+
+  # The design spec's "Composability with :cache" section claims :cqrs and
+  # :cache can both be applied to one project without conflict — this is
+  # the only test that actually applies both together and proves it.
+  @tag :toolchain
+  @tag timeout: :timer.minutes(3)
+  test "mix capstone.new applies plugins: [:cache, :cqrs] together without conflict", %{
+    tmp_dir: tmp
+  } do
+    capstone_path = File.cwd!()
+    name = "with_cache_and_cqrs"
+
+    opts = %Options{
+      name: name,
+      app: :with_cache_and_cqrs,
+      module: WithCacheAndCqrs,
+      base: :api,
+      github_org: "acme",
+      capstone: {:path, capstone_path},
+      plugins: [:cache, :cqrs]
+    }
+
+    File.cd!(tmp, fn -> assert :ok = Bootstrap.run(opts, Bootstrap.defaults()) end)
+
+    project = Path.join(tmp, name)
+    assert File.exists?(Path.join(project, "lib/with_cache_and_cqrs/cache.ex"))
+    assert File.exists?(Path.join(project, "lib/with_cache_and_cqrs/cqrs/dispatcher.ex"))
+
+    application = File.read!(Path.join(project, "lib/with_cache_and_cqrs/application.ex"))
+    assert application =~ "WithCacheAndCqrs.Cache.Store"
+    assert application =~ "WithCacheAndCqrs.CQRS.App"
+    assert application =~ "WithCacheAndCqrs.CQRS.Cache"
+
+    config = File.read!(Path.join(project, "config/config.exs"))
+    assert config =~ "WithCacheAndCqrs.Cache.Store"
+    assert config =~ "WithCacheAndCqrs.EventStore"
+    assert config =~ "WithCacheAndCqrs.CQRS.App"
+
+    Shell.cmd!(["compile"], project)
+
+    # config/test.exs already overrides CQRS.App to the InMemory adapter.
+    # `mix test` (unlike `mix run`) runs under :test env via Mix's own
+    # preferred_cli_env regardless of Shell's MIX_ENV-scrubbing for child
+    # processes, so this genuinely exercises the InMemory-backed
+    # supervision tree — including the real, Nebulex-backed :cache Store —
+    # without needing a real Postgres-backed event store. mix test itself
+    # fails loudly (Shell.cmd! raises on non-zero exit) if the application
+    # can't start during test setup, which is exactly what this proves.
+    Shell.cmd!(["test"], project)
+  end
+
   # The failure mode this guards against is SILENT: apply returns :ok, writes
   # every :sole_owner file, and leaves the :manual hunk in an unresolved
   # conflict region at the end of a file that no longer compiles. So assert on
