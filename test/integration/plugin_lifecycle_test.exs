@@ -279,6 +279,45 @@ defmodule Capstone.Integration.PluginLifecycleTest do
     Shell.cmd!(["test"], project)
   end
 
+  @tag :toolchain
+  @tag timeout: :timer.minutes(3)
+  test "mix capstone.new applies plugins: [:grpc] from target.exs", %{tmp_dir: tmp} do
+    capstone_path = File.cwd!()
+    name = "with_grpc"
+
+    opts = %Options{
+      name: name,
+      app: :with_grpc,
+      module: WithGrpc,
+      base: :api,
+      github_org: "acme",
+      capstone: {:path, capstone_path},
+      plugins: [:grpc]
+    }
+
+    File.cd!(tmp, fn -> assert :ok = Bootstrap.run(opts, Bootstrap.defaults()) end)
+
+    project = Path.join(tmp, name)
+    assert File.exists?(Path.join(project, "target.exs"))
+    assert File.exists?(Path.join(project, "lib/with_grpc/grpc/endpoint.ex"))
+    assert File.exists?(Path.join(project, "lib/with_grpc/grpc/client.ex"))
+    assert File.exists?(Path.join(project, "priv/cert/grpc_selfsigned.pem"))
+
+    application = "lib/#{name}/application.ex"
+    assert_placed_not_marked(project, application, "WithGrpc.GRPC.Endpoint")
+
+    Shell.cmd!(["compile"], project)
+
+    # config/test.exs is inherited unchanged from baseline_api (this plugin
+    # has no InMemory-vs-real split the way :cqrs does — the server either
+    # runs or doesn't, and the committed test cert is real either way), so
+    # `mix test` genuinely starts the whole supervision tree, including the
+    # real, TLS-wrapped GRPC.Server.Supervisor, under real :test env — per
+    # this branch's own hard-won lesson (:cqrs's Task 9), `mix test` (not
+    # `mix run -e`) is the only way Shell.cmd! reliably reaches :test env.
+    Shell.cmd!(["test"], project)
+  end
+
   # The failure mode this guards against is SILENT: apply returns :ok, writes
   # every :sole_owner file, and leaves the :manual hunk in an unresolved
   # conflict region at the end of a file that no longer compiles. So assert on
