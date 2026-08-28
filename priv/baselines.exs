@@ -134,7 +134,7 @@
     tree_digest: "sha256:e3c197a333749f149a7b1e0a7a530d41841a6f6f43565762d27f3cabd1e88733"
   },
   cqrs: %{
-    archive_sha256: "fd957b87dd0edf24ddad059a382cc121836214de95dcad3de25d7878b1eb66e0",
+    archive_sha256: "a7bcc8f298c9473443fb52e88605770d0a9457c18d8bf422596ac67c08f408d8",
     derived_from: :api,
     files: %{
       ".formatter.exs" => "a44a43d777033eb6c64e0101b7469611c2def3b377b04c9d6b2a8620a347d385",
@@ -164,7 +164,7 @@
       "lib/new_api_app/cqrs/reservation/commands.ex" =>
         "6c304612e8bd957035d879c6dcb847105e21ce6cf914e2c210d74af5da8cba2a",
       "lib/new_api_app/cqrs/reservation/events.ex" =>
-        "d3dbe82219173fcf224f7fe2a18940dfd132afe1dae52a5e52057a2ec9764e1b",
+        "0b62c1f49efc895f26750b511ae4b4bb560232f9bc49dacf61819c5fc1596828",
       "lib/new_api_app/cqrs/reservation/router.ex" =>
         "85a79141140a71d0bca2f8e950c01a6e7c2aa9c959d88aa367beca78fcf2e3cc",
       "lib/new_api_app/cqrs/unique_check.ex" =>
@@ -215,7 +215,7 @@
     },
     names: %{app: "new_api_app", module: "NewApiApp", name: "new_api_app"},
     path: "priv/meta/cqrs_component",
-    tree_digest: "sha256:4e524e162f2743b1b0d88ac14da9379c3d560f1a7cd4b5fec12b462877bd3f74"
+    tree_digest: "sha256:eee9c6ee61ea50b8ac6792c5898f807c3a2f3c93418be781a5891cac1a21efde"
   },
   openapi: %{
     archive_sha256: "92c66ce84c9731d95bf3d9ae98882e89d0fe3ffd605d4024acd5f62e98b013c7",

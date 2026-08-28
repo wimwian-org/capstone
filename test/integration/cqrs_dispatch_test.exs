@@ -53,16 +53,54 @@ defmodule Capstone.Integration.CqrsDispatchTest do
     File.cd!(tmp, fn -> assert :ok = Bootstrap.run(opts, Bootstrap.defaults()) end)
 
     project = Path.join(tmp, name)
+    write_fixture_test_config!(project)
     write_fixture_migration!(project)
     write_fixture_domain!(project)
     write_fixture_router_wiring!(project)
+    write_fixture_test_alias!(project)
     write_fixture_test!(project)
 
-    Shell.cmd!(["event_store.create"], project)
-    Shell.cmd!(["event_store.init"], project)
     Shell.cmd!(["test", "test/widget_dispatch_test.exs"], project)
-    Shell.cmd!(["event_store.drop"], project)
-    Shell.cmd!(["ecto.drop", "--quiet"], project)
+  end
+
+  defp write_fixture_test_config!(project) do
+    path = Path.join(project, "config/test.exs")
+
+    File.write!(
+      path,
+      File.read!(path) <>
+        """
+
+        # This integration test specifically needs the real, Postgres-backed
+        # EventStore — override :cqrs's InMemory-adapter default (correct for the
+        # plugin's own shipped unit tests) for this one throwaway fixture project
+        # only. Config merges same-key keyword lists with the later occurrence's
+        # leaf values winning, so this correctly overrides just :adapter.
+        config :cqrs_dispatch, CqrsDispatch.CQRS.App,
+          event_store: [
+            adapter: Commanded.EventStore.Adapters.EventStore,
+            event_store: CqrsDispatch.EventStore
+          ]
+        """
+    )
+  end
+
+  defp write_fixture_test_alias!(project) do
+    path = Path.join(project, "mix.exs")
+    original = File.read!(path)
+
+    updated =
+      String.replace(
+        original,
+        ~s(test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"]),
+        ~s(test: [\n        "event_store.drop --quiet -e CqrsDispatch.EventStore",\n        "event_store.create --quiet -e CqrsDispatch.EventStore",\n        "event_store.init --quiet -e CqrsDispatch.EventStore",\n        "ecto.create --quiet",\n        "ecto.migrate --quiet",\n        "test"\n      ])
+      )
+
+    if updated == original do
+      raise "expected to find the `test:` alias entry in #{path}, but it wasn't there — inspect the file's actual content and adjust the replace pattern"
+    end
+
+    File.write!(path, updated)
   end
 
   defp write_fixture_migration!(project) do
@@ -116,6 +154,7 @@ defmodule Capstone.Integration.CqrsDispatchTest do
     end
 
     defmodule CqrsDispatch.Widgets.Events.WidgetCreated do
+      @derive Jason.Encoder
       @enforce_keys [:id, :email]
       defstruct [:id, :email]
     end
