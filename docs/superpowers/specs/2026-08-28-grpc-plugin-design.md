@@ -40,13 +40,15 @@ Full deps list added to `priv/meta/grpc_component/mix.exs`, appended after the e
 ```elixir
 {:grpc, "~> 1.0"},
 {:grpc_server, "~> 1.0"},
-{:protobuf, "~> 0.13"},
-{:x509, "~> 0.8", only: [:dev, :test], runtime: false}
+{:protobuf, "~> 0.13"}
 ```
 
-`{:x509, ...}` is scoped `only: [:dev, :test], runtime: false` — it exists solely to generate
-self-signed dev/test certificates and must never ship in a production release, exactly matching
-how Phoenix itself scopes `x509` for its own `mix phx.gen.cert` task.
+**No `x509` dependency** — see the Cert tooling section below. Phoenix's own `mix phx.gen.cert`
+(the explicit precedent this plugin's cert task mirrors) does NOT use the `x509` package;
+fetching its real, current source (`phoenixframework/phoenix`, `lib/mix/tasks/phx.gen.cert.ex`,
+checked 2026-08-28) confirms it generates certificates directly via Erlang/OTP's own `:public_key`
+and `:crypto` primitives — no extra Hex dependency at all. This is a real correction to an earlier
+draft of this spec, which assumed `x509` without having checked the actual precedent first.
 
 ## Architecture overview
 
@@ -73,8 +75,9 @@ NewApiApp.GRPC.Credentials — shared cert/key-path → GRPC.Credential.new/1 bu
 used by both the server child spec and the client helper.
 
 mix <app>.grpc.gen        — wraps `protoc`, generates .pb.ex from priv/protos/*.proto
-mix <app>.grpc.gen.cert   — mirrors Phoenix's own `phx.gen.cert`; generates a
-                            self-signed dev/test certificate via `x509`
+mix <app>.grpc.gen.cert   — mirrors Phoenix's own `phx.gen.cert` (real source copied,
+                            no extra dep); generates a self-signed dev/test certificate
+                            via Erlang/OTP's own :public_key primitives
 ```
 
 What capstone ships as real code in `grpc_component/`:
@@ -157,9 +160,9 @@ other plugin relies on):
 
 ```elixir
 config :new_api_app, NewApiApp.GRPC.Credentials,
-  certfile: "priv/cert/selfsigned.pem",
-  keyfile: "priv/cert/selfsigned_key.pem",
-  cacertfile: "priv/cert/selfsigned.pem"
+  certfile: "priv/cert/grpc_selfsigned.pem",
+  keyfile: "priv/cert/grpc_selfsigned_key.pem",
+  cacertfile: "priv/cert/grpc_selfsigned.pem"
 
 config :new_api_app, NewApiApp.GRPC.Endpoint, port: 50051
 ```
@@ -268,15 +271,122 @@ applied to every other verified claim in this spec.
 
 ## Cert tooling: `mix <app>.grpc.gen.cert`
 
-Mirrors Phoenix's own `mix phx.gen.cert` almost exactly (same `x509` self-signed-CA-then-leaf
-pattern), differing only in the file names/paths this plugin's config expects
-(`priv/cert/selfsigned.pem` / `priv/cert/selfsigned_key.pem`, vs. Phoenix's own
-`priv/cert/selfsigned_key.pem`/`selfsigned.pem` naming for HTTPS). **The exact `x509` API calls
-(certificate/key generation, validity period, subject name) must be verified against Phoenix's
-own real `phx.gen.cert` task source during implementation** — this spec intentionally does not
-guess at the precise `X509.Certificate`/`X509.PrivateKey` call shapes without having read that
-real source first, the same discipline already applied above for the deps/Credential/Supervisor
-APIs.
+Adapted directly from Phoenix's own real, current `mix phx.gen.cert` implementation
+(`phoenixframework/phoenix`, `lib/mix/tasks/phx.gen.cert.ex`, fetched 2026-08-28) — same
+`:public_key`/`:crypto` primitives (RSA key generation, a self-signed X.509 certificate with
+`subjectAltName` DNS entries), no external Hex dependency. Two deliberate differences from
+Phoenix's own task, both to avoid collision if a project ever applies both `:grpc` and uses
+Phoenix's own HTTPS `phx.gen.cert`:
+
+- Default output path is `priv/cert/grpc_selfsigned` (→ `grpc_selfsigned.pem` /
+  `grpc_selfsigned_key.pem`), not Phoenix's own `priv/cert/selfsigned`.
+- The shell instructions printed after generation describe THIS plugin's own
+  `NewApiApp.GRPC.Credentials` config keys, not Phoenix's `https:` Endpoint config.
+
+```elixir
+defmodule Mix.Tasks.NewApiApp.Grpc.Gen.Cert do
+  @shortdoc "Generates a self-signed certificate for gRPC TLS testing"
+
+  @default_path "priv/cert/grpc_selfsigned"
+  @default_name "Self-signed gRPC test certificate"
+  @default_hostnames ["localhost"]
+
+  @warning """
+  WARNING: only use the generated certificate for testing in a closed network
+  environment, such as running gRPC on `localhost`. For production, staging,
+  or testing servers on the public internet, obtain a proper certificate,
+  for example from a private CA or a service that issues them.
+  """
+
+  @moduledoc """
+  Generates a self-signed certificate for gRPC TLS testing.
+
+      $ mix new_api_app.grpc.gen.cert
+      $ mix new_api_app.grpc.gen.cert my-service.localhost my-service.internal.example.com
+
+  Creates a private key and a self-signed certificate in PEM format, for use
+  as NewApiApp.GRPC.Credentials' certfile/keyfile/cacertfile config.
+
+  #{@warning}
+
+  ## Arguments
+
+  The list of hostnames, if none are specified, defaults to:
+
+    * #{Enum.join(@default_hostnames, "\\n  * ")}
+
+  Other (optional) arguments:
+
+    * `--output` (`-o`): the path and base filename for the certificate and
+      key (default: #{@default_path})
+    * `--name` (`-n`): the Common Name value in the certificate's subject
+      (default: "#{@default_name}")
+
+  Requires OTP 21.3 or later.
+  """
+
+  use Mix.Task
+  import Mix.Generator
+
+  @impl Mix.Task
+  def run(all_args) do
+    {opts, args} =
+      OptionParser.parse!(
+        all_args,
+        aliases: [n: :name, o: :output],
+        strict: [name: :string, output: :string]
+      )
+
+    path = opts[:output] || @default_path
+    name = opts[:name] || @default_name
+    hostnames = if args == [], do: @default_hostnames, else: args
+
+    {certificate, private_key} = certificate_and_key(2048, name, hostnames)
+
+    keyfile = path <> "_key.pem"
+    certfile = path <> ".pem"
+
+    create_file(
+      keyfile,
+      :public_key.pem_encode([:public_key.pem_entry_encode(:RSAPrivateKey, private_key)])
+    )
+
+    create_file(
+      certfile,
+      :public_key.pem_encode([{:Certificate, certificate, :not_encrypted}])
+    )
+
+    Mix.shell().info("""
+
+    Update config/dev.exs (and config/test.exs) with:
+
+      config :new_api_app, NewApiApp.GRPC.Credentials,
+        certfile: "#{certfile}",
+        keyfile: "#{keyfile}",
+        cacertfile: "#{certfile}"
+
+    #{@warning}
+    """)
+  end
+
+  # Certificate/key generation: identical in substance to Mix.Tasks.Phx.Gen.Cert's
+  # own real implementation (:public_key/:crypto records and OID constants) —
+  # verify this compiles and produces a loadable cert against the actually
+  # installed OTP version during implementation, adjusting only if something in
+  # this exact record/OID shape has changed since 2026-08-28.
+  # [... full private helper functions omitted here for brevity — copy
+  # Mix.Tasks.Phx.Gen.Cert's certificate_and_key/3, new_cert/3, rdn/1,
+  # extensions/2, key_identifier/1, generate_rsa_key/2, extract_public_key/1,
+  # and all Record.defrecordp/OID @attribute definitions verbatim, renaming
+  # only the module name itself ...]
+end
+```
+
+The implementation plan must copy Phoenix's real private helper functions verbatim (the
+`Record.defrecordp` calls, OID constants, `certificate_and_key/3`, `new_cert/3`, etc.) rather than
+reimplementing them — they're pure, dependency-free `:public_key` plumbing already proven correct
+by Phoenix's own test suite, and hand-retyping ASN.1 OID tuples from memory is exactly the kind of
+thing that's easy to get subtly wrong.
 
 ## Testing
 
@@ -288,7 +398,8 @@ APIs.
   `application.ex` child in every env, including `:test`. So the shipped test does **not** start
   anything itself — `mix test` already boots the full OTP application (with the server running,
   configured against a test cert generated by `mix <app>.grpc.gen.cert` and committed as a
-  fixture — `priv/cert/selfsigned.pem`/`selfsigned_key.pem` checked into the plugin tree, matching
+  fixture — `priv/cert/grpc_selfsigned.pem`/`grpc_selfsigned_key.pem` checked into the plugin
+  tree, matching
   how a real project commits its own dev/test certs, NOT regenerated fresh per test run) before
   any test body runs. The test simply calls `NewApiApp.GRPC.Client.connect/1` against the
   already-running server for a genuine client↔server TLS round trip — no `start_supervised!`
@@ -332,9 +443,12 @@ Its own supervision child, config namespace (`NewApiApp.GRPC.*`), and deps are s
 Everything in the Dependencies, Server, and Client sections above was checked against real,
 current Hex/GitHub source (`elixir-grpc/grpc`'s `grpc`/`grpc_core`/`grpc_server` packages, version
 1.0.4, fetched 2026-08-28) — the same rigor the `:cqrs` spec applied to Nebulex/Commanded/
-EventStore. Two items were explicitly NOT verified this way and are flagged inline above for the
-implementation plan to confirm empirically before finalizing:
-- The `mix <app>.grpc.gen` task's exact `protoc`/`protoc-gen-elixir` flag set.
-- The `mix <app>.grpc.gen.cert` task's exact `x509` API calls (best verified by reading Phoenix's
-  own real `phx.gen.cert` task source directly, since it's the explicit precedent this task
-  mirrors).
+EventStore. The Cert tooling section's design was corrected mid-spec after fetching Phoenix's own
+real, current `phx.gen.cert` source (`phoenixframework/phoenix`, `lib/mix/tasks/phx.gen.cert.ex`,
+fetched 2026-08-28) — an earlier draft assumed an `x509` dependency without having checked the
+actual precedent first; the real source uses no external dependency at all. One item remains
+explicitly NOT verified against real source and is flagged for the implementation plan to confirm
+empirically before finalizing:
+- The `mix <app>.grpc.gen` task's exact `protoc`/`protoc-gen-elixir` flag set — no real
+  `protoc-gen-elixir` invocation was run during spec-writing; verify by actually installing the
+  toolchain and compiling a trivial `.proto` file during implementation.
