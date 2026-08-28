@@ -1,2 +1,3 @@
 
   defdelegate fetch(key, fun), to: <%= @module %>.Cache
+  defdelegate fetch(key, ttl, fun), to: <%= @module %>.Cache

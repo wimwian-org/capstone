@@ -8,4 +8,5 @@ defmodule NewApiApp do
   """
 
   defdelegate fetch(key, fun), to: NewApiApp.Cache
+  defdelegate fetch(key, ttl, fun), to: NewApiApp.Cache
 end
