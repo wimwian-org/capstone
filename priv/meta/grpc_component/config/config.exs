@@ -45,6 +45,9 @@ config :new_api_app, NewApiApp.GRPC.Credentials,
   keyfile: "priv/cert/grpc_selfsigned_key.pem",
   cacertfile: "priv/cert/grpc_selfsigned.pem"
 
+# Configure the gRPC server's port
+config :new_api_app, NewApiApp.GRPC.Endpoint, port: 50051
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

@@ -15,7 +15,12 @@ defmodule NewApiApp.Application do
       # Start a worker by calling: NewApiApp.Worker.start_link(arg)
       # {NewApiApp.Worker, arg},
       # Start to serve requests, typically the last entry
-      NewApiAppWeb.Endpoint
+      NewApiAppWeb.Endpoint,
+      {GRPC.Server.Supervisor,
+       endpoint: NewApiApp.GRPC.Endpoint,
+       port: Application.fetch_env!(:new_api_app, NewApiApp.GRPC.Endpoint)[:port],
+       start_server: true,
+       adapter_opts: [cred: NewApiApp.GRPC.Credentials.server_credential()]}
     ]
 
     # See https://elixir.hexdocs.pm/Supervisor.html
