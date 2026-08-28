@@ -1009,8 +1009,9 @@ cat priv/meta/meta_grpc/manifest.exs
 ```
 
 Verify:
-- `deps:` contains exactly three entries: `grpc`, `grpc_server`, `protobuf`, matching `mix.exs`'s
-  declaration order.
+- `deps:` contains exactly four entries: `grpc`, `grpc_server`, `protobuf`, `mint`, matching
+  `mix.exs`'s declaration order. (`mint` was added during Task 6's TLS bugfix, after this task
+  was originally drafted with only three — this is the correct, current expectation.)
 - Every `lib/new_api_app/grpc/*.ex`, `lib/mix/tasks/new_api_app.grpc.*.ex`, `test/grpc/*_test.exs`,
   and both `priv/cert/grpc_selfsigned*.pem` files appear as `{"...", :sole_owner}`.
 - `README.md` appears as `:contributes`.
