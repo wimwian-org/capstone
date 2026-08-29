@@ -1,5 +1,16 @@
 # `:openbao` plugin — secrets vault sidecar — design
 
+> **Superseded** by
+> `docs/superpowers/specs/2026-08-29-container-sidecars-design.md`, which
+> resolves this doc's own "Known limitation" section (`compose.yaml`
+> ownership) and covers `:openbao` alongside three sibling plugins
+> (`:podman`, `:valkey`, `:nginx`) that ship together. Kept here as the
+> historical record of `:openbao`'s first draft — `compose.yaml` as
+> `:sole_owner`, `derived_from: :api` directly, and production framed as
+> pointing at an externally operated cluster rather than also running the
+> sidecar pattern. None of that reflects the shipped plugin; read the spec
+> above instead.
+
 ## Purpose
 
 Give a generated project an optional OpenBao (Vault-compatible) secrets

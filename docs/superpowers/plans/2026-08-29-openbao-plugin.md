@@ -1,5 +1,13 @@
 # OpenBao Plugin Implementation Plan
 
+> **Superseded.** The design this plan implements
+> (`docs/superpowers/specs/2026-08-29-openbao-plugin-design.md`) is itself
+> superseded by
+> `docs/superpowers/specs/2026-08-29-container-sidecars-design.md` —
+> `compose.yaml` is `:contributes` against an `:api_podman` baseline now, not
+> `:sole_owner` against bare `:api` as every task below assumes. Kept as the
+> historical record of the first draft's task breakdown.
+
 See `docs/superpowers/specs/2026-08-29-openbao-plugin-design.md` for the
 design this implements.
 
