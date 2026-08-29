@@ -129,8 +129,17 @@ Add, alongside the existing `openapi:`/`prod_image_api:` entries (alphabetical b
 the file's existing order):
 
 ```elixir
-web_layer: %{derived_from: :api, path: "priv/meta/web_component"},
+web_layer: %{
+  derived_from: :api,
+  path: "priv/meta/web_component",
+  names: %{app: "new_api_app", module: "NewApiApp", name: "new_api_app"}
+},
 ```
+
+`names:` is required (every existing entry — `api:`, `cache:`, `grpc:`, etc. — already carries it;
+`derive` needs it the same way `compose` needs it on the `web:` entry in Task 3) — the snippet
+above was previously missing it; every sibling entry uses this exact `new_api_app`/`NewApiApp`
+triple, matching `web_component/mix.exs`'s own identity.
 
 - [ ] **Step 2: Derive**
 
@@ -149,9 +158,12 @@ cat priv/meta/meta_web_layer/manifest.exs
 Verify, per the design spec's §"What ports from svelixir":
 - `deps:` contains exactly three entries: `phoenix_vite`, `phoenix_live_view`, `live_svelte`.
 - `aliases:` contains the nine `assets.*` entries plus `setup` gaining `"assets.setup"`.
-- Every new `assets/`, `lib/mix/tasks/assets.pnpm.ex`, `lib/new_api_app/vite_watcher.ex`,
-  `lib/new_api_app_web/components/*`, `mix.lock`, and built `priv/static/.vite/`/hashed-asset
-  file appears as `{"...", :sole_owner}`.
+- Every new `assets/`, `lib/mix/tasks/assets.pnpm.ex`, `lib/new_api_app/vite_watcher.ex`, and
+  `lib/new_api_app_web/components/*` file appears as `{"...", :sole_owner}`. `mix.lock` and the
+  built `priv/static/.vite/`/hashed-asset files must NOT appear anywhere in the manifest —
+  `Capstone.Baseline`'s `@pruned_paths` excludes them from `Baseline.tree`'s walk entirely (see
+  Global Constraints), so `derive` never sees them as part of either tree in the first place. If
+  they DO appear, something is wrong with the pruning, not with `web_component/`.
 - `config/config.exs` and `config/dev.exs` appear as `:contributes`.
 - `lib/new_api_app_web.ex`, `lib/new_api_app_web/endpoint.ex`, `lib/new_api_app_web/router.ex`
   each appear as exactly ONE contiguous `:manual` hunk — NOT split into multiple insertions for
