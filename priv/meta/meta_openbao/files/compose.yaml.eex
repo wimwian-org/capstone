@@ -1,0 +1,23 @@
+services:
+  # Sidecar -- optional secrets vault, not required for the app to boot or for
+  # tests to pass. Runs in dev mode with a fixed root token so
+  # `mix test --include openbao` can authenticate deterministically. Dev mode
+  # only -- never use a fixed root token outside local development/testing.
+  #
+  # Production does not run this service at all: config/runtime.exs's prod
+  # branch reads OPENBAO_ADDR/OPENBAO_TOKEN from the environment, pointing at
+  # a separately operated OpenBao deployment instead.
+  openbao:
+    image: docker.io/openbao/openbao:latest
+    environment:
+      BAO_DEV_ROOT_TOKEN_ID: <%= @app %>-dev-root-token
+      BAO_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+    cap_add:
+      - IPC_LOCK
+    ports:
+      - "8200:8200"
+    healthcheck:
+      test: ["CMD", "bao", "status", "-address=http://127.0.0.1:8200"]
+      interval: 2s
+      timeout: 3s
+      retries: 15

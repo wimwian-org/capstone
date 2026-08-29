@@ -370,6 +370,73 @@
     path: "priv/meta/openapi_component",
     tree_digest: "sha256:ccf353c50e96d6fa37bd6f092078157229c6b17637cb36760819a8299f471c06"
   },
+  openbao: %{
+    archive_sha256: "6d2c198d1ea9bc77194dbdcefc737d175a1b06e809f4fcb8c414a5879593e3f1",
+    derived_from: :api,
+    files: %{
+      ".formatter.exs" => "a44a43d777033eb6c64e0101b7469611c2def3b377b04c9d6b2a8620a347d385",
+      ".gitignore" => "62ee1d39760528ade9087a64430331c1362541232b1213cdae98a25cce8888ed",
+      "AGENTS.md" => "00f6f1bdb914d6eb925e9f1abaae89b10fe7b7245323df8e7bdf6c6b65fd31a4",
+      "README.md" => "b7543b32f6f0e9ac2aea13ee42b086d4de5ebbd711c61fbb2360b6f359c9dffb",
+      "compose.yaml" => "a88657aaac017f4d7bcf35a90ded9d59605551e460b84c473d2eb199bc2b3d20",
+      "config/config.exs" => "6a7734a2b5f00eea9206414cb2c72524c86e7da1ca3a9827e6aae218c1eec155",
+      "config/dev.exs" => "82fbe0785d59a2fc614e5f0aca2e32f1a7e1d4b483b583262158f6a627d66041",
+      "config/prod.exs" => "4d305ac8156d0e4bb49de00f219c7d4ecd553d762d484da994ea598b2e79ba90",
+      "config/runtime.exs" => "afd44a4f66896c69d0f5b1dba45c95d597e14d1839e8f145621ef2b34aa626b3",
+      "config/test.exs" => "4979bd2b404c62626950024973e2011cad86178a0872a438348469a3d476ef34",
+      "lib/new_api_app.ex" => "0bbd7d634a418a9abb5fb9f93e53fe0a332ad85b220f1397439b091e1c1a4c02",
+      "lib/new_api_app/application.ex" =>
+        "dfd81ddd6c46736e5db861086841be7f2892336f7575511649f141c5a7934842",
+      "lib/new_api_app/mailer.ex" =>
+        "c607a46ffca95ab2e63c5c0c1078b1e9eb2f61640b845526a68bbd84c2e742dc",
+      "lib/new_api_app/repo.ex" =>
+        "6b171e503d4e1b7734e5e1cc91cfd52219d80dc7a9cd75e73cdf2eebe2db3f24",
+      "lib/new_api_app/vault.ex" =>
+        "2af3cc2f95729feb2f2b59cbb9d01c3a93940f9f3762a236d335de9a90b0802e",
+      "lib/new_api_app_web.ex" =>
+        "d4ded48aa07fd27fc19fb5e082f4959cf9728e44fa08ca1fa96326122473d1f1",
+      "lib/new_api_app_web/controllers/error_json.ex" =>
+        "ba767ae62030f0f759c245ada6ccb8d865b00ac4a4e4c3d5bce5845e8aaa4d0d",
+      "lib/new_api_app_web/endpoint.ex" =>
+        "6a730a529c3b812af2929cf33c7df9b3bb53308d5620e8b4a09830261163d42c",
+      "lib/new_api_app_web/gettext.ex" =>
+        "0606b29e602f87bde9c10670522e2a873d74910cd1f4e915ec6fa9f80c2c1818",
+      "lib/new_api_app_web/router.ex" =>
+        "18f68f5eec8914616c88bebbe9fa840b59e979c088328163989081269afce4b4",
+      "lib/new_api_app_web/telemetry.ex" =>
+        "545604fa4abecf9644ca57b1d495f587c9e19884d1d7c1c703dcd6513da7cce6",
+      "mix.exs" => "ac9f5ad45500826c9501545e22b2c86d3a1655513eb1587ed4172be9af1eea31",
+      "priv/gettext/en/LC_MESSAGES/errors.po" =>
+        "7965ec884cd9c0dd4f13b268b485e1e3edc13d8f2574eee6f11b35bf3175d05b",
+      "priv/gettext/errors.pot" =>
+        "e2ba1a9a3fd94ac18f7d60d8a03fdfcd0c306aa7b34c5c679f10d356fa42d358",
+      "priv/repo/migrations/.formatter.exs" =>
+        "0214526079b381af52379d2b1fff614512fe4f5bb9a04394ef3246e5b1f61c87",
+      "priv/repo/seeds.exs" => "82a007edef590351038659089cc5840ff011c5af7bc38659242922047122b472",
+      "priv/static/favicon.ico" =>
+        "01723aeae3ce3b5195a8f42e3eb6e9018a8c08b7acda4ed382b31341811f0a8a",
+      "priv/static/robots.txt" =>
+        "f994bfae2c1db1221ac049f1097776b444048e0b0a7705d33ea511b610bed115",
+      "test/new_api_app/vault_test.exs" =>
+        "a0117e821854ddeadb9d54e4f41218d1f4528ee0b781545950f41915319f8b83",
+      "test/new_api_app_web/controllers/error_json_test.exs" =>
+        "2af6dd41cde5382eaa3e3ffc7d052596b7334f05cffa911df85419617cd513ff",
+      "test/support/conn_case.ex" =>
+        "1398686968936337abc0d883180d75fcc8227fb3a5b7d4855161a8e28d8a3c61",
+      "test/support/data_case.ex" =>
+        "031590471b16158509060d1de434a2640e2e1838ed1f9e0cc7c3ba8fbdde3f4f",
+      "test/test_helper.exs" => "70b2e16f8bc7ff44754829b35847cee6522b027df423f7080828f635b0846c9c"
+    },
+    names: %{app: "new_api_app", module: "NewApiApp", name: "new_api_app"},
+    normalisations: [
+      {:secret, "config/config.exs", :signing_salt},
+      {:secret, "config/dev.exs", :secret_key_base},
+      {:secret, "config/test.exs", :secret_key_base},
+      {:secret, "lib/new_api_app_web/endpoint.ex", :signing_salt}
+    ],
+    path: "priv/meta/openbao_component",
+    tree_digest: "sha256:e98abb889d43e02a27c159c08d590980fc04bad40caa623e282be0b5ba7754ac"
+  },
   prod_image_api: %{
     archive_sha256: "d3e1d647bbe8d610582113c6290cbb4cf802f7432e21c00caf590229ba7216ab",
     derived_from: :api,
