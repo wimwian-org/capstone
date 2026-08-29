@@ -346,6 +346,15 @@ defmodule Capstone.Integration.PluginLifecycleTest do
 
     assert File.exists?(Path.join(project, "lib/with_web_layer/vite_watcher.ex"))
 
+    # priv/meta/meta_web_layer/manifest.exs's router.ex hunk inserts a
+    # :browser pipeline and `import Phoenix.LiveView.Router`, none of which
+    # exist in base :api's pristine router.ex (priv/meta/baseline_api's own
+    # router.ex has only :api / dev_routes) — so "WithWebLayerWeb.Layouts",
+    # rendered from `<%= @module %>Web.Layouts` inside that hunk, only shows
+    # up here if the hunk actually landed at its anchor.
+    router = "lib/#{name}_web/router.ex"
+    assert_placed_not_marked(project, router, "WithWebLayerWeb.Layouts")
+
     Shell.cmd!(["compile"], project)
     Shell.cmd!(["test"], project)
   end
