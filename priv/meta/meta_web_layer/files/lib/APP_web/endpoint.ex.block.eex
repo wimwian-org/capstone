@@ -1,0 +1,6 @@
+  # `import` sits beside the plug it enables rather than at the top of the
+  # module, so the layer makes ONE contiguous insertion in this file.
+  import PhoenixVite.Plug
+
+  plug :favicon, dev_server: {PhoenixVite.Components, :has_vite_watcher?, [__MODULE__]}
+

@@ -444,5 +444,10 @@
     ],
     path: "priv/meta/prod_image_api_component",
     tree_digest: "sha256:32f90697087995e7072ff150fc9eeeef6c5268b541cd7052fe69b13e1dd12402"
+  },
+  web_layer: %{
+    derived_from: :api,
+    names: %{app: "new_api_app", module: "NewApiApp", name: "new_api_app"},
+    path: "priv/meta/web_component"
   }
 }

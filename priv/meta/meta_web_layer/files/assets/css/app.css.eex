@@ -1,0 +1,7 @@
+@import "tailwindcss";
+@import "./theme.css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@source "../../lib/<%= @app %>_web";
+@source "../svelte/**/*.svelte";
