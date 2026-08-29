@@ -169,14 +169,13 @@ defmodule Capstone.MixProject do
       # nothing here overlaps).
       groups_for_modules: [
         Capstone: [
-          ~r/^Capstone(\.(?!(Config|Manifest|New|Plugin|Root|Source)(\.|$)).+)?$/,
+          ~r/^(?!.*Error$)Capstone(\.(?!(Config|Manifest|New|Plugin|Source)(\.|$)).+)?$/,
           ~r/^Mix\.Tasks\.Capstone(\.|$)/
         ],
         Config: ~r/^(?!.*Error$)Capstone\.Config(\.|$)/,
         Manifest: ~r/^(?!.*Error$)Capstone\.Manifest(\.|$)/,
         New: ~r/^(?!.*Error$)Capstone\.New(\.|$)/,
         Plugin: ~r/^(?!.*Error$)Capstone\.Plugin(\.|$)/,
-        Root: ~r/^(?!.*Error$)Capstone\.Root(\.|$)/,
         Source: ~r/^(?!.*Error$)Capstone\.Source(\.|$)/,
         Exceptions: ~r/^Capstone\..*Error$/
       ],
