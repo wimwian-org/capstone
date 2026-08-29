@@ -5,7 +5,7 @@ defmodule Capstone.Plugin.OpenbaoRoundTripTest do
   alias Capstone.Baseline
   alias Capstone.Plugin.Apply
 
-  @baseline "priv/meta/baseline_api"
+  @baseline "priv/meta/baseline_api_podman"
   @plugin "priv/meta/meta_openbao"
   @raw "priv/meta/openbao_component"
 
@@ -19,7 +19,8 @@ defmodule Capstone.Plugin.OpenbaoRoundTripTest do
     {:ok, target: target}
   end
 
-  test "applying meta_openbao to baseline_api reproduces openbao_component", %{target: target} do
+  test "applying meta_openbao to baseline_api_podman reproduces openbao_component",
+       %{target: target} do
     {:ok, _component} = Apply.run(@plugin, target)
 
     expected = Baseline.tree(@raw)

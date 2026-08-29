@@ -1,12 +1,51 @@
 services:
-  # Sidecar -- optional secrets vault, not required for the app to boot or for
-  # tests to pass. Runs in dev mode with a fixed root token so
-  # `mix test --include openbao` can authenticate deterministically. Dev mode
-  # only -- never use a fixed root token outside local development/testing.
-  #
-  # Production does not run this service at all: config/runtime.exs's prod
-  # branch reads OPENBAO_ADDR/OPENBAO_TOKEN from the environment, pointing at
-  # a separately operated OpenBao deployment instead.
+  db:
+    image: docker.io/library/postgres:17-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: dba4PG
+      POSTGRES_DB: new_api_app_prod
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  app:
+    build:
+      context: .
+    environment:
+      DATABASE_URL: ecto://postgres:dba4PG@db/new_api_app_prod
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      PHX_HOST: localhost
+      PHX_SERVER: "true"
+      PORT: "4000"
+    # No published port: nginx is the only way to reach the app, once the
+    # :nginx plugin is applied. Without it, nothing outside this compose
+    # network can reach `app` at all -- reachable only from other services
+    # here, by its service name.
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Sidecar plugins (openbao, valkey, ...) each contribute one more service
+  # block below this line. `services:` must stay the file's last top-level
+  # key: a contribution is a plain text append, so a `volumes:`/`networks:`
+  # section here would end up nested under whichever sidecar happened to be
+  # applied last instead of at the top level.
+
+  # openbao -- optional secrets vault sidecar. Dev mode with a fixed root
+  # token, so `mix test --include openbao` can authenticate deterministically
+  # -- dev mode only, never use a fixed root token anywhere else. The
+  # published port is bound to loopback only -- reachable from this host's
+  # own `mix test`/`mix phx.server`, never from another machine on the
+  # network; other compose services still reach it over the compose network
+  # by service name regardless, unaffected by this binding. The SAME image
+  # and sidecar shape also run in production (an OCI-compliant container
+  # placed beside the app by whatever orchestrator runs it there, not this
+  # compose file) -- config/runtime.exs's prod branch always reads a real
+  # OPENBAO_TOKEN from the environment and never falls back to this fixed
+  # token, dev-mode-only default included.
   openbao:
     image: docker.io/openbao/openbao:latest
     environment:
@@ -15,7 +54,7 @@ services:
     cap_add:
       - IPC_LOCK
     ports:
-      - "8200:8200"
+      - "127.0.0.1:8200:8200"
     healthcheck:
       test: ["CMD", "bao", "status", "-address=http://127.0.0.1:8200"]
       interval: 2s
