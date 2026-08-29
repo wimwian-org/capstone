@@ -34,6 +34,7 @@ defmodule Capstone.New.Options do
 
   @switches [path: :string]
   @default_requirement "~> 0.1"
+  @base_plugins %{web: [:web_layer], both: [:web_layer]}
 
   @doc "Parses argv (just `--path PATH`) into a fully validated `%Capstone.New.Options{}`."
   @spec parse!([String.t()]) :: t()
@@ -47,6 +48,18 @@ defmodule Capstone.New.Options do
     |> Capstone.Config.read!()
     |> from_config!()
   end
+
+  @doc """
+  Plugins `base` implies, in addition to whatever `target.exs` lists explicitly.
+
+  `:api` implies nothing — it is the bare tree every other base is generated
+  from and derived against. `:web` and `:both` both imply `:web_layer`: the
+  LiveView/Svelte layer never comes from the generator (`generator_argv/1`
+  strips `--no-html --no-assets` for all three phx.new-driven bases
+  identically), only from this plugin being applied.
+  """
+  @spec implied_plugins(:api | :web | :both) :: [atom()]
+  def implied_plugins(base), do: Map.get(@base_plugins, base, [])
 
   @doc """
   Builds a `%Capstone.New.Options{}` from an already-validated `%Capstone.Config{}`.
@@ -66,7 +79,7 @@ defmodule Capstone.New.Options do
       base: config.base,
       github_org: config.project.github_org,
       capstone: {:hex, @default_requirement},
-      plugins: config.plugins
+      plugins: (implied_plugins(config.base) ++ config.plugins) |> Enum.uniq()
     }
   end
 
