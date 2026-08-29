@@ -89,7 +89,7 @@ defmodule Capstone.New.Bootstrap do
   end
 
   defp apply_plugins!(opts, registry_dir, sync) do
-    Enum.each(opts.plugins, fn type ->
+    Enum.each(Options.effective_plugins(opts), fn type ->
       sync.(type, registry_dir)
       Install.run(type, opts.name, registry_dir)
     end)

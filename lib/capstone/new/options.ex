@@ -58,8 +58,19 @@ defmodule Capstone.New.Options do
   strips `--no-html --no-assets` for all three phx.new-driven bases
   identically), only from this plugin being applied.
   """
-  @spec implied_plugins(:api | :web | :both) :: [atom()]
+  @spec implied_plugins(base()) :: [atom()]
   def implied_plugins(base), do: Map.get(@base_plugins, base, [])
+
+  @doc """
+  Every plugin that should actually be installed: base-implied plugins plus whatever
+  was explicitly declared, deduplicated. This is the ONLY place the two lists merge —
+  `plugins:` itself (declared-only) is never mutated, so `target.exs` (written from
+  `plugins:`, never from this) stays an honest record of what the user asked for.
+  """
+  @spec effective_plugins(t()) :: [atom()]
+  def effective_plugins(%__MODULE__{} = opts) do
+    (implied_plugins(opts.base) ++ opts.plugins) |> Enum.uniq()
+  end
 
   @doc """
   Builds a `%Capstone.New.Options{}` from an already-validated `%Capstone.Config{}`.
@@ -79,7 +90,7 @@ defmodule Capstone.New.Options do
       base: config.base,
       github_org: config.project.github_org,
       capstone: {:hex, @default_requirement},
-      plugins: (implied_plugins(config.base) ++ config.plugins) |> Enum.uniq()
+      plugins: config.plugins
     }
   end
 
