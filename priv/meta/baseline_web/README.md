@@ -16,3 +16,26 @@ Ready to run in production? Please [check our deployment guides](https://phoenix
 * Docs: https://phoenix.hexdocs.pm
 * Forum: https://elixirforum.com/c/phoenix-forum
 * Source: https://github.com/phoenixframework/phoenix
+
+## Web assets (LiveView + Svelte)
+
+This project ships a `live_svelte` asset pipeline: Vite bundles a Svelte 5 UI alongside Phoenix
+LiveView, with pnpm as the JS package manager for everything under `assets/`.
+
+Run `mix assets.setup` once before first use to install the pnpm-managed dependencies (`mix setup`
+already calls it, so a fresh clone only needs `mix setup`). `mix phx.server` then starts the Vite
+dev server automatically, as a dev-only Phoenix watcher (`NewWebApp.ViteWatcher`, port 5173) —
+there is nothing extra to start by hand.
+
+### `assets.*` aliases
+
+* `mix assets.setup` — `pnpm install`
+* `mix assets.build` — a one-off production Vite build (also `mix assets.deploy`, which `mix
+  release` runs)
+* `mix assets.check` — `svelte-check` (TypeScript/Svelte type checking)
+* `mix assets.lint` — ESLint plus a Prettier `--check`
+* `mix assets.format` — `prettier --write`
+* `mix assets.test` — the Vitest unit suite
+* `mix assets.test.coverage` — the Vitest suite with coverage
+* `mix assets.test.e2e` — Playwright end-to-end tests; run `pnpm exec playwright install` once
+  from `assets/` first, to fetch the browsers Playwright needs

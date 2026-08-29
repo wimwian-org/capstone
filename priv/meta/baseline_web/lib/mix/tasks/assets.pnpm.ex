@@ -13,8 +13,8 @@ defmodule Mix.Tasks.Assets.Pnpm do
   def run([script | rest]) do
     assets_dir = Path.join(File.cwd!(), "assets")
 
-    unless File.dir?(assets_dir) do
-      Mix.raise("assets/ not found — this project has no live_svelte asset pipeline (07-assets.md)")
+    if not File.dir?(assets_dir) do
+      Mix.raise("assets/ not found — this project has no live_svelte asset pipeline")
     end
 
     {_output, exit_code} =

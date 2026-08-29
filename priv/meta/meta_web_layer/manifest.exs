@@ -13,7 +13,7 @@
   ],
   deps: [
     "{:phoenix_vite, \"~> 0.5\"}",
-    "{:phoenix_live_view, \"~> 1.0\"}",
+    "{:phoenix_live_view, \"~> 1.2\"}",
     "{:live_svelte, \"~> 0.18\"}"
   ],
   files: [
@@ -39,6 +39,8 @@
     {"lib/APP_web/components/layouts/root.html.heex", :sole_owner},
     {"test/mix/tasks/assets.pnpm_test.exs", :sole_owner},
     {"test/APP/vite_watcher_test.exs", :sole_owner},
+    {".gitignore", :contributes, [key: :web_layer_]},
+    {"README.md", :contributes, [key: :web_layer_readme]},
     {"config/config.exs", :contributes, [key: :web_layer_config, at: :before_import]},
     {"config/dev.exs", :contributes, [key: :web_layer_dev]},
     {"lib/APP_web.ex", :manual,

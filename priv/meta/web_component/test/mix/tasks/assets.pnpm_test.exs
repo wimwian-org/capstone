@@ -46,7 +46,7 @@ defmodule Mix.Tasks.Assets.PnpmTest do
 
   test "raises when assets/ is missing", %{tmp_dir: tmp_dir} do
     assert_raise Mix.Error,
-                 "assets/ not found — this project has no live_svelte asset pipeline (07-assets.md)",
+                 "assets/ not found — this project has no live_svelte asset pipeline",
                  fn ->
                    File.cd!(tmp_dir, fn ->
                      Mix.Tasks.Assets.Pnpm.run(["build"])

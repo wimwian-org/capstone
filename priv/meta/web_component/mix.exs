@@ -40,7 +40,7 @@ defmodule NewApiApp.MixProject do
   defp deps do
     [
       {:phoenix_vite, "~> 0.5"},
-      {:phoenix_live_view, "~> 1.0"},
+      {:phoenix_live_view, "~> 1.2"},
       {:live_svelte, "~> 0.18"},
       {:phoenix, "~> 1.8.9"},
       {:phoenix_ecto, "~> 4.5"},
