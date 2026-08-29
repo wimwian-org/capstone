@@ -12,6 +12,30 @@
 
 ## Global Constraints
 
+**Revision note:** the bullet below on Phase B's implication living "ONLY in
+`Capstone.New.Options.from_config!/1`" (and the **Architecture** line above it) describe this
+plan's ORIGINAL design, which shipped a real bug: merging the implied plugin into `Options.plugins`
+inside `from_config!/1` gets that same field written straight into the generated project's
+`target.exs` by `Capstone.New.Bootstrap.run/3` (via `Project.render_config(opts)`), baking
+`:web_layer` in as if the user had typed it — contradicting the design's own stated goal that
+`target.exs` stays an honest, user-authored record. Caught by Task 8's own end-to-end toolchain
+test, which is exactly what it was written to catch. The corrected design — implication as a
+separate `Options.effective_plugins/1` function, read only by
+`Capstone.New.Bootstrap.apply_plugins!/3`, never by `from_config!/1` (reverted to a plain
+passthrough) or `Project.render_config/1` — is the one actually implemented; see the spec's own
+"Revision note" in its Phase B section (`docs/superpowers/specs/2026-08-29-web-plugin-design.md`)
+for the full account. Task 7's steps below (and the "Phase B's implication lives ONLY in
+`from_config!/1`" bullet immediately below) are kept verbatim as the historical record of what was
+originally planned and later corrected mid-implementation — do not follow them literally as a guide
+to the current code, and do not use them as a template for a similar future feature without
+re-reading the spec's corrected design first.
+
+Also see that same spec section's scope-boundary note: `mix capstone.update` does **not**
+retroactively apply a base-implied plugin when an existing project's `target.exs` has its `base:`
+changed after generation — `Capstone.Update` reads `Capstone.Config` directly and never consults
+`Options.implied_plugins/1`/`effective_plugins/1`. That gap is deliberate and out of scope for this
+plan, not something any task below closes.
+
 - The plugin is built via the existing pipeline: `priv/meta/web_component/` (ported, not hand-edited) → `mix capstone.plugin.derive web_layer` → `priv/meta/meta_web_layer/manifest.exs`. Never hand-edit files under `priv/meta/meta_web_layer/` directly.
 - `priv/meta/web_component/` already carries the `new_api_app`/`NewApiApp` identity — confirmed directly against svelixir's own `priv/meta/web_component/mix.exs` (`app: :new_api_app`, `defmodule NewApiApp.MixProject`). **No identity rename at port time.** Only the composed `priv/meta/baseline_web` gets renamed (to `new_web_app`/`NewWebApp`), and that happens automatically inside `mix capstone.baseline.compose web` (`Template.capture/2`/`render/2`) — already-implemented, already-tested capstone machinery, unchanged by this work.
 - `priv/baselines.exs` needs two new top-level keys, not one: `web_layer` (`derived_from: :api, path: "priv/meta/web_component"` — the raw component `derive` reads) and `web` (`derived_from: :api, plugin: :web_layer, path: "priv/meta/baseline_web", names: %{app: "new_web_app", module: "NewWebApp", name: "new_web_app"}` — the composed baseline `compose` writes and `record`/the drift-check test read). Confirm the `names:` field before running `compose` — `Mix.Tasks.Capstone.Baseline.Compose`'s `rename!/2` dereferences `entry.names` unconditionally and raises a `KeyError` (not a clean `Mix.raise`) without it.
@@ -527,6 +551,13 @@ git commit -m "test(plugin): add a structural toolchain test for the :web_layer 
 
 ### Task 7: Implement `base:` → implied-plugin wiring
 
+> **Superseded mid-implementation — see the "Revision note" under Global Constraints above before
+> reading any step below.** Everything here describes merging the implied plugin into
+> `Options.plugins` inside `from_config!/1`, which bakes `:web_layer` into the generated project's
+> own `target.exs`. The shipped code instead keeps `from_config!/1` a plain passthrough and computes
+> the merge in a separate `Options.effective_plugins/1`, called only from
+> `Capstone.New.Bootstrap.apply_plugins!/3`. The steps are kept verbatim as the historical record.
+
 **Files:**
 - Modify: `lib/capstone/new/options.ex`
 - Modify: `test/capstone/new/options_test.exs`
@@ -758,9 +789,12 @@ block, after the edited test from Step 1:
 ```
 
 Note the last assertion: `target.exs`'s own `plugins:` stays exactly what the user wrote
-(`[]`) — the implication happens in `Options.from_config!/1`, downstream of `Capstone.Config`,
-never mutating `target.exs` itself. `real_config.plugins == []` is the whole point of Task 7's
-design (implication lives at the `Options` boundary, not baked back into the config file).
+(`[]`) — the implication happens in `Options.effective_plugins/1`, read only by
+`Capstone.New.Bootstrap.apply_plugins!/3` at install time, never mutating `target.exs` itself.
+(As originally written this sentence named `Options.from_config!/1`; that is precisely the design
+this test caught and the Global Constraints' revision note above corrects.) `real_config.plugins ==
+[]` is the whole point (implication lives at the `Options` boundary, not baked back into the config
+file).
 
 - [ ] **Step 4: Run it**
 

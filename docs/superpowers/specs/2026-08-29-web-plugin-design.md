@@ -201,6 +201,20 @@ Ordering inside `effective_plugins/1`: implied plugins first, so an explicit ent
 so a future ordering dependency has an explicit rule to change rather than an accidental one to
 discover.
 
+**Scope boundary — `mix capstone.update` does not retroactively apply a base-implied plugin.**
+`effective_plugins/1` is consulted only by `Capstone.New.Bootstrap.apply_plugins!/3`, i.e. only at
+`mix capstone.new` generation time. `Capstone.Update.run/3` (`lib/capstone/update.ex`) is a
+separate code path that reads an existing project's `target.exs` straight through
+`Capstone.Config` and installs whatever `config.plugins` newly lists relative to `plugin.exs` — it
+never constructs an `%Options{}`, so it has no way to call `implied_plugins/1`/`effective_plugins/1`
+and no notion of `base:` implying anything. Concretely: a project generated with `base: :api`,
+later hand-edited to `base: :web` in its own `target.exs`, and then run through
+`mix capstone.update` will **not** gain `:web_layer` — only an explicit `:web_layer` entry added to
+that same `plugins:` list would. This is a real, deliberate gap left open by this design, not an
+oversight papered over: retrofitting `Capstone.Update` with base-implication support is its own
+piece of design work (deciding, among other things, whether an update should ever be allowed to
+change a project's generated shape this drastically) and is out of scope here.
+
 ### Why not the alternatives
 
 - **Merging into `Options.plugins` inside `from_config!/1`** (the first attempt) is exactly the
@@ -209,11 +223,18 @@ discover.
   those two answers can differ.
 - **A `Bootstrap`-level ad-hoc conditional** (`if opts.base in [:web, :both], do: Install.run(...)`
   inlined directly, with no named function) duplicates the base→plugin mapping as a one-off
-  branch rather than a single named, testable function, and — because generation and update are
-  different entry points that both need this behavior — risks the special-case being written once
-  and forgotten in the other. `effective_plugins/1` avoids this: it is a plain, exported, unit-
-  tested function on `Options`, and `Bootstrap` merely calls it — the DRY property this bullet
-  argues for is preserved, just computed on demand instead of stored.
+  branch rather than a single named, testable function. `effective_plugins/1` avoids that: it is a
+  plain, exported, unit-tested function on `Options`, and `Bootstrap` merely calls it — the DRY
+  property this bullet argues for is preserved, just computed on demand instead of stored.
+  **Correction:** an earlier revision of this bullet additionally claimed `effective_plugins/1`
+  avoids the risk of the special-case being "written once and forgotten" between generation and
+  update, since generation and update are different entry points that could both need this
+  behavior. That claim does not hold: `effective_plugins/1` lives on `Options`, and
+  `Capstone.Update.run/3` never constructs an `%Options{}` or calls it — it reads
+  `Capstone.Config` straight off an existing project's `target.exs` and has no notion of
+  `base:`-implied plugins at all. `mix capstone.update` picking up a base-implied plugin after an
+  existing project's `base:` changes remains unimplemented today, not merely un-DRY. See the scope
+  boundary called out at the end of "The decision" above.
 - **Reading the mapping out of `priv/baselines.exs` at runtime** keeps `lib/` as the single
   source of truth in theory, but `priv/baselines.exs`/`priv/meta/` are maintainer-only artifacts
   absent from what an end user's `{:capstone, "~> 0.x", only: :dev}` hex install actually
