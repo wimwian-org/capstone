@@ -6,6 +6,7 @@ defmodule Capstone.BaselineTest do
 
   alias Capstone.Baseline
   alias Capstone.Factory
+  alias Mix.Tasks.Capstone.Baseline.Compose
 
   test "normalise_secrets/1 is idempotent" do
     %{source: source} = Factory.build(:phx_config_source)
@@ -212,7 +213,7 @@ defmodule Capstone.BaselineTest do
     web = Map.fetch!(Baseline.read!("priv/baselines.exs"), :web)
     before = Baseline.tree(web.path)
 
-    capture_io(fn -> Mix.Tasks.Capstone.Baseline.Compose.run(["web"]) end)
+    capture_io(fn -> Compose.run(["web"]) end)
 
     assert_same_tree(Baseline.tree(web.path), before)
   end
