@@ -1,0 +1,15 @@
+
+# Appended rather than edited into the endpoint block above. `Config.config/3`
+# deep-merges keyword lists, so this REPLACES `watchers: []` and ADDS
+# `static_url:` at runtime without deleting a line of what phx.new generated —
+# which is what keeps this component free of deletions, and free of a conflict
+# region in every project it installs into.
+config :<%= @app %>, <%= @module %>Web.Endpoint,
+  static_url: [host: "localhost", port: 5173],
+  watchers: [vite: {<%= @module %>.ViteWatcher, :run, []}]
+
+# Staged for a deferred future SSR-enablement pass — inert for now, since the global
+# `config :live_svelte, ssr: false` in config.exs takes precedence.
+config :live_svelte,
+  ssr_module: LiveSvelte.SSR.ViteJS,
+  vite_host: "http://localhost:5173"

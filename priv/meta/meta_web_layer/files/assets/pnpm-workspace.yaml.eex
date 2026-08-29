@@ -1,0 +1,18 @@
+# Two deliberate relaxations of pnpm's default security posture. Both are
+# narrow, both are load-bearing, and both are recorded here rather than left
+# for a reader to infer.
+#
+# morphdom is pulled in by phoenix_live_view's own npm package via a git
+# dependency (the Phoenix team's fork) — not a supply-chain risk this scaffold
+# introduces, but pnpm's exotic-subdep guard blocks it by default and the
+# install fails hard with ERR_PNPM_EXOTIC_SUBDEP.
+blockExoticSubdeps: false
+
+# Pre-answers ERR_PNPM_IGNORED_BUILDS for exactly two packages that genuinely
+# need a postinstall step: esbuild fetches its native binary, msw writes its
+# service worker. Postinstall scripts are arbitrary code execution, so this is
+# an ALLOWLIST of two and never a blanket enable — anything else added here
+# deserves the same one-line justification.
+allowBuilds:
+  esbuild: true
+  msw: true

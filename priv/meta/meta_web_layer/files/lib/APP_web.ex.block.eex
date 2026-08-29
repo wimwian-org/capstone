@@ -1,0 +1,31 @@
+  def live_view do
+    quote do
+      use Phoenix.LiveView
+
+      unquote(html_helpers())
+    end
+  end
+
+  def html do
+    quote do
+      use Phoenix.Component
+
+      unquote(html_helpers())
+    end
+  end
+
+  defp html_helpers do
+    quote do
+      # HTML escaping, and the CSRF token the root layout embeds.
+      import Phoenix.HTML
+      import Phoenix.Controller, only: [get_csrf_token: 0]
+
+      # The Svelte app-shell mount.
+      import <%= @module %>Web.CoreComponents
+
+      alias Phoenix.LiveView.JS
+
+      unquote(verified_routes())
+    end
+  end
+

@@ -178,25 +178,28 @@ defmodule Capstone.ManifestTest do
     manifest = Factory.build(:manifest, base: :cli)
 
     assert_raise Manifest.InvalidError,
-                 ~r/base must be one of \[:otp, :api, :web\], got: :cli/,
+                 ~r/base must be one of \[:otp, :api, :web, :both\], got: :cli/,
                  fn -> Manifest.encode!(manifest) end
   end
 
   test "every supported base round-trips" do
-    for base <- [:otp, :api, :web] do
+    for base <- [:otp, :api, :web, :both] do
       encoded = Manifest.encode!(Factory.build(:manifest, base: base))
 
       assert Manifest.decode!(encoded, "plugin.exs").base == base
     end
   end
 
-  # A test asserting "every base Capstone.Config resolves, Manifest can also
-  # record" existed here in capstone_umbrella, built on Capstone.Config.decode!/2
-  # against a :config_map fixture shaped for the umbrella's 14-module Config
-  # schema (bases :otp/:api/:web, decode!/2). This package kept its own,
-  # differently-shaped Capstone.Config (bases :api/:web/:both, no decode!/2) --
-  # dropped rather than adapted, since porting it would mean reintroducing the
-  # excluded schema's vocabulary just for this one assertion.
+  test "every base Capstone.Config accepts, Manifest also accepts" do
+    # Mirrors Capstone.Config.@valid_bases (lib/capstone/config.ex) -- kept as a
+    # literal here rather than a shared accessor, since neither module exposes
+    # its base list for a caller outside itself.
+    for base <- [:api, :web, :both] do
+      encoded = Manifest.encode!(Factory.build(:manifest, base: base))
+
+      assert Manifest.decode!(encoded, "plugin.exs").base == base
+    end
+  end
 
   test "duplicate plugin names raise" do
     duplicate = Factory.build(:manifest_component, name: :valkey)

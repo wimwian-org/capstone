@@ -1,0 +1,3 @@
+# Vite (assets/vite.config.mjs) owns the Tailwind build now.
+config :live_svelte, ssr: false
+

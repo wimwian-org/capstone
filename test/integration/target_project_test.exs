@@ -251,7 +251,7 @@ defmodule Capstone.New.Integration.TargetProjectTest do
 
   describe "generating via --path against the real target.exs reader" do
     @tag :toolchain
-    test "drives phx.new with the flags that keep HTML and assets out, for :api and :both",
+    test "drives phx.new with the flags that keep HTML and assets out, for :api",
          %{dir: dir} do
       # Compiling this project's own dependencies pruned every archive off the
       # code path before the suite started — the exact effect
@@ -261,7 +261,7 @@ defmodule Capstone.New.Integration.TargetProjectTest do
       # for an archive that is installed on disk.
       Mix.Local.append_archives()
 
-      for base <- [:api, :both] do
+      for base <- [:api] do
         name = "app_#{base}"
         config = Factory.build(:config)
 
@@ -288,6 +288,38 @@ defmodule Capstone.New.Integration.TargetProjectTest do
         real_config = Capstone.Config.read!(Path.join(project, "target.exs"))
         assert real_config.base == base
         assert real_config.project.name == "app_#{base}"
+      end
+    end
+
+    @tag :toolchain
+    test "base: :web and base: :both auto-apply :web_layer with no explicit plugins:",
+         %{dir: dir} do
+      Mix.Local.append_archives()
+
+      for base <- [:web, :both] do
+        name = "app_#{base}_implied"
+        config = Factory.build(:config)
+
+        config = %{
+          config
+          | base: base,
+            plugins: [],
+            project: %{
+              config.project
+              | name: name,
+                module: Module.concat([Macro.camelize(name)]),
+                app: String.to_atom(name)
+            }
+        }
+
+        project = generate!(dir, config)
+
+        assert File.exists?(Path.join(project, "assets/svelte/components/AppShell.svelte"))
+
+        assert File.exists?(Path.join(project, "lib/#{name}_web/components/core_components.ex"))
+
+        real_config = Capstone.Config.read!(Path.join(project, "target.exs"))
+        assert real_config.plugins == []
       end
     end
 

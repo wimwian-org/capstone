@@ -2,8 +2,11 @@ defmodule Capstone.BaselineTest do
   # async: false — two tests below rewrite files inside the repo working tree.
   use ExUnit.Case, async: false
 
+  import ExUnit.CaptureIO
+
   alias Capstone.Baseline
   alias Capstone.Factory
+  alias Mix.Tasks.Capstone.Baseline.Compose
 
   test "normalise_secrets/1 is idempotent" do
     %{source: source} = Factory.build(:phx_config_source)
@@ -204,6 +207,15 @@ defmodule Capstone.BaselineTest do
     refute Map.has_key?(cache, :argv)
     refute Map.has_key?(cache, :generator)
     assert cache.derived_from == :api
+  end
+
+  test "composing :web from :api plus :web_layer reproduces the checked-in baseline_web" do
+    web = Map.fetch!(Baseline.read!("priv/baselines.exs"), :web)
+    before = Baseline.tree(web.path)
+
+    capture_io(fn -> Compose.run(["web"]) end)
+
+    assert_same_tree(Baseline.tree(web.path), before)
   end
 
   defp assert_same_tree(expected, actual) do

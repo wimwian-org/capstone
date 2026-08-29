@@ -34,6 +34,7 @@ defmodule Capstone.New.Options do
 
   @switches [path: :string]
   @default_requirement "~> 0.1"
+  @base_plugins %{web: [:web_layer], both: [:web_layer]}
 
   @doc "Parses argv (just `--path PATH`) into a fully validated `%Capstone.New.Options{}`."
   @spec parse!([String.t()]) :: t()
@@ -46,6 +47,29 @@ defmodule Capstone.New.Options do
     |> fetch_path!()
     |> Capstone.Config.read!()
     |> from_config!()
+  end
+
+  @doc """
+  Plugins `base` implies, in addition to whatever `target.exs` lists explicitly.
+
+  `:api` implies nothing — it is the bare tree every other base is generated
+  from and derived against. `:web` and `:both` both imply `:web_layer`: the
+  LiveView/Svelte layer never comes from the generator (`generator_argv/1`
+  strips `--no-html --no-assets` for all three phx.new-driven bases
+  identically), only from this plugin being applied.
+  """
+  @spec implied_plugins(base()) :: [atom()]
+  def implied_plugins(base), do: Map.get(@base_plugins, base, [])
+
+  @doc """
+  Every plugin that should actually be installed: base-implied plugins plus whatever
+  was explicitly declared, deduplicated. This is the ONLY place the two lists merge —
+  `plugins:` itself (declared-only) is never mutated, so `target.exs` (written from
+  `plugins:`, never from this) stays an honest record of what the user asked for.
+  """
+  @spec effective_plugins(t()) :: [atom()]
+  def effective_plugins(%__MODULE__{} = opts) do
+    (implied_plugins(opts.base) ++ opts.plugins) |> Enum.uniq()
   end
 
   @doc """

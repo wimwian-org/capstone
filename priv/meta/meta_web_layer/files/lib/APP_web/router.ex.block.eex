@@ -1,0 +1,18 @@
+  # ONE contiguous block: the import, the pipeline and its scope together.
+  # A component records one anchored hunk per file, so two separated
+  # insertions would be concatenated and applied at the first anchor.
+  import Phoenix.LiveView.Router
+
+  pipeline :browser do
+    plug :accepts, ["html"]
+    plug :fetch_session
+    plug :fetch_live_flash
+    plug :put_root_layout, html: {<%= @module %>Web.Layouts, :root}
+    plug :protect_from_forgery
+    plug :put_secure_browser_headers
+  end
+
+  scope "/", <%= @module %>Web do
+    pipe_through :browser
+  end
+

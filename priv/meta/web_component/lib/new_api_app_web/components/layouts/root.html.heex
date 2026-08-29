@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="csrf-token" content={get_csrf_token()} />
+    <.live_title default="NewApiApp">
+      {assigns[:page_title]}
+    </.live_title>
+    <.vite_assets
+      names={["js/app.js", "css/app.css"]}
+      manifest={{:new_api_app, "priv/static/.vite/manifest.json"}}
+      dev_server={PhoenixVite.Components.has_vite_watcher?(NewApiAppWeb.Endpoint)}
+      to_url={fn p -> NewApiAppWeb.Endpoint.static_url() <> p end}
+    />
+  </head>
+  <body>
+    {@inner_content}
+  </body>
+</html>

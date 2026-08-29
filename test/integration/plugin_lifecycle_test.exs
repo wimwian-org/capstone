@@ -319,6 +319,76 @@ defmodule Capstone.Integration.PluginLifecycleTest do
   end
 
   @tag :toolchain
+  @tag timeout: :timer.minutes(5)
+  test "mix capstone.new applies plugins: [:web_layer] from target.exs", %{tmp_dir: tmp} do
+    # The design spec and this plan's Global Constraints both require a real
+    # pnpm/Vite run to gate this test — mirroring Shell.ensure_task_available!/2's
+    # loud failure for a missing "mix phx.new" rather than a silent skip, per
+    # test_helper.exs's own reasoning: "a machine without the generators
+    # reports them as failures rather than as absences."
+    if is_nil(System.find_executable("pnpm")) do
+      raise "pnpm is not available on PATH — install it (https://pnpm.io/installation) to run " <>
+              "this toolchain test's real assets.setup/assets.build steps"
+    end
+
+    capstone_path = File.cwd!()
+    name = "with_web_layer"
+
+    opts = %Options{
+      name: name,
+      app: :with_web_layer,
+      module: WithWebLayer,
+      base: :api,
+      github_org: "acme",
+      capstone: {:path, capstone_path},
+      plugins: [:web_layer]
+    }
+
+    File.cd!(tmp, fn -> assert :ok = Bootstrap.run(opts, Bootstrap.defaults()) end)
+
+    project = Path.join(tmp, name)
+    assert File.exists?(Path.join(project, "target.exs"))
+    assert File.exists?(Path.join(project, "assets/svelte/components/AppShell.svelte"))
+
+    assert File.exists?(
+             Path.join(project, "lib/with_web_layer_web/components/core_components.ex")
+           )
+
+    assert File.exists?(Path.join(project, "lib/with_web_layer/vite_watcher.ex"))
+
+    # priv/meta/meta_web_layer/manifest.exs's router.ex hunk inserts a
+    # :browser pipeline and `import Phoenix.LiveView.Router`, none of which
+    # exist in base :api's pristine router.ex (priv/meta/baseline_api's own
+    # router.ex has only :api / dev_routes) — so "WithWebLayerWeb.Layouts",
+    # rendered from `<%= @module %>Web.Layouts` inside that hunk, only shows
+    # up here if the hunk actually landed at its anchor.
+    router = "lib/#{name}_web/router.ex"
+    assert_placed_not_marked(project, router, "WithWebLayerWeb.Layouts")
+
+    Shell.cmd!(["compile"], project)
+    Shell.cmd!(["test"], project)
+
+    # The real toolchain gate this plugin's own plan required but never got:
+    # a real "pnpm install" against the shipped pnpm-lock.yaml, and a real
+    # Vite build of the Svelte 5 UI it locks against. Neither package.json's
+    # validity, the lockfile's resolvability, Svelte compilation, nor the
+    # Vite build itself is exercised anywhere else in this suite.
+    Shell.cmd!(["assets.setup"], project)
+    Shell.cmd!(["assets.build"], project)
+
+    manifest_path = Path.join(project, "priv/static/.vite/manifest.json")
+    assert File.regular?(manifest_path)
+
+    manifest = manifest_path |> File.read!() |> :json.decode()
+
+    assert %{"js/app.js" => %{"file" => js_file}, "css/app.css" => %{"file" => css_file}} =
+             manifest
+
+    assert File.regular?(Path.join(project, "priv/static/#{js_file}"))
+    assert File.regular?(Path.join(project, "priv/static/#{css_file}"))
+  end
+
+  @tag :toolchain
   @tag timeout: :timer.minutes(3)
   test "mix capstone.new applies plugins: [:podman, :openbao, :valkey] from target.exs", %{
     tmp_dir: tmp

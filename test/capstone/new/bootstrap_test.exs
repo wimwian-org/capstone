@@ -202,5 +202,102 @@ defmodule Capstone.New.BootstrapTest do
     assert File.read!(Path.join(generated, "README.probe.md")) == "installed by generated\n"
   end
 
+  test "names the implying base:, not just the plugin, when an implied plugin's archive is missing",
+       %{dir: dir} do
+    # Registry deliberately stays empty for :web_layer — no Package.run/3 for
+    # it — so Registry.resolve!/4 finds nothing and raises.
+    registry = Path.join(dir, "empty_registry")
+    File.mkdir_p!(registry)
+
+    opts =
+      Factory.build(:options, name: "generated", app: :generated, base: :web, plugins: [])
+
+    generated = Path.join(dir, opts.name)
+    File.mkdir_p!(generated)
+
+    File.write!(Path.join(generated, "mix.exs"), """
+    defmodule Generated.MixProject do
+      use Mix.Project
+
+      def project do
+        [app: :generated, version: "0.1.0", elixir: "~> 1.20", deps: deps()]
+      end
+
+      defp deps do
+        [
+        ]
+      end
+    end
+    """)
+
+    effects = %{
+      Bootstrap.defaults()
+      | getenv: fn -> %{} end,
+        lookup: fn _ -> :fake_task end,
+        generator: fn _name, _argv -> :ok end,
+        runner: {__MODULE__, :fake_cmd},
+        shell: Say,
+        sync: fn _type, _dir -> :ok end
+    }
+
+    File.cd!(dir, fn ->
+      assert_raise Mix.Error, ~r/implied by base: :web/, fn ->
+        Bootstrap.run(opts, effects, registry)
+      end
+    end)
+  end
+
+  test "does not mention base: when an EXPLICITLY declared plugin's archive is missing",
+       %{dir: dir} do
+    registry = Path.join(dir, "empty_registry_2")
+    File.mkdir_p!(registry)
+
+    opts =
+      Factory.build(:options,
+        name: "generated2",
+        app: :generated2,
+        base: :api,
+        plugins: [:nonexistent]
+      )
+
+    generated = Path.join(dir, opts.name)
+    File.mkdir_p!(generated)
+
+    File.write!(Path.join(generated, "mix.exs"), """
+    defmodule Generated2.MixProject do
+      use Mix.Project
+
+      def project do
+        [app: :generated2, version: "0.1.0", elixir: "~> 1.20", deps: deps()]
+      end
+
+      defp deps do
+        [
+        ]
+      end
+    end
+    """)
+
+    effects = %{
+      Bootstrap.defaults()
+      | getenv: fn -> %{} end,
+        lookup: fn _ -> :fake_task end,
+        generator: fn _name, _argv -> :ok end,
+        runner: {__MODULE__, :fake_cmd},
+        shell: Say,
+        sync: fn _type, _dir -> :ok end
+    }
+
+    File.cd!(dir, fn ->
+      exception =
+        assert_raise Mix.Error, fn ->
+          Bootstrap.run(opts, effects, registry)
+        end
+
+      assert Exception.message(exception) =~ "no plugin archive for :nonexistent"
+      refute Exception.message(exception) =~ "implied by base:"
+    end)
+  end
+
   def fake_cmd(_argv, _cwd, _), do: {"", 0}
 end

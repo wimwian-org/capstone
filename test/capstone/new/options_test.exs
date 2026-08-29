@@ -60,7 +60,7 @@ defmodule Capstone.New.OptionsTest do
   end
 
   test "from_config!/1 maps a %Capstone.Config{} directly" do
-    config = Factory.build(:config)
+    config = %{Factory.build(:config) | base: :api}
 
     opts = Options.from_config!(config)
 
@@ -76,9 +76,66 @@ defmodule Capstone.New.OptionsTest do
   end
 
   test "from_config!/1 carries the config's plugins list through" do
-    config = Factory.build(:config, plugins: [:cache])
+    config = Factory.build(:config, base: :api, plugins: [:cache])
 
     assert Options.from_config!(config).plugins == [:cache]
+  end
+
+  describe "from_config!/1 — plugins stays declared-only, never implied" do
+    test "base: :web with no explicit plugins stays empty" do
+      config = Factory.build(:config, base: :web, plugins: [])
+
+      assert Options.from_config!(config).plugins == []
+    end
+
+    test "base: :both with no explicit plugins stays empty" do
+      config = Factory.build(:config, base: :both, plugins: [])
+
+      assert Options.from_config!(config).plugins == []
+    end
+  end
+
+  describe "implied_plugins/1" do
+    test "returns [] for :api" do
+      assert Options.implied_plugins(:api) == []
+    end
+
+    test "returns [:web_layer] for :web and :both" do
+      assert Options.implied_plugins(:web) == [:web_layer]
+      assert Options.implied_plugins(:both) == [:web_layer]
+    end
+  end
+
+  describe "effective_plugins/1" do
+    test "base: :web prepends :web_layer" do
+      opts = Factory.build(:options, base: :web, plugins: [])
+
+      assert Options.effective_plugins(opts) == [:web_layer]
+    end
+
+    test "base: :both prepends :web_layer" do
+      opts = Factory.build(:options, base: :both, plugins: [])
+
+      assert Options.effective_plugins(opts) == [:web_layer]
+    end
+
+    test "base: :api implies nothing" do
+      opts = Factory.build(:options, base: :api, plugins: [:cache])
+
+      assert Options.effective_plugins(opts) == [:cache]
+    end
+
+    test "an explicit :web_layer entry does not duplicate the implied one" do
+      opts = Factory.build(:options, base: :web, plugins: [:web_layer, :cache])
+
+      assert Options.effective_plugins(opts) == [:web_layer, :cache]
+    end
+
+    test "implied plugins come before explicit ones" do
+      opts = Factory.build(:options, base: :web, plugins: [:cache])
+
+      assert Options.effective_plugins(opts) == [:web_layer, :cache]
+    end
   end
 
   test "generator/1 and generator_argv/1 differ by base, :both included" do
