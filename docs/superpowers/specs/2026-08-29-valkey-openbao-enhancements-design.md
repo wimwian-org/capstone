@@ -68,11 +68,13 @@ contributes stays discoverable under one prefix.
   adapter: Nebulex.Adapters.Local`. In-process ETS, the fast path for every
   read.
 - **`NewApiApp.Valkey.Cache.L2`** — `use Nebulex.Cache, otp_app: :new_api_app,
-  adapter: NebulexRedisAdapter`. Talks to the Valkey sidecar. The adapter
-  pools connections internally (`nebulex_redis_adapter`'s own connection-pool
-  option), which is what actually closes today's single-named-connection
-  bottleneck (`Redix.child_spec/1` currently starts exactly one connection;
-  every concurrent caller serializes on it) — no hand-rolled pool needed.
+  adapter: Nebulex.Adapters.Redis` (the module the `nebulex_redis_adapter`
+  package provides — package name and adapter module name differ, confirmed
+  against the package's own README). Talks to the Valkey sidecar. The adapter
+  pools connections internally (a documented `pool_size` key), which is what
+  actually closes today's single-named-connection bottleneck
+  (`Redix.child_spec/1` currently starts exactly one connection; every
+  concurrent caller serializes on it) — no hand-rolled pool needed.
 - **`NewApiApp.Valkey.Breaker`** — a lock-free circuit breaker, ported from
   `manage_infra`'s `ManageInfra.Cache.Breaker` (`cache/breaker.ex:33-46,
   169-234`): `:atomics` for the failure counter and state, `:persistent_term`
@@ -106,17 +108,22 @@ contributes stays discoverable under one prefix.
 
 ### Dependencies
 
-`{:nebulex, "~> 3.0"}`, `{:nebulex_redis_adapter, "~> 3.0"}` — both verified
-live against Hex during spec-writing (not assumed): `nebulex` 3.0.4 and
-`nebulex_redis_adapter` 3.0.0 are the current stable releases as of this
-writing (Feb 2026), and `nebulex_redis_adapter` itself is Redix-backed
-internally. `{:redix, "~> 1.8"}` stays an explicit direct dependency (matching
+`{:nebulex, "~> 3.0"}`, `{:nebulex_local, "~> 3.0"}`, `{:nebulex_redis_adapter,
+"~> 3.0"}` — all verified live against Hex/their own docs during spec-writing
+(not assumed): `nebulex` 3.0.4 and `nebulex_redis_adapter` 3.0.0 are the
+current stable releases as of this writing (Feb 2026), and
+`nebulex_redis_adapter` itself is Redix-backed internally.
+`Nebulex.Adapters.Local` (used by `Cache.L1` above) ships as the **separate**
+package `nebulex_local`, not inside core `nebulex` — confirmed against both
+the getting-started guide and the package's own Hex listing; the original
+draft of this spec missed this and listed only two of the three required
+packages. `{:redix, "~> 1.8"}` stays an explicit direct dependency (matching
 this project's convention of declaring target-facing deps directly rather
 than relying on a transitive resolution) even though `nebulex_redis_adapter`
 would pull it in on its own.
 
-Both new deps go at the **front** of `valkey_component/mix.exs`'s `deps()`
-list, ahead of the existing `:redix` entry —
+All three new deps go at the **front** of `valkey_component/mix.exs`'s
+`deps()` list, ahead of the existing `:redix` entry —
 `Capstone.Plugin.Apply.add_deps/2` reverses the manifest's `deps:` list before
 prepending each one, so a new dep recorded anywhere but the front of the raw
 component's own list reproduces a different order on round-trip apply than
@@ -127,18 +134,37 @@ implementation plan must not reintroduce it a third time.
 
 ### Config
 
-New keys under `config :new_api_app, NewApiApp.Valkey.Cache`:
+Each Nebulex cache module reads its own app-env entry keyed by its own module
+name (confirmed against `Nebulex.Cache`'s `otp_app:`-based config lookup) —
+not one umbrella entry with `l1:`/`l2:` sub-keys as an earlier draft of this
+spec assumed:
 
 ```elixir
-l1: [gc_interval: :timer.hours(1), max_size: 1_000_000, allocated_memory: 100_000_000],
-l2: [pool_size: 5],
-breaker: [timeout_ms: 100, failure_threshold: 3, cooldown_ms: :timer.seconds(30)],
-default_ttl: :timer.minutes(10)
+config :new_api_app, NewApiApp.Valkey.Cache.L1,
+  gc_interval: :timer.hours(1),
+  max_size: 1_000_000,
+  allocated_memory: 100_000_000
+
+config :new_api_app, NewApiApp.Valkey.Cache.L2,
+  conn_opts: [
+    host: System.get_env("VALKEY_HOST", "localhost"),
+    port: String.to_integer(System.get_env("VALKEY_PORT", "6379"))
+  ],
+  pool_size: 5
+
+config :new_api_app, NewApiApp.Valkey.Breaker,
+  timeout_ms: 100,
+  failure_threshold: 3,
+  cooldown_ms: :timer.seconds(30)
+
+config :new_api_app, NewApiApp.Valkey.Cache,
+  default_ttl: :timer.minutes(10)
 ```
 
-`host`/`port` stay where they are today (`config/dev.exs`, `config/runtime.exs`)
-— they configure `Cache.L2`'s connection to the sidecar exactly as they
-configure today's `NewApiApp.Valkey`'s.
+`host`/`port` move from today's flat `config :new_api_app, NewApiApp.Valkey`
+entry into `Cache.L2`'s `conn_opts:` — confirmed the adapter expects Redix
+connection options nested there, not at the top level, against the
+`nebulex_redis_adapter` package's own README.
 
 ### `compose.yaml`
 
