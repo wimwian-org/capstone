@@ -1,0 +1,18 @@
+
+  # valkey -- optional KV sidecar (Redis wire protocol), the default KV
+  # platform. No auth, so the published port is bound to loopback only --
+  # reachable from this host's own `mix test`/`mix phx.server`, never from
+  # another machine on the network. Other compose services still reach it
+  # over the compose network by service name regardless, unaffected by this
+  # binding. In production, the same image runs as this service's sidecar
+  # too (an OCI-compliant container placed beside the app by whatever
+  # orchestrator runs it there, not this compose file).
+  valkey:
+    image: docker.io/valkey/valkey:alpine
+    ports:
+      - "127.0.0.1:6379:6379"
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
