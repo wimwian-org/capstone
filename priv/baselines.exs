@@ -370,28 +370,6 @@
     path: "priv/meta/openapi_component",
     tree_digest: "sha256:ccf353c50e96d6fa37bd6f092078157229c6b17637cb36760819a8299f471c06"
   },
-  otp: %{
-    archive_sha256: "ef77546f3059d2a5f156a494267131ed77a71431eadbc3deb590dd730f52b8d2",
-    argv: ["new_otp_app"],
-    elixir: "1.20.3",
-    erts: "17.0.5",
-    files: %{
-      ".formatter.exs" => "a46ecd2cb12fd54c0cf0928c72fb10bef329b3f72b49df9bef621c3370734bc5",
-      ".gitignore" => "630947e18540e2c5179f6e2ca3c5b9a234e71fea1e0b08a5ba912afa407a2b9f",
-      "README.md" => "7f91f940e64c8fdb675d60719c8e8a85b6e9387a991201302f8cb31d8e78a140",
-      "lib/new_otp_app.ex" => "d43abbe0e0d84073689a0755404d38ac53ec61dc55600b94e8b27622b9017a94",
-      "mix.exs" => "1c3f745db3258e7d6ca1c239554fe815186e54234b3d57c3f7b041a946935e6b",
-      "test/new_otp_app_test.exs" =>
-        "cecfd52cbd029cd84e46c0a2253498509b3e6403efb3904e4cee9df0e0188b4f",
-      "test/test_helper.exs" => "b086ec47f0c6c7aaeb4cffca5ae5243dd05e0dc96ab761ced93325d5315f4b12"
-    },
-    generator: :mix_new,
-    generator_version: "1.20.3",
-    normalisations: [],
-    otp: "29.0.5",
-    path: "priv/meta/baseline_otp",
-    tree_digest: "sha256:5357ecb72a5dcb1aa6f43fe2959e03fc0e8cbc0a520b4b53bc7cbc939d7efab8"
-  },
   prod_image_api: %{
     archive_sha256: "d3e1d647bbe8d610582113c6290cbb4cf802f7432e21c00caf590229ba7216ab",
     derived_from: :api,

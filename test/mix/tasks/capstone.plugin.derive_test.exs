@@ -51,9 +51,9 @@ defmodule Mix.Tasks.Capstone.Plugin.DeriveTest do
   end
 
   test "a baseline entry has no derived_from and is refused" do
-    # :otp is a baseline, not a raw working project — it has nothing to diff against.
-    assert_raise Mix.Error, ~r/otp has no derived_from/, fn ->
-      Derive.run(["otp"])
+    # :api is a baseline, not a raw working project — it has nothing to diff against.
+    assert_raise Mix.Error, ~r/api has no derived_from/, fn ->
+      Derive.run(["api"])
     end
   end
 

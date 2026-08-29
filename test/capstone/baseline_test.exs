@@ -94,13 +94,13 @@ defmodule Capstone.BaselineTest do
     # Negative control: Baseline must NOT share Capstone.Hash's comment-stripping
     # normaliser. The manifest hash must IGNORE an added comment; the baseline
     # check must TREAT it as drift. Two normalisers, deliberately opposite.
-    file = "priv/meta/baseline_otp/mix.exs"
+    file = "priv/meta/baseline_api/mix.exs"
     original = File.read!(file)
     on_exit(fn -> File.write!(file, original) end)
 
-    before = Baseline.digest("priv/meta/baseline_otp")
+    before = Baseline.digest("priv/meta/baseline_api")
     File.write!(file, original <> "\n# drift\n")
-    refute Baseline.digest("priv/meta/baseline_otp") == before
+    refute Baseline.digest("priv/meta/baseline_api") == before
   end
 
   test "the recorded files and tree_digest match the checked-in baselines" do
@@ -178,20 +178,6 @@ defmodule Capstone.BaselineTest do
     %{api: api} = Baseline.read!("priv/baselines.exs")
     {out, 0} = System.cmd("mix", ["phx.new", "-v"])
     assert out =~ api.generator_version
-  end
-
-  @tag :toolchain
-  test "the otp baseline is byte-identical to fresh mix new output" do
-    # mix new has zero randomness — no normalisation on either side.
-    dir = Path.join(System.tmp_dir!(), "otpbase-#{System.unique_integer([:positive])}")
-    on_exit(fn -> File.rm_rf!(dir) end)
-    File.mkdir_p!(dir)
-    {_out, 0} = System.cmd("mix", ["new", "new_otp_app"], cd: dir)
-
-    assert_same_tree(
-      Baseline.tree("priv/meta/baseline_otp"),
-      Baseline.tree(Path.join(dir, "new_otp_app"))
-    )
   end
 
   @tag :toolchain
