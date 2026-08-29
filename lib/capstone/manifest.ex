@@ -76,7 +76,7 @@ defmodule Capstone.Manifest do
   # `target.exs` may be unreadable, so it depends on nothing outside itself.
   # `Capstone.ManifestTest` is what keeps the two lists in step — a base added
   # to one and not the other makes a project generatable but unrecordable.
-  @bases [:otp, :api, :web]
+  @bases [:otp, :api, :web, :both]
   @top_keys [
     :base,
     :plugins,
@@ -91,7 +91,7 @@ defmodule Capstone.Manifest do
   defstruct @top_keys
 
   @type t :: %__MODULE__{
-          base: :otp | :api | :web,
+          base: :otp | :api | :web | :both,
           plugins: [Plugin.t()],
           config_digest: String.t(),
           generated_at: String.t(),
