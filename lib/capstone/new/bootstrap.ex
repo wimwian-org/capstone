@@ -89,10 +89,35 @@ defmodule Capstone.New.Bootstrap do
   end
 
   defp apply_plugins!(opts, registry_dir, sync) do
+    implied = Options.implied_plugins(opts.base)
+
     Enum.each(Options.effective_plugins(opts), fn type ->
       sync.(type, registry_dir)
-      Install.run(type, opts.name, registry_dir)
+      install_plugin!(type, opts, registry_dir, implied)
     end)
+  end
+
+  # `Registry.resolve!/4` (reached through `Install.run/3`) is the ONLY place
+  # in this call chain that raises `Mix.Error` — `Apply.run/3`'s own failures
+  # use their own exception modules (`ConfigExs.Error` etc.), never
+  # `Mix.Error` — so rescuing it here is a narrow match on exactly a
+  # resolution failure, not a general error-wrapping net.
+  #
+  # A plugin the user never wrote in `target.exs` (implied by `base:`) fails
+  # with a message naming only the plugin, which is baffling on its own:
+  # augment it to say WHY this plugin was being installed at all.
+  defp install_plugin!(type, opts, registry_dir, implied) do
+    Install.run(type, opts.name, registry_dir)
+  rescue
+    e in Mix.Error ->
+      if type in implied and type not in opts.plugins do
+        Mix.raise(
+          "#{Exception.message(e)} (#{inspect(type)} is implied by base: #{inspect(opts.base)} " <>
+            "— it is not listed in this project's plugins:)"
+        )
+      else
+        reraise e, __STACKTRACE__
+      end
   end
 
   defp patch_mix_exs!(opts) do
