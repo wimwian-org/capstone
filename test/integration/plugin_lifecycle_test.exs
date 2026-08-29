@@ -319,8 +319,18 @@ defmodule Capstone.Integration.PluginLifecycleTest do
   end
 
   @tag :toolchain
-  @tag timeout: :timer.minutes(3)
+  @tag timeout: :timer.minutes(5)
   test "mix capstone.new applies plugins: [:web_layer] from target.exs", %{tmp_dir: tmp} do
+    # The design spec and this plan's Global Constraints both require a real
+    # pnpm/Vite run to gate this test — mirroring Shell.ensure_task_available!/2's
+    # loud failure for a missing "mix phx.new" rather than a silent skip, per
+    # test_helper.exs's own reasoning: "a machine without the generators
+    # reports them as failures rather than as absences."
+    if is_nil(System.find_executable("pnpm")) do
+      raise "pnpm is not available on PATH — install it (https://pnpm.io/installation) to run " <>
+              "this toolchain test's real assets.setup/assets.build steps"
+    end
+
     capstone_path = File.cwd!()
     name = "with_web_layer"
 
@@ -357,6 +367,25 @@ defmodule Capstone.Integration.PluginLifecycleTest do
 
     Shell.cmd!(["compile"], project)
     Shell.cmd!(["test"], project)
+
+    # The real toolchain gate this plugin's own plan required but never got:
+    # a real "pnpm install" against the shipped pnpm-lock.yaml, and a real
+    # Vite build of the Svelte 5 UI it locks against. Neither package.json's
+    # validity, the lockfile's resolvability, Svelte compilation, nor the
+    # Vite build itself is exercised anywhere else in this suite.
+    Shell.cmd!(["assets.setup"], project)
+    Shell.cmd!(["assets.build"], project)
+
+    manifest_path = Path.join(project, "priv/static/.vite/manifest.json")
+    assert File.regular?(manifest_path)
+
+    manifest = manifest_path |> File.read!() |> :json.decode()
+
+    assert %{"js/app.js" => %{"file" => js_file}, "css/app.css" => %{"file" => css_file}} =
+             manifest
+
+    assert File.regular?(Path.join(project, "priv/static/#{js_file}"))
+    assert File.regular?(Path.join(project, "priv/static/#{css_file}"))
   end
 
   # The failure mode this guards against is SILENT: apply returns :ok, writes
