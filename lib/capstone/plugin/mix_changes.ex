@@ -20,7 +20,7 @@ defmodule Capstone.Plugin.MixChanges do
 
   alias Capstone.Source.MixExs
 
-  @typedoc "What a plugin's meta-project declares in `mix.exs` beyond its baseline — the shape `Capstone.Plugin.Behavior.deps/0` and friends are captured into."
+  @typedoc "What a plugin's meta-project declares in `mix.exs` beyond its baseline — the shape `c:Capstone.Plugin.Behavior.deps/0` and friends are captured into."
   @type t :: %{deps: [binary()], aliases: keyword(), project: keyword()}
 
   @doc """
