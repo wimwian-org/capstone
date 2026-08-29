@@ -1,7 +1,6 @@
 %{
   deps: ["{:open_api_spex, \"~> 3.22\"}"],
   files: [
-    {"compose.yaml", :sole_owner},
     {"lib/APP_web/api_spec.ex", :sole_owner},
     {"lib/APP_web/controllers/health_controller.ex", :sole_owner},
     {"lib/APP_web/schemas.ex", :sole_owner},

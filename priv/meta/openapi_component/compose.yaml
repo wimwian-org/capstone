@@ -20,8 +20,16 @@ services:
       PHX_HOST: localhost
       PHX_SERVER: "true"
       PORT: "4000"
-    ports:
-      - "${APP_PORT:-4000}:4000"
+    # No published port: nginx is the only way to reach the app, once the
+    # :nginx plugin is applied. Without it, nothing outside this compose
+    # network can reach `app` at all -- reachable only from other services
+    # here, by its service name.
     depends_on:
       db:
         condition: service_healthy
+
+  # Sidecar plugins (openbao, valkey, ...) each contribute one more service
+  # block below this line. `services:` must stay the file's last top-level
+  # key: a contribution is a plain text append, so a `volumes:`/`networks:`
+  # section here would end up nested under whichever sidecar happened to be
+  # applied last instead of at the top level.
