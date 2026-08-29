@@ -318,6 +318,87 @@ defmodule Capstone.Integration.PluginLifecycleTest do
     Shell.cmd!(["test"], project)
   end
 
+  @tag :toolchain
+  @tag timeout: :timer.minutes(3)
+  test "mix capstone.new applies plugins: [:podman, :openbao, :valkey] from target.exs", %{
+    tmp_dir: tmp
+  } do
+    capstone_path = File.cwd!()
+    name = "with_sidecars"
+
+    opts = %Options{
+      name: name,
+      app: :with_sidecars,
+      module: WithSidecars,
+      base: :api,
+      github_org: "acme",
+      capstone: {:path, capstone_path},
+      plugins: [:podman, :openbao, :valkey]
+    }
+
+    File.cd!(tmp, fn -> assert :ok = Bootstrap.run(opts, Bootstrap.defaults()) end)
+
+    project = Path.join(tmp, name)
+    assert File.exists?(Path.join(project, "target.exs"))
+    assert File.exists?(Path.join(project, "lib/with_sidecars/vault.ex"))
+    assert File.exists?(Path.join(project, "lib/with_sidecars/valkey.ex"))
+
+    compose = File.read!(Path.join(project, "compose.yaml"))
+    assert compose =~ "openbao:"
+    assert compose =~ "valkey:"
+
+    assert_placed_not_marked(project, "config/runtime.exs", "WithSidecars.Vault")
+    assert_placed_not_marked(project, "config/runtime.exs", "WithSidecars.Valkey")
+    assert_placed_not_marked(project, "config/dev.exs", "WithSidecars.Vault")
+    assert_placed_not_marked(project, "config/dev.exs", "WithSidecars.Valkey")
+    assert_placed_not_marked(project, "config/test.exs", "WithSidecars.Vault")
+    assert_placed_not_marked(project, "config/test.exs", "WithSidecars.Valkey")
+    assert_placed_not_marked(project, "lib/with_sidecars/application.ex", "WithSidecars.Valkey")
+
+    # Bootstrap already ran deps.get and deps.compile; req is already a
+    # baseline dependency (openbao adds none), redix is valkey's one added dep.
+    Shell.cmd!(["compile"], project)
+
+    # No live OpenBao/Valkey sidecar is started here — vault_test.exs stubs
+    # the HTTP transport with Req.Test, and valkey_test.exs is tagged
+    # :valkey (excluded by default, since Redix has no equivalent stub) — so
+    # this proves the plugins compile and pass out of the box without
+    # `compose.yaml` ever being brought up.
+    Shell.cmd!(["test"], project)
+  end
+
+  @tag :toolchain
+  @tag timeout: :timer.minutes(3)
+  test "mix capstone.new applies plugins: [:podman, :openapi, :nginx] from target.exs", %{
+    tmp_dir: tmp
+  } do
+    capstone_path = File.cwd!()
+    name = "with_nginx"
+
+    opts = %Options{
+      name: name,
+      app: :with_nginx,
+      module: WithNginx,
+      base: :api,
+      github_org: "acme",
+      capstone: {:path, capstone_path},
+      plugins: [:podman, :openapi, :nginx]
+    }
+
+    File.cd!(tmp, fn -> assert :ok = Bootstrap.run(opts, Bootstrap.defaults()) end)
+
+    project = Path.join(tmp, name)
+    assert File.exists?(Path.join(project, "nginx.conf"))
+
+    compose = File.read!(Path.join(project, "compose.yaml"))
+    assert compose =~ "nginx:"
+    assert compose =~ ~s(- "${APP_PORT:-4000}:80")
+    refute compose =~ ~s(- "${APP_PORT:-4000}:4000")
+
+    Shell.cmd!(["compile"], project)
+    Shell.cmd!(["test"], project)
+  end
+
   # The failure mode this guards against is SILENT: apply returns :ok, writes
   # every :sole_owner file, and leaves the :manual hunk in an unresolved
   # conflict region at the end of a file that no longer compiles. So assert on

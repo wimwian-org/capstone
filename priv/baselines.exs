@@ -67,6 +67,70 @@
     path: "priv/meta/baseline_api",
     tree_digest: "sha256:3459dcc09d6bffe7a67570d65e5227003974628bf7273e63b95cd67f91431f69"
   },
+  api_podman: %{
+    archive_sha256: "721780ec82a1e8942590a2a84bb66e143ae3183c6020c7953b0c2d375065dea9",
+    derived_from: :api,
+    files: %{
+      ".formatter.exs" => "a44a43d777033eb6c64e0101b7469611c2def3b377b04c9d6b2a8620a347d385",
+      ".gitignore" => "62ee1d39760528ade9087a64430331c1362541232b1213cdae98a25cce8888ed",
+      "AGENTS.md" => "00f6f1bdb914d6eb925e9f1abaae89b10fe7b7245323df8e7bdf6c6b65fd31a4",
+      "README.md" => "08f794ca41a109f6ff51f85c6b919666a0146fdd64823488dc6de054b3e66103",
+      "compose.yaml" => "de0ad90c74d40eb3dfbeb5152356e5011858b0476348c4b5ea1277a47766a26d",
+      "config/config.exs" => "6a7734a2b5f00eea9206414cb2c72524c86e7da1ca3a9827e6aae218c1eec155",
+      "config/dev.exs" => "105066f4897d1acf4ed57806f2fe950010e2898a1216c77203cdb08249872d49",
+      "config/prod.exs" => "4d305ac8156d0e4bb49de00f219c7d4ecd553d762d484da994ea598b2e79ba90",
+      "config/runtime.exs" => "3f29f4cdd20a6b406ffa68f56108e8966f98e908b31d893a5126818db8a9fb85",
+      "config/test.exs" => "a20ca71cf45c0b51a81a452f3263f2711cb7336b67e556376127fe6341d509cf",
+      "lib/new_api_app.ex" => "0bbd7d634a418a9abb5fb9f93e53fe0a332ad85b220f1397439b091e1c1a4c02",
+      "lib/new_api_app/application.ex" =>
+        "dfd81ddd6c46736e5db861086841be7f2892336f7575511649f141c5a7934842",
+      "lib/new_api_app/mailer.ex" =>
+        "c607a46ffca95ab2e63c5c0c1078b1e9eb2f61640b845526a68bbd84c2e742dc",
+      "lib/new_api_app/repo.ex" =>
+        "6b171e503d4e1b7734e5e1cc91cfd52219d80dc7a9cd75e73cdf2eebe2db3f24",
+      "lib/new_api_app_web.ex" =>
+        "d4ded48aa07fd27fc19fb5e082f4959cf9728e44fa08ca1fa96326122473d1f1",
+      "lib/new_api_app_web/controllers/error_json.ex" =>
+        "ba767ae62030f0f759c245ada6ccb8d865b00ac4a4e4c3d5bce5845e8aaa4d0d",
+      "lib/new_api_app_web/endpoint.ex" =>
+        "6a730a529c3b812af2929cf33c7df9b3bb53308d5620e8b4a09830261163d42c",
+      "lib/new_api_app_web/gettext.ex" =>
+        "0606b29e602f87bde9c10670522e2a873d74910cd1f4e915ec6fa9f80c2c1818",
+      "lib/new_api_app_web/router.ex" =>
+        "18f68f5eec8914616c88bebbe9fa840b59e979c088328163989081269afce4b4",
+      "lib/new_api_app_web/telemetry.ex" =>
+        "545604fa4abecf9644ca57b1d495f587c9e19884d1d7c1c703dcd6513da7cce6",
+      "mix.exs" => "ac9f5ad45500826c9501545e22b2c86d3a1655513eb1587ed4172be9af1eea31",
+      "priv/gettext/en/LC_MESSAGES/errors.po" =>
+        "7965ec884cd9c0dd4f13b268b485e1e3edc13d8f2574eee6f11b35bf3175d05b",
+      "priv/gettext/errors.pot" =>
+        "e2ba1a9a3fd94ac18f7d60d8a03fdfcd0c306aa7b34c5c679f10d356fa42d358",
+      "priv/repo/migrations/.formatter.exs" =>
+        "0214526079b381af52379d2b1fff614512fe4f5bb9a04394ef3246e5b1f61c87",
+      "priv/repo/seeds.exs" => "82a007edef590351038659089cc5840ff011c5af7bc38659242922047122b472",
+      "priv/static/favicon.ico" =>
+        "01723aeae3ce3b5195a8f42e3eb6e9018a8c08b7acda4ed382b31341811f0a8a",
+      "priv/static/robots.txt" =>
+        "f994bfae2c1db1221ac049f1097776b444048e0b0a7705d33ea511b610bed115",
+      "test/new_api_app_web/controllers/error_json_test.exs" =>
+        "2af6dd41cde5382eaa3e3ffc7d052596b7334f05cffa911df85419617cd513ff",
+      "test/support/conn_case.ex" =>
+        "1398686968936337abc0d883180d75fcc8227fb3a5b7d4855161a8e28d8a3c61",
+      "test/support/data_case.ex" =>
+        "031590471b16158509060d1de434a2640e2e1838ed1f9e0cc7c3ba8fbdde3f4f",
+      "test/test_helper.exs" => "70b2e16f8bc7ff44754829b35847cee6522b027df423f7080828f635b0846c9c"
+    },
+    names: %{app: "new_api_app", module: "NewApiApp", name: "new_api_app"},
+    normalisations: [
+      {:secret, "config/config.exs", :signing_salt},
+      {:secret, "config/dev.exs", :secret_key_base},
+      {:secret, "config/test.exs", :secret_key_base},
+      {:secret, "lib/new_api_app_web/endpoint.ex", :signing_salt}
+    ],
+    path: "priv/meta/baseline_api_podman",
+    plugin: :podman,
+    tree_digest: "sha256:6e1a57c12e1408ba479f0b876a1a8379a359bc887a79af6ac5b2fd00458963df"
+  },
   cache: %{
     archive_sha256: "9cdf5fa1599d1378b40f21fd34a9b37b0afece9cae506e6482c010ec11e900bd",
     derived_from: :api,
@@ -301,15 +365,79 @@
     path: "priv/meta/grpc_component",
     tree_digest: "sha256:9ff36b9171688ad77824c2bba5b3aabfcb8317a01b9c89493e6a927296a4a1a9"
   },
-  openapi: %{
-    archive_sha256: "92c66ce84c9731d95bf3d9ae98882e89d0fe3ffd605d4024acd5f62e98b013c7",
-    derived_from: :api,
+  nginx: %{
+    archive_sha256: "f75699c4cd3401be8eb3dd1a58ed11378a691909daf1306d8b2146dc4866b1b2",
+    derived_from: :api_podman,
     files: %{
       ".formatter.exs" => "a44a43d777033eb6c64e0101b7469611c2def3b377b04c9d6b2a8620a347d385",
       ".gitignore" => "62ee1d39760528ade9087a64430331c1362541232b1213cdae98a25cce8888ed",
       "AGENTS.md" => "00f6f1bdb914d6eb925e9f1abaae89b10fe7b7245323df8e7bdf6c6b65fd31a4",
       "README.md" => "08f794ca41a109f6ff51f85c6b919666a0146fdd64823488dc6de054b3e66103",
-      "compose.yaml" => "782a76048be7fb51c0d2f30684b06893d2199a1a75fecb9d6be880c5ebcbf0f2",
+      "compose.yaml" => "0cdd0de8e873ef97a2dc5015ab1da1d4000531147c0974f3a369c6c96befc096",
+      "config/config.exs" => "6a7734a2b5f00eea9206414cb2c72524c86e7da1ca3a9827e6aae218c1eec155",
+      "config/dev.exs" => "105066f4897d1acf4ed57806f2fe950010e2898a1216c77203cdb08249872d49",
+      "config/prod.exs" => "4d305ac8156d0e4bb49de00f219c7d4ecd553d762d484da994ea598b2e79ba90",
+      "config/runtime.exs" => "3f29f4cdd20a6b406ffa68f56108e8966f98e908b31d893a5126818db8a9fb85",
+      "config/test.exs" => "a20ca71cf45c0b51a81a452f3263f2711cb7336b67e556376127fe6341d509cf",
+      "lib/new_api_app.ex" => "0bbd7d634a418a9abb5fb9f93e53fe0a332ad85b220f1397439b091e1c1a4c02",
+      "lib/new_api_app/application.ex" =>
+        "dfd81ddd6c46736e5db861086841be7f2892336f7575511649f141c5a7934842",
+      "lib/new_api_app/mailer.ex" =>
+        "c607a46ffca95ab2e63c5c0c1078b1e9eb2f61640b845526a68bbd84c2e742dc",
+      "lib/new_api_app/repo.ex" =>
+        "6b171e503d4e1b7734e5e1cc91cfd52219d80dc7a9cd75e73cdf2eebe2db3f24",
+      "lib/new_api_app_web.ex" =>
+        "d4ded48aa07fd27fc19fb5e082f4959cf9728e44fa08ca1fa96326122473d1f1",
+      "lib/new_api_app_web/controllers/error_json.ex" =>
+        "ba767ae62030f0f759c245ada6ccb8d865b00ac4a4e4c3d5bce5845e8aaa4d0d",
+      "lib/new_api_app_web/endpoint.ex" =>
+        "6a730a529c3b812af2929cf33c7df9b3bb53308d5620e8b4a09830261163d42c",
+      "lib/new_api_app_web/gettext.ex" =>
+        "0606b29e602f87bde9c10670522e2a873d74910cd1f4e915ec6fa9f80c2c1818",
+      "lib/new_api_app_web/router.ex" =>
+        "18f68f5eec8914616c88bebbe9fa840b59e979c088328163989081269afce4b4",
+      "lib/new_api_app_web/telemetry.ex" =>
+        "545604fa4abecf9644ca57b1d495f587c9e19884d1d7c1c703dcd6513da7cce6",
+      "mix.exs" => "ac9f5ad45500826c9501545e22b2c86d3a1655513eb1587ed4172be9af1eea31",
+      "nginx.conf" => "8586fe82703a99d175c8794e31f981ade618f0f853622c80c72cce2c7687ee54",
+      "priv/gettext/en/LC_MESSAGES/errors.po" =>
+        "7965ec884cd9c0dd4f13b268b485e1e3edc13d8f2574eee6f11b35bf3175d05b",
+      "priv/gettext/errors.pot" =>
+        "e2ba1a9a3fd94ac18f7d60d8a03fdfcd0c306aa7b34c5c679f10d356fa42d358",
+      "priv/repo/migrations/.formatter.exs" =>
+        "0214526079b381af52379d2b1fff614512fe4f5bb9a04394ef3246e5b1f61c87",
+      "priv/repo/seeds.exs" => "82a007edef590351038659089cc5840ff011c5af7bc38659242922047122b472",
+      "priv/static/favicon.ico" =>
+        "01723aeae3ce3b5195a8f42e3eb6e9018a8c08b7acda4ed382b31341811f0a8a",
+      "priv/static/robots.txt" =>
+        "f994bfae2c1db1221ac049f1097776b444048e0b0a7705d33ea511b610bed115",
+      "test/new_api_app_web/controllers/error_json_test.exs" =>
+        "2af6dd41cde5382eaa3e3ffc7d052596b7334f05cffa911df85419617cd513ff",
+      "test/support/conn_case.ex" =>
+        "1398686968936337abc0d883180d75fcc8227fb3a5b7d4855161a8e28d8a3c61",
+      "test/support/data_case.ex" =>
+        "031590471b16158509060d1de434a2640e2e1838ed1f9e0cc7c3ba8fbdde3f4f",
+      "test/test_helper.exs" => "70b2e16f8bc7ff44754829b35847cee6522b027df423f7080828f635b0846c9c"
+    },
+    names: %{app: "new_api_app", module: "NewApiApp", name: "new_api_app"},
+    normalisations: [
+      {:secret, "config/config.exs", :signing_salt},
+      {:secret, "config/dev.exs", :secret_key_base},
+      {:secret, "config/test.exs", :secret_key_base},
+      {:secret, "lib/new_api_app_web/endpoint.ex", :signing_salt}
+    ],
+    path: "priv/meta/nginx_component",
+    tree_digest: "sha256:812523cfb846db924e6b4d2b3888f053bd66df3ee9d614f1c5cd6de4a4c135ea"
+  },
+  openapi: %{
+    archive_sha256: "13b9ce8dd94b0271368519b63af60b72eabf507f4a06f968b6139b0c49b23de2",
+    derived_from: :api_podman,
+    files: %{
+      ".formatter.exs" => "a44a43d777033eb6c64e0101b7469611c2def3b377b04c9d6b2a8620a347d385",
+      ".gitignore" => "62ee1d39760528ade9087a64430331c1362541232b1213cdae98a25cce8888ed",
+      "AGENTS.md" => "00f6f1bdb914d6eb925e9f1abaae89b10fe7b7245323df8e7bdf6c6b65fd31a4",
+      "README.md" => "08f794ca41a109f6ff51f85c6b919666a0146fdd64823488dc6de054b3e66103",
+      "compose.yaml" => "de0ad90c74d40eb3dfbeb5152356e5011858b0476348c4b5ea1277a47766a26d",
       "config/config.exs" => "6a7734a2b5f00eea9206414cb2c72524c86e7da1ca3a9827e6aae218c1eec155",
       "config/dev.exs" => "105066f4897d1acf4ed57806f2fe950010e2898a1216c77203cdb08249872d49",
       "config/prod.exs" => "4d305ac8156d0e4bb49de00f219c7d4ecd553d762d484da994ea598b2e79ba90",
@@ -368,29 +496,137 @@
       {:secret, "lib/new_api_app_web/endpoint.ex", :signing_salt}
     ],
     path: "priv/meta/openapi_component",
-    tree_digest: "sha256:ccf353c50e96d6fa37bd6f092078157229c6b17637cb36760819a8299f471c06"
+    tree_digest: "sha256:cba7ab0ffc6d27a70cae451689126a51687d0690d0580b616ad1b74564050603"
   },
-  otp: %{
-    archive_sha256: "ef77546f3059d2a5f156a494267131ed77a71431eadbc3deb590dd730f52b8d2",
-    argv: ["new_otp_app"],
-    elixir: "1.20.3",
-    erts: "17.0.5",
+  openbao: %{
+    archive_sha256: "7adf934a1a46ae0f5251453cf910388ac1a66b4ae97a022ea1eb3bf74809377d",
+    derived_from: :api_podman,
     files: %{
-      ".formatter.exs" => "a46ecd2cb12fd54c0cf0928c72fb10bef329b3f72b49df9bef621c3370734bc5",
-      ".gitignore" => "630947e18540e2c5179f6e2ca3c5b9a234e71fea1e0b08a5ba912afa407a2b9f",
-      "README.md" => "7f91f940e64c8fdb675d60719c8e8a85b6e9387a991201302f8cb31d8e78a140",
-      "lib/new_otp_app.ex" => "d43abbe0e0d84073689a0755404d38ac53ec61dc55600b94e8b27622b9017a94",
-      "mix.exs" => "1c3f745db3258e7d6ca1c239554fe815186e54234b3d57c3f7b041a946935e6b",
-      "test/new_otp_app_test.exs" =>
-        "cecfd52cbd029cd84e46c0a2253498509b3e6403efb3904e4cee9df0e0188b4f",
-      "test/test_helper.exs" => "b086ec47f0c6c7aaeb4cffca5ae5243dd05e0dc96ab761ced93325d5315f4b12"
+      ".formatter.exs" => "a44a43d777033eb6c64e0101b7469611c2def3b377b04c9d6b2a8620a347d385",
+      ".gitignore" => "62ee1d39760528ade9087a64430331c1362541232b1213cdae98a25cce8888ed",
+      "AGENTS.md" => "00f6f1bdb914d6eb925e9f1abaae89b10fe7b7245323df8e7bdf6c6b65fd31a4",
+      "README.md" => "b7543b32f6f0e9ac2aea13ee42b086d4de5ebbd711c61fbb2360b6f359c9dffb",
+      "compose.yaml" => "4bc6589325c1a11f76e7853df1a75a4735dcbd378be7a748cdddc61998643731",
+      "config/config.exs" => "6a7734a2b5f00eea9206414cb2c72524c86e7da1ca3a9827e6aae218c1eec155",
+      "config/dev.exs" => "82fbe0785d59a2fc614e5f0aca2e32f1a7e1d4b483b583262158f6a627d66041",
+      "config/prod.exs" => "4d305ac8156d0e4bb49de00f219c7d4ecd553d762d484da994ea598b2e79ba90",
+      "config/runtime.exs" => "afd44a4f66896c69d0f5b1dba45c95d597e14d1839e8f145621ef2b34aa626b3",
+      "config/test.exs" => "4979bd2b404c62626950024973e2011cad86178a0872a438348469a3d476ef34",
+      "lib/new_api_app.ex" => "0bbd7d634a418a9abb5fb9f93e53fe0a332ad85b220f1397439b091e1c1a4c02",
+      "lib/new_api_app/application.ex" =>
+        "dfd81ddd6c46736e5db861086841be7f2892336f7575511649f141c5a7934842",
+      "lib/new_api_app/mailer.ex" =>
+        "c607a46ffca95ab2e63c5c0c1078b1e9eb2f61640b845526a68bbd84c2e742dc",
+      "lib/new_api_app/repo.ex" =>
+        "6b171e503d4e1b7734e5e1cc91cfd52219d80dc7a9cd75e73cdf2eebe2db3f24",
+      "lib/new_api_app/vault.ex" =>
+        "2af3cc2f95729feb2f2b59cbb9d01c3a93940f9f3762a236d335de9a90b0802e",
+      "lib/new_api_app_web.ex" =>
+        "d4ded48aa07fd27fc19fb5e082f4959cf9728e44fa08ca1fa96326122473d1f1",
+      "lib/new_api_app_web/controllers/error_json.ex" =>
+        "ba767ae62030f0f759c245ada6ccb8d865b00ac4a4e4c3d5bce5845e8aaa4d0d",
+      "lib/new_api_app_web/endpoint.ex" =>
+        "6a730a529c3b812af2929cf33c7df9b3bb53308d5620e8b4a09830261163d42c",
+      "lib/new_api_app_web/gettext.ex" =>
+        "0606b29e602f87bde9c10670522e2a873d74910cd1f4e915ec6fa9f80c2c1818",
+      "lib/new_api_app_web/router.ex" =>
+        "18f68f5eec8914616c88bebbe9fa840b59e979c088328163989081269afce4b4",
+      "lib/new_api_app_web/telemetry.ex" =>
+        "545604fa4abecf9644ca57b1d495f587c9e19884d1d7c1c703dcd6513da7cce6",
+      "mix.exs" => "ac9f5ad45500826c9501545e22b2c86d3a1655513eb1587ed4172be9af1eea31",
+      "priv/gettext/en/LC_MESSAGES/errors.po" =>
+        "7965ec884cd9c0dd4f13b268b485e1e3edc13d8f2574eee6f11b35bf3175d05b",
+      "priv/gettext/errors.pot" =>
+        "e2ba1a9a3fd94ac18f7d60d8a03fdfcd0c306aa7b34c5c679f10d356fa42d358",
+      "priv/repo/migrations/.formatter.exs" =>
+        "0214526079b381af52379d2b1fff614512fe4f5bb9a04394ef3246e5b1f61c87",
+      "priv/repo/seeds.exs" => "82a007edef590351038659089cc5840ff011c5af7bc38659242922047122b472",
+      "priv/static/favicon.ico" =>
+        "01723aeae3ce3b5195a8f42e3eb6e9018a8c08b7acda4ed382b31341811f0a8a",
+      "priv/static/robots.txt" =>
+        "f994bfae2c1db1221ac049f1097776b444048e0b0a7705d33ea511b610bed115",
+      "test/new_api_app/vault_test.exs" =>
+        "a0117e821854ddeadb9d54e4f41218d1f4528ee0b781545950f41915319f8b83",
+      "test/new_api_app_web/controllers/error_json_test.exs" =>
+        "2af6dd41cde5382eaa3e3ffc7d052596b7334f05cffa911df85419617cd513ff",
+      "test/support/conn_case.ex" =>
+        "1398686968936337abc0d883180d75fcc8227fb3a5b7d4855161a8e28d8a3c61",
+      "test/support/data_case.ex" =>
+        "031590471b16158509060d1de434a2640e2e1838ed1f9e0cc7c3ba8fbdde3f4f",
+      "test/test_helper.exs" => "70b2e16f8bc7ff44754829b35847cee6522b027df423f7080828f635b0846c9c"
     },
-    generator: :mix_new,
-    generator_version: "1.20.3",
-    normalisations: [],
-    otp: "29.0.5",
-    path: "priv/meta/baseline_otp",
-    tree_digest: "sha256:5357ecb72a5dcb1aa6f43fe2959e03fc0e8cbc0a520b4b53bc7cbc939d7efab8"
+    names: %{app: "new_api_app", module: "NewApiApp", name: "new_api_app"},
+    normalisations: [
+      {:secret, "config/config.exs", :signing_salt},
+      {:secret, "config/dev.exs", :secret_key_base},
+      {:secret, "config/test.exs", :secret_key_base},
+      {:secret, "lib/new_api_app_web/endpoint.ex", :signing_salt}
+    ],
+    path: "priv/meta/openbao_component",
+    tree_digest: "sha256:a70d598159ae1bcef3e032dc0cd2e7faf7b3c8ccb719c0055a092299c5c43358"
+  },
+  podman: %{
+    archive_sha256: "721780ec82a1e8942590a2a84bb66e143ae3183c6020c7953b0c2d375065dea9",
+    derived_from: :api,
+    files: %{
+      ".formatter.exs" => "a44a43d777033eb6c64e0101b7469611c2def3b377b04c9d6b2a8620a347d385",
+      ".gitignore" => "62ee1d39760528ade9087a64430331c1362541232b1213cdae98a25cce8888ed",
+      "AGENTS.md" => "00f6f1bdb914d6eb925e9f1abaae89b10fe7b7245323df8e7bdf6c6b65fd31a4",
+      "README.md" => "08f794ca41a109f6ff51f85c6b919666a0146fdd64823488dc6de054b3e66103",
+      "compose.yaml" => "de0ad90c74d40eb3dfbeb5152356e5011858b0476348c4b5ea1277a47766a26d",
+      "config/config.exs" => "6a7734a2b5f00eea9206414cb2c72524c86e7da1ca3a9827e6aae218c1eec155",
+      "config/dev.exs" => "105066f4897d1acf4ed57806f2fe950010e2898a1216c77203cdb08249872d49",
+      "config/prod.exs" => "4d305ac8156d0e4bb49de00f219c7d4ecd553d762d484da994ea598b2e79ba90",
+      "config/runtime.exs" => "3f29f4cdd20a6b406ffa68f56108e8966f98e908b31d893a5126818db8a9fb85",
+      "config/test.exs" => "a20ca71cf45c0b51a81a452f3263f2711cb7336b67e556376127fe6341d509cf",
+      "lib/new_api_app.ex" => "0bbd7d634a418a9abb5fb9f93e53fe0a332ad85b220f1397439b091e1c1a4c02",
+      "lib/new_api_app/application.ex" =>
+        "dfd81ddd6c46736e5db861086841be7f2892336f7575511649f141c5a7934842",
+      "lib/new_api_app/mailer.ex" =>
+        "c607a46ffca95ab2e63c5c0c1078b1e9eb2f61640b845526a68bbd84c2e742dc",
+      "lib/new_api_app/repo.ex" =>
+        "6b171e503d4e1b7734e5e1cc91cfd52219d80dc7a9cd75e73cdf2eebe2db3f24",
+      "lib/new_api_app_web.ex" =>
+        "d4ded48aa07fd27fc19fb5e082f4959cf9728e44fa08ca1fa96326122473d1f1",
+      "lib/new_api_app_web/controllers/error_json.ex" =>
+        "ba767ae62030f0f759c245ada6ccb8d865b00ac4a4e4c3d5bce5845e8aaa4d0d",
+      "lib/new_api_app_web/endpoint.ex" =>
+        "6a730a529c3b812af2929cf33c7df9b3bb53308d5620e8b4a09830261163d42c",
+      "lib/new_api_app_web/gettext.ex" =>
+        "0606b29e602f87bde9c10670522e2a873d74910cd1f4e915ec6fa9f80c2c1818",
+      "lib/new_api_app_web/router.ex" =>
+        "18f68f5eec8914616c88bebbe9fa840b59e979c088328163989081269afce4b4",
+      "lib/new_api_app_web/telemetry.ex" =>
+        "545604fa4abecf9644ca57b1d495f587c9e19884d1d7c1c703dcd6513da7cce6",
+      "mix.exs" => "ac9f5ad45500826c9501545e22b2c86d3a1655513eb1587ed4172be9af1eea31",
+      "priv/gettext/en/LC_MESSAGES/errors.po" =>
+        "7965ec884cd9c0dd4f13b268b485e1e3edc13d8f2574eee6f11b35bf3175d05b",
+      "priv/gettext/errors.pot" =>
+        "e2ba1a9a3fd94ac18f7d60d8a03fdfcd0c306aa7b34c5c679f10d356fa42d358",
+      "priv/repo/migrations/.formatter.exs" =>
+        "0214526079b381af52379d2b1fff614512fe4f5bb9a04394ef3246e5b1f61c87",
+      "priv/repo/seeds.exs" => "82a007edef590351038659089cc5840ff011c5af7bc38659242922047122b472",
+      "priv/static/favicon.ico" =>
+        "01723aeae3ce3b5195a8f42e3eb6e9018a8c08b7acda4ed382b31341811f0a8a",
+      "priv/static/robots.txt" =>
+        "f994bfae2c1db1221ac049f1097776b444048e0b0a7705d33ea511b610bed115",
+      "test/new_api_app_web/controllers/error_json_test.exs" =>
+        "2af6dd41cde5382eaa3e3ffc7d052596b7334f05cffa911df85419617cd513ff",
+      "test/support/conn_case.ex" =>
+        "1398686968936337abc0d883180d75fcc8227fb3a5b7d4855161a8e28d8a3c61",
+      "test/support/data_case.ex" =>
+        "031590471b16158509060d1de434a2640e2e1838ed1f9e0cc7c3ba8fbdde3f4f",
+      "test/test_helper.exs" => "70b2e16f8bc7ff44754829b35847cee6522b027df423f7080828f635b0846c9c"
+    },
+    names: %{app: "new_api_app", module: "NewApiApp", name: "new_api_app"},
+    normalisations: [
+      {:secret, "config/config.exs", :signing_salt},
+      {:secret, "config/dev.exs", :secret_key_base},
+      {:secret, "config/test.exs", :secret_key_base},
+      {:secret, "lib/new_api_app_web/endpoint.ex", :signing_salt}
+    ],
+    path: "priv/meta/podman_component",
+    tree_digest: "sha256:6e1a57c12e1408ba479f0b876a1a8379a359bc887a79af6ac5b2fd00458963df"
   },
   prod_image_api: %{
     archive_sha256: "d3e1d647bbe8d610582113c6290cbb4cf802f7432e21c00caf590229ba7216ab",
@@ -466,5 +702,72 @@
     ],
     path: "priv/meta/prod_image_api_component",
     tree_digest: "sha256:32f90697087995e7072ff150fc9eeeef6c5268b541cd7052fe69b13e1dd12402"
+  },
+  valkey: %{
+    archive_sha256: "fe45e4ffd1409a5eee8db6979143137357e6763b33279153db99960a6b3096ca",
+    derived_from: :api_podman,
+    files: %{
+      ".formatter.exs" => "a44a43d777033eb6c64e0101b7469611c2def3b377b04c9d6b2a8620a347d385",
+      ".gitignore" => "62ee1d39760528ade9087a64430331c1362541232b1213cdae98a25cce8888ed",
+      "AGENTS.md" => "00f6f1bdb914d6eb925e9f1abaae89b10fe7b7245323df8e7bdf6c6b65fd31a4",
+      "README.md" => "676b5a86ed8766266c4a36c19521cc5768fd82dffa92449f6e9806c707bb66e1",
+      "compose.yaml" => "afbe56059b1c778d5fbd1dc1b9ebae924c25b001aae6d13ff69cfc45b8c8e5e9",
+      "config/config.exs" => "6a7734a2b5f00eea9206414cb2c72524c86e7da1ca3a9827e6aae218c1eec155",
+      "config/dev.exs" => "41388ab08783bfb5058c6a1dc5d9c07b84f063b529584a0541c893939a2e8668",
+      "config/prod.exs" => "4d305ac8156d0e4bb49de00f219c7d4ecd553d762d484da994ea598b2e79ba90",
+      "config/runtime.exs" => "e19c7a5c95a9a03f2922ac4274c757eaa9d6180381e3aab6936a617f9f8afbbe",
+      "config/test.exs" => "3a7bb907edd986120667f5fe3e9e10a8c4c64bf00eb9444bec18577974bd1e20",
+      "lib/new_api_app.ex" => "0bbd7d634a418a9abb5fb9f93e53fe0a332ad85b220f1397439b091e1c1a4c02",
+      "lib/new_api_app/application.ex" =>
+        "b75e3aa5aea6eab2706e8425282729560c4ba16793b711634bb6460ae6d12757",
+      "lib/new_api_app/mailer.ex" =>
+        "c607a46ffca95ab2e63c5c0c1078b1e9eb2f61640b845526a68bbd84c2e742dc",
+      "lib/new_api_app/repo.ex" =>
+        "6b171e503d4e1b7734e5e1cc91cfd52219d80dc7a9cd75e73cdf2eebe2db3f24",
+      "lib/new_api_app/valkey.ex" =>
+        "ef41c94aaec49e17a5e44e76dffa5e9d49eed45b58cbb149878824ba67946ade",
+      "lib/new_api_app_web.ex" =>
+        "d4ded48aa07fd27fc19fb5e082f4959cf9728e44fa08ca1fa96326122473d1f1",
+      "lib/new_api_app_web/controllers/error_json.ex" =>
+        "ba767ae62030f0f759c245ada6ccb8d865b00ac4a4e4c3d5bce5845e8aaa4d0d",
+      "lib/new_api_app_web/endpoint.ex" =>
+        "6a730a529c3b812af2929cf33c7df9b3bb53308d5620e8b4a09830261163d42c",
+      "lib/new_api_app_web/gettext.ex" =>
+        "0606b29e602f87bde9c10670522e2a873d74910cd1f4e915ec6fa9f80c2c1818",
+      "lib/new_api_app_web/router.ex" =>
+        "18f68f5eec8914616c88bebbe9fa840b59e979c088328163989081269afce4b4",
+      "lib/new_api_app_web/telemetry.ex" =>
+        "545604fa4abecf9644ca57b1d495f587c9e19884d1d7c1c703dcd6513da7cce6",
+      "mix.exs" => "39c5a805d7be73501a921ffa5b29edb57bee04a176d7bcc9cdaa3118d4b038aa",
+      "priv/gettext/en/LC_MESSAGES/errors.po" =>
+        "7965ec884cd9c0dd4f13b268b485e1e3edc13d8f2574eee6f11b35bf3175d05b",
+      "priv/gettext/errors.pot" =>
+        "e2ba1a9a3fd94ac18f7d60d8a03fdfcd0c306aa7b34c5c679f10d356fa42d358",
+      "priv/repo/migrations/.formatter.exs" =>
+        "0214526079b381af52379d2b1fff614512fe4f5bb9a04394ef3246e5b1f61c87",
+      "priv/repo/seeds.exs" => "82a007edef590351038659089cc5840ff011c5af7bc38659242922047122b472",
+      "priv/static/favicon.ico" =>
+        "01723aeae3ce3b5195a8f42e3eb6e9018a8c08b7acda4ed382b31341811f0a8a",
+      "priv/static/robots.txt" =>
+        "f994bfae2c1db1221ac049f1097776b444048e0b0a7705d33ea511b610bed115",
+      "test/new_api_app/valkey_test.exs" =>
+        "a9b61615ef43596d688359458aad82ea89271938d3dfcb8646f27c60422fa62c",
+      "test/new_api_app_web/controllers/error_json_test.exs" =>
+        "2af6dd41cde5382eaa3e3ffc7d052596b7334f05cffa911df85419617cd513ff",
+      "test/support/conn_case.ex" =>
+        "1398686968936337abc0d883180d75fcc8227fb3a5b7d4855161a8e28d8a3c61",
+      "test/support/data_case.ex" =>
+        "031590471b16158509060d1de434a2640e2e1838ed1f9e0cc7c3ba8fbdde3f4f",
+      "test/test_helper.exs" => "f17f051866d21780b638786cedbd470aa0258d1495d7fd4f3702c8a2b623fbbf"
+    },
+    names: %{app: "new_api_app", module: "NewApiApp", name: "new_api_app"},
+    normalisations: [
+      {:secret, "config/config.exs", :signing_salt},
+      {:secret, "config/dev.exs", :secret_key_base},
+      {:secret, "config/test.exs", :secret_key_base},
+      {:secret, "lib/new_api_app_web/endpoint.ex", :signing_salt}
+    ],
+    path: "priv/meta/valkey_component",
+    tree_digest: "sha256:42c4c297077c036780cdfddb57b95adf695aad1eb45f3c5f6ef8779c3919146b"
   }
 }

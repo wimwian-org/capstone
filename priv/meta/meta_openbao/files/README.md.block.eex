@@ -1,0 +1,10 @@
+
+## OpenBao
+
+Secrets are read from an OpenBao (Vault-compatible) sidecar via
+`<%= @module %>.Vault.read_secret/2`, which talks to its KV v2 HTTP API.
+
+In dev and test, `compose.yaml`'s `openbao` service runs in dev mode with a
+fixed root token, so nothing extra needs to be set up locally. In prod,
+`OPENBAO_ADDR` and `OPENBAO_TOKEN` must point at a real OpenBao deployment —
+this plugin never starts one.

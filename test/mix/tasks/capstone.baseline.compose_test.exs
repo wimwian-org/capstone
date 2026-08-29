@@ -73,7 +73,7 @@ defmodule Mix.Tasks.Capstone.Baseline.ComposeTest do
 
   test "an entry with no plugin is refused" do
     assert_raise Mix.Error, ~r/no plugin:/, fn ->
-      Compose.run(["otp"])
+      Compose.run(["api"])
     end
   end
 

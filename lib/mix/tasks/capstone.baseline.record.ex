@@ -61,7 +61,7 @@ defmodule Mix.Tasks.Capstone.Baseline.Record do
   end
 
   # One archive per baseline project, each independent: a change to the web
-  # baseline must not move the otp archive's sha.
+  # baseline must not move the grpc archive's sha.
   #
   # No sidecar file. `archive_sha256` is already recorded in the manifest, and
   # the pin below asserts the bytes written match what was recorded there.
