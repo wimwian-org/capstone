@@ -399,68 +399,30 @@ where a generator toolchain is installed.
 - [ ] **Step 1: Add the test**
 
 Insert into `test/capstone/baseline_test.exs`, near the other baseline-shape tests (e.g. after
-`"a derived entry carries no generator provenance"`):
+`"a derived entry carries no generator provenance"`). This calls the REAL
+`Mix.Tasks.Capstone.Baseline.Compose.run/1` against its real, already-tracked
+`priv/meta/baseline_web` path (never a scratch copy) and asserts it reproduces byte-identical
+output — Task 3 Step 4 already proved `compose` is idempotent by hand; this is that same proof,
+turned into a permanent, always-run test. No private logic is duplicated: the test exercises the
+actual command a maintainer runs, not a reimplementation of its internals. Add
+`import ExUnit.CaptureIO` to this test module if it isn't already imported (check the top of the
+file first — `test/mix/tasks/capstone.baseline.compose_test.exs` already does this and can be
+used as the reference for the exact import form).
 
 ```elixir
 test "composing :web from :api plus :web_layer reproduces the checked-in baseline_web" do
-  manifest = Baseline.read!("priv/baselines.exs")
-  web = Map.fetch!(manifest, :web)
-  scratch = Path.join(System.tmp_dir!(), "web-compose-#{System.unique_integer([:positive])}")
-  on_exit(fn -> File.rm_rf!(scratch) end)
+  web = Map.fetch!(Baseline.read!("priv/baselines.exs"), :web)
+  before = Baseline.tree(web.path)
 
-  entry = %{web | path: scratch}
-  api = Map.fetch!(manifest, :api)
-  plugin = Path.join("priv/meta", "meta_#{entry.plugin}")
+  capture_io(fn -> Mix.Tasks.Capstone.Baseline.Compose.run(["web"]) end)
 
-  rename_and_apply!(api, entry, plugin)
-
-  assert_same_tree(Baseline.tree(entry.path), Baseline.tree(web.path))
+  assert_same_tree(Baseline.tree(web.path), before)
 end
 ```
 
-This calls a private `rename_and_apply!/3` helper rather than shelling out to
-`mix capstone.baseline.compose web` (which writes to the REAL `entry.path`, not a scratch
-directory) — add it as a `defp` in this test module, copying the rename+apply logic from
-`Mix.Tasks.Capstone.Baseline.Compose`'s own `compose/1`/`rename!/2` private functions (`Template`,
-`Capstone.Plugin.Apply` — both already `alias`ed or aliasable in this test file):
-
-```elixir
-defp rename_and_apply!(source, entry, plugin) do
-  File.mkdir_p!(entry.path)
-
-  source.path
-  |> Baseline.tree()
-  |> Map.keys()
-  |> Enum.each(fn relative ->
-    contents = File.read!(Path.join(source.path, relative))
-    target = Path.join(entry.path, rename_target_path(relative, source, entry))
-
-    File.mkdir_p!(Path.dirname(target))
-    File.write!(target, rename_contents(contents, source, entry))
-  end)
-
-  {:ok, _} = Capstone.Plugin.Apply.run(plugin, entry.path)
-end
-
-defp rename_target_path(relative, source, entry) do
-  relative
-  |> Capstone.Template.placeholder_path(source.names)
-  |> Capstone.Template.resolve_path(entry.names)
-end
-
-defp rename_contents(contents, source, entry) do
-  if Capstone.Template.text?(contents) do
-    {:ok, captured} = Capstone.Template.capture(contents, source.names)
-    Capstone.Template.render(captured, entry.names)
-  else
-    contents
-  end
-end
-```
-
-If `Mix.Tasks.Capstone.Baseline.Compose`'s real private functions have a different exact
-signature by the time this task runs (Task 3 may have adjusted them), read that file directly and
-match it rather than trusting this plan's transcription.
+If this assertion ever fails, `priv/meta/baseline_web` is left modified on disk by the failing
+`Compose.run/1` call — that dirty working tree IS the debugging signal (same as Task 3 Step 4),
+not a side effect to suppress with an `on_exit` restore.
 
 - [ ] **Step 2: Run it**
 
