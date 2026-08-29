@@ -161,6 +161,22 @@ defmodule Capstone.MixProject do
       filter_modules: fn module, _metadata ->
         not (module |> to_string() |> String.contains?(".Vendor."))
       end,
+      # The `Capstone` pattern excludes the other groups' submodules via
+      # negative lookahead, so every pattern here is self-contained and the
+      # list can stay in plain alphabetical order regardless of match
+      # precedence (first matching group wins, but nothing here overlaps).
+      groups_for_modules: [
+        Capstone: [
+          ~r/^Capstone(\.(?!(Config|Manifest|New|Plugin|Root|Source)(\.|$)).+)?$/,
+          ~r/^Mix\.Tasks\.Capstone(\.|$)/
+        ],
+        Config: ~r/^Capstone\.Config(\.|$)/,
+        Manifest: ~r/^Capstone\.Manifest(\.|$)/,
+        New: ~r/^Capstone\.New(\.|$)/,
+        Plugin: ~r/^Capstone\.Plugin(\.|$)/,
+        Root: ~r/^Capstone\.Root(\.|$)/,
+        Source: ~r/^Capstone\.Source(\.|$)/
+      ],
       skip_code_autolink_to: [
         "Mix.Dep.Lock",
         "Mix.Tasks.Capstone.New.run/1",
