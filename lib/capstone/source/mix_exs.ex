@@ -222,7 +222,7 @@ defmodule Capstone.Source.MixExs do
   `add_dep/2` does NOT use this: a dependency goes at the top of the list, a
   position `priv/meta/cache_component` records and the round trip compares.
   """
-  @spec append_element(binary(), [Macro.t()], Sourceror.Range.t(), binary()) ::
+  @spec append_element(binary(), [Macro.t()], Elixir.Sourceror.Range.t(), binary()) ::
           binary()
   def append_element(source, [], list_range, element),
     do: insert_into_empty(source, list_range, element)

@@ -112,9 +112,8 @@ defmodule Capstone.Manifest do
   @doc """
   The absolute path to `target`'s `plugin.exs`.
 
-  There is no `filename/0` beside it, for the reason `Capstone.Config.path/1`
-  gives: a public accessor over a module attribute has no caller that `path/1`
-  does not serve better.
+  There is no `filename/0` beside it: a public accessor over a module
+  attribute has no caller that `path/1` does not already serve better.
   """
   @spec path(Root.t()) :: Path.t()
   def path(target), do: Root.path(target, @filename)
