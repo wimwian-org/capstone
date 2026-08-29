@@ -78,7 +78,19 @@ defmodule Capstone.Plugin.WebLayerRoundTripTest do
 
     {:ok, _} = Apply.run(@plugin, other)
 
+    # Verify :sole_owner files exist and old ones don't
     assert File.exists?(Path.join(other, "lib/other_app/vite_watcher.ex"))
     refute File.exists?(Path.join(other, "lib/new_api_app/vite_watcher.ex"))
+
+    # Verify content-rewrite of :manual hunks actually happened
+    router_content = File.read!(Path.join(other, "lib/other_app_web/router.ex"))
+    assert router_content =~ "defmodule OtherAppWeb.Router do"
+    refute router_content =~ "NewApiAppWeb"
+    refute router_content =~ Apply.marker_prefix(:web_layer_router)
+
+    endpoint_content = File.read!(Path.join(other, "lib/other_app_web/endpoint.ex"))
+    assert endpoint_content =~ "defmodule OtherAppWeb.Endpoint do"
+    refute endpoint_content =~ "NewApiAppWeb"
+    refute endpoint_content =~ Apply.marker_prefix(:web_layer_endpoint)
   end
 end
