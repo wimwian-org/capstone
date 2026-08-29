@@ -1,0 +1,19 @@
+events {}
+
+http {
+  server {
+    listen 80;
+
+    location /api/ {
+      proxy_pass http://app:4000/api/;
+    }
+
+    location = /openapi {
+      proxy_pass http://app:4000/api/v1/openapi;
+    }
+
+    location /docs/ {
+      proxy_pass http://app:4000/api/v1/docs/;
+    }
+  }
+}

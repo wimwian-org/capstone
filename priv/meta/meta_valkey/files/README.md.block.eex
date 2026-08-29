@@ -1,0 +1,10 @@
+
+## Valkey
+
+Valkey is the default KV platform, reached via `<%= @module %>.Valkey`, a thin
+Redix client (see `<%= @module %>.Valkey.get/1` and `.set/3`).
+
+In dev and test, `compose.yaml`'s `valkey` service is up on `localhost:6379`
+with no auth, so nothing extra needs to be set up locally. In prod, the same
+image runs as this service's sidecar — set `VALKEY_HOST`/`VALKEY_PORT` if it
+isn't reachable at the default `localhost:6379`.

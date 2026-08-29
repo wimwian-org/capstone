@@ -1,0 +1,33 @@
+defmodule NewApiApp.Vault do
+  @moduledoc "Reads secrets from the OpenBao (Vault-compatible) sidecar's KV v2 HTTP API."
+
+  @doc """
+  Reads the secret at `path` (e.g. `"new_api_app/db"`).
+
+  `opts` are merged into the underlying `Req.new/1` call — tests use this to
+  inject a `:plug` stub (see `Req.Test`) instead of hitting a real OpenBao
+  instance.
+  """
+  def read_secret(path, opts \\ []) do
+    config = Application.fetch_env!(:new_api_app, __MODULE__)
+    base_url = Keyword.fetch!(config, :base_url)
+    token = Keyword.fetch!(config, :token)
+
+    req_opts = Keyword.merge([base_url: base_url, headers: [{"x-vault-token", token}]], opts)
+    request = Req.new(req_opts)
+
+    case Req.get(request, url: "/v1/secret/data/#{path}") do
+      {:ok, %Req.Response{status: 200, body: %{"data" => %{"data" => data}}}} ->
+        {:ok, data}
+
+      {:ok, %Req.Response{status: 404}} ->
+        {:error, :not_found}
+
+      {:ok, %Req.Response{status: status}} ->
+        {:error, {:unexpected_status, status}}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+end

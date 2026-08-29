@@ -1,0 +1,27 @@
+
+  # openbao -- optional secrets vault sidecar. Dev mode with a fixed root
+  # token, so `mix test --include openbao` can authenticate deterministically
+  # -- dev mode only, never use a fixed root token anywhere else. The
+  # published port is bound to loopback only -- reachable from this host's
+  # own `mix test`/`mix phx.server`, never from another machine on the
+  # network; other compose services still reach it over the compose network
+  # by service name regardless, unaffected by this binding. The SAME image
+  # and sidecar shape also run in production (an OCI-compliant container
+  # placed beside the app by whatever orchestrator runs it there, not this
+  # compose file) -- config/runtime.exs's prod branch always reads a real
+  # OPENBAO_TOKEN from the environment and never falls back to this fixed
+  # token, dev-mode-only default included.
+  openbao:
+    image: docker.io/openbao/openbao:latest
+    environment:
+      BAO_DEV_ROOT_TOKEN_ID: <%= @app %>-dev-root-token
+      BAO_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+    cap_add:
+      - IPC_LOCK
+    ports:
+      - "127.0.0.1:8200:8200"
+    healthcheck:
+      test: ["CMD", "bao", "status", "-address=http://127.0.0.1:8200"]
+      interval: 2s
+      timeout: 3s
+      retries: 15

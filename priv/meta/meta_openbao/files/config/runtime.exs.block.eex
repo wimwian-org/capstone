@@ -1,0 +1,10 @@
+  openbao_token =
+    System.get_env("OPENBAO_TOKEN") ||
+      raise """
+      environment variable OPENBAO_TOKEN is missing.
+      """
+
+  config :<%= @app %>, <%= @module %>.Vault,
+    base_url: System.get_env("OPENBAO_ADDR", "http://localhost:8200"),
+    token: openbao_token
+
