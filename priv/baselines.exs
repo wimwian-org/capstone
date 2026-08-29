@@ -445,9 +445,209 @@
     path: "priv/meta/prod_image_api_component",
     tree_digest: "sha256:32f90697087995e7072ff150fc9eeeef6c5268b541cd7052fe69b13e1dd12402"
   },
-  web_layer: %{
+  web: %{
+    archive_sha256: "8155520d15cc37e46e760c612a87577e374cff5c0dfb492db0f5799ce9415003",
     derived_from: :api,
+    files: %{
+      ".formatter.exs" => "a44a43d777033eb6c64e0101b7469611c2def3b377b04c9d6b2a8620a347d385",
+      ".gitignore" => "dfb4b40222602414720c82ccc9b20c7f6cf17c38367caccf951eaa4763c3b880",
+      "AGENTS.md" => "00f6f1bdb914d6eb925e9f1abaae89b10fe7b7245323df8e7bdf6c6b65fd31a4",
+      "README.md" => "6a0d8dccba2f4be884aff1655aecea3c4a639423cde3113703cc98447b9d20bf",
+      "assets/.prettierignore" =>
+        "70c178cc94aabc9ee7a348bd3b12d1f3acdc73eea7d914c516d00c6998c37c88",
+      "assets/.prettierrc" => "cbca90e8341ff1103f4c7d1f3fbd2a97f18f528f2bf350968344368970380350",
+      "assets/css/app.css" => "8d9cfcd1486a79010567f4bf8b208323c50e26a7775383abcbe7b33f08ee69bb",
+      "assets/css/theme.css" =>
+        "9c3fe3ecc158b9a98baf384f777cd51ef217898514c7bc126f8edc2f36c26a2a",
+      "assets/eslint.config.js" =>
+        "dfd9399bd705ce59d268176c0308dd3c216615032f878b291eb95fba9d2fefd5",
+      "assets/js/app.js" => "fc800117b537ab479215a561dc808803babf94125851f01f0062a6e7aed4d179",
+      "assets/package.json" => "fc5af3fd8fe7854720e408c86e9143d3709bb0fe9a256eef2324f5a97bd35ec3",
+      "assets/pnpm-lock.yaml" =>
+        "8b3d0a870ea9584b6f6634a933d18ef735c349db28dcd9abe62761bb525c1f24",
+      "assets/pnpm-workspace.yaml" =>
+        "68b189b6f1924b17118d6d7d5a705315bddc5bd8e88215cde05299e297f62ab4",
+      "assets/svelte/components/AppShell.svelte" =>
+        "fe66e8c070b3304af02377e9f6ba93e8e24a173f91635c1c9234150a8aa6ae88",
+      "assets/svelte/lib/sv5ui.js" =>
+        "0b50b94b679b146c1780c9f79ad24c697c6c90a3d005a1383d278ccdd36da3a5",
+      "assets/test/svelte/components/AppShell.svelte.test.js" =>
+        "de5354cf8633d13f27eb81f8fa53da58fe855533dd00446de7a3afb1f696f25d",
+      "assets/tsconfig.json" =>
+        "e13e43af231fff9cd3ab20dfe2967d9d055223c0ebe1e0f39dd06065ac269e95",
+      "assets/vite.config.mjs" =>
+        "2a90c7dd073559fecad7d569cfc21e27dd5fc5e09ce08d12d6503eb330d5ca08",
+      "assets/vitest.config.js" =>
+        "c35f4a4dc01ae0e51d647eaad2ddc5e004959c5daaa5284c4656b65112fc297b",
+      "config/config.exs" => "cc9f90642af69ac8edf358b69847f9b5d5111a0e27c1875297a03f3aecbca3df",
+      "config/dev.exs" => "3a657aeb6c3b737a964d81fd6c4e5da8f3971fc3a598fcaad3e2521c7f2d4073",
+      "config/prod.exs" => "07c97c8bf8d0f25d228a43bc5e29e6810c3bca916a92ff2856921ab7311230b1",
+      "config/runtime.exs" => "1ac8d997f3e1a8e93cf8fcbbd9b231b0700754c5863b79c1758a9e044a023d9a",
+      "config/test.exs" => "3739e532b1a21186f3d9c4f3bc18939d6b2c3f2a6313a6e88ed4c1c8324c0c53",
+      "lib/mix/tasks/assets.pnpm.ex" =>
+        "dd22b6d53a756d11fb66a7474d808170f73bffe07ef5fc11cd11dd8ba9bd7b65",
+      "lib/new_web_app.ex" => "f164602028041d30db532c01c94865d10fb9f49717ab11d28e16a646c75d6271",
+      "lib/new_web_app/application.ex" =>
+        "6cae0f6bba0fc15f4e31ef245b6dbc8416e3f68a4e6d7611d82f4bfb4f5fce88",
+      "lib/new_web_app/mailer.ex" =>
+        "c0641882430eae98a096474129557ff4d9afd31fca29aca444a4482e009a747e",
+      "lib/new_web_app/repo.ex" =>
+        "3412c81ccbe9d2eade79cef05fb33422a26a18204a87f82e66915122e3d21fee",
+      "lib/new_web_app/vite_watcher.ex" =>
+        "2d160275040c658e6be84b8710dd0f5695deef4e2f6e080f22f7df33bf71e1a6",
+      "lib/new_web_app_web.ex" =>
+        "2ca7778838facb4ac57ffb036f800647a963852758efa090d0227917755497db",
+      "lib/new_web_app_web/components/core_components.ex" =>
+        "3d506e1dc5b23f7cad2b47263c13037acf1218542771ffd1e8cc49068d870eeb",
+      "lib/new_web_app_web/components/layouts.ex" =>
+        "45b3f4347169fcf198efe81a90f43988b7242a7178d566264051fc77e14a6562",
+      "lib/new_web_app_web/components/layouts/root.html.heex" =>
+        "1562c2780ea1f86b4452690db4e1c6ab6cc65a1fad4c11c0b78227e9553950f5",
+      "lib/new_web_app_web/controllers/error_json.ex" =>
+        "d98672d55199f0169a10683f007146333161ac5c16c403ae38ba77fa9bfbfb4c",
+      "lib/new_web_app_web/endpoint.ex" =>
+        "47bf089c2654e23239c32e2f9afb1bb94b3d0eab1cfa9fccb96cd66ca7709a0f",
+      "lib/new_web_app_web/gettext.ex" =>
+        "d5f447a109176f46e90ceb06a0acba8a6c350a5e99c1ab956ad3a927154e1557",
+      "lib/new_web_app_web/router.ex" =>
+        "d840a8a3d12fc05810ec708ce9f2c8cfbd51bcc64347ab9b2afc131b1afbc0f4",
+      "lib/new_web_app_web/telemetry.ex" =>
+        "19e8995167cd7d1d8e2713b649e9f4edae7c0308158d4bfb5da33a656995b573",
+      "mix.exs" => "8baef847cdf0b1981f897c26b48a8729f9bd7b5bd16ccedf4ad0430b31c49819",
+      "priv/gettext/en/LC_MESSAGES/errors.po" =>
+        "7965ec884cd9c0dd4f13b268b485e1e3edc13d8f2574eee6f11b35bf3175d05b",
+      "priv/gettext/errors.pot" =>
+        "e2ba1a9a3fd94ac18f7d60d8a03fdfcd0c306aa7b34c5c679f10d356fa42d358",
+      "priv/repo/migrations/.formatter.exs" =>
+        "0214526079b381af52379d2b1fff614512fe4f5bb9a04394ef3246e5b1f61c87",
+      "priv/repo/seeds.exs" => "1fea5d1f886a2e9af459b3834ac67f356e934d4bc608dc3f276993f7589679d2",
+      "priv/static/favicon.ico" =>
+        "01723aeae3ce3b5195a8f42e3eb6e9018a8c08b7acda4ed382b31341811f0a8a",
+      "priv/static/robots.txt" =>
+        "f994bfae2c1db1221ac049f1097776b444048e0b0a7705d33ea511b610bed115",
+      "test/mix/tasks/assets.pnpm_test.exs" =>
+        "15b8d061b77992d4f93810ce5ab2222e5b201bff5d435dc2214f2e03fcdfcee3",
+      "test/new_web_app/vite_watcher_test.exs" =>
+        "feb98f987017ab15ac3e29cc3e99429a63a3f781b8478d2783e2848b4378eee0",
+      "test/new_web_app_web/controllers/error_json_test.exs" =>
+        "551f363303dedb31ee368506f7449d83d4b81f9c68da657c624a264192ba901f",
+      "test/support/conn_case.ex" =>
+        "7a1269617c77d8cc074cd73a3f32805247b2384cb4ad52f765b4f39eb87629fa",
+      "test/support/data_case.ex" =>
+        "a153d3adc5dd577088679b41c77ec6ea5cb40ebcc83248747bc26ff9a42d6f9e",
+      "test/test_helper.exs" => "3fb183b5fb43ca2e448c1e693571149690de59f71937c0c7165b21654cb525cf"
+    },
+    names: %{app: "new_web_app", module: "NewWebApp", name: "new_web_app"},
+    normalisations: [
+      {:secret, "config/config.exs", :signing_salt},
+      {:secret, "config/dev.exs", :secret_key_base},
+      {:secret, "config/test.exs", :secret_key_base},
+      {:secret, "lib/new_web_app_web/endpoint.ex", :signing_salt}
+    ],
+    path: "priv/meta/baseline_web",
+    plugin: :web_layer,
+    tree_digest: "sha256:cbd9da5ee4ffe3afb38bdae1bc2a17a0920d631bd98b2d566fda6ba8f27743fc"
+  },
+  web_layer: %{
+    archive_sha256: "5f4f7c0feb4492c844faf8f21e40cc4b863fc5a93ebd5374f044e98087a0d88b",
+    derived_from: :api,
+    files: %{
+      ".formatter.exs" => "a44a43d777033eb6c64e0101b7469611c2def3b377b04c9d6b2a8620a347d385",
+      ".gitignore" => "62ee1d39760528ade9087a64430331c1362541232b1213cdae98a25cce8888ed",
+      "AGENTS.md" => "00f6f1bdb914d6eb925e9f1abaae89b10fe7b7245323df8e7bdf6c6b65fd31a4",
+      "README.md" => "08f794ca41a109f6ff51f85c6b919666a0146fdd64823488dc6de054b3e66103",
+      "assets/.prettierignore" =>
+        "70c178cc94aabc9ee7a348bd3b12d1f3acdc73eea7d914c516d00c6998c37c88",
+      "assets/.prettierrc" => "cbca90e8341ff1103f4c7d1f3fbd2a97f18f528f2bf350968344368970380350",
+      "assets/css/app.css" => "8e835bfd1f34c16315055a93a76c734b9c829d8646608b5ef041eef2dccf8f69",
+      "assets/css/theme.css" =>
+        "9c3fe3ecc158b9a98baf384f777cd51ef217898514c7bc126f8edc2f36c26a2a",
+      "assets/eslint.config.js" =>
+        "dfd9399bd705ce59d268176c0308dd3c216615032f878b291eb95fba9d2fefd5",
+      "assets/js/app.js" => "fc800117b537ab479215a561dc808803babf94125851f01f0062a6e7aed4d179",
+      "assets/package.json" => "73f9d36d6fe899622c75f3bd529c63cebc5345e848fc65ff1e2f2d1b520da603",
+      "assets/pnpm-lock.yaml" =>
+        "8b3d0a870ea9584b6f6634a933d18ef735c349db28dcd9abe62761bb525c1f24",
+      "assets/pnpm-workspace.yaml" =>
+        "68b189b6f1924b17118d6d7d5a705315bddc5bd8e88215cde05299e297f62ab4",
+      "assets/svelte/components/AppShell.svelte" =>
+        "fe66e8c070b3304af02377e9f6ba93e8e24a173f91635c1c9234150a8aa6ae88",
+      "assets/svelte/lib/sv5ui.js" =>
+        "0b50b94b679b146c1780c9f79ad24c697c6c90a3d005a1383d278ccdd36da3a5",
+      "assets/test/svelte/components/AppShell.svelte.test.js" =>
+        "de5354cf8633d13f27eb81f8fa53da58fe855533dd00446de7a3afb1f696f25d",
+      "assets/tsconfig.json" =>
+        "e13e43af231fff9cd3ab20dfe2967d9d055223c0ebe1e0f39dd06065ac269e95",
+      "assets/vite.config.mjs" =>
+        "2a90c7dd073559fecad7d569cfc21e27dd5fc5e09ce08d12d6503eb330d5ca08",
+      "assets/vitest.config.js" =>
+        "c35f4a4dc01ae0e51d647eaad2ddc5e004959c5daaa5284c4656b65112fc297b",
+      "config/config.exs" => "84df99ba2f7c6b71a2a1473756ec4248b2d4cc68226c9a665ae250cdc923079a",
+      "config/dev.exs" => "e238758d7899f15a95752f95f112ef51e666969d0062e4b7415a58f1b2fb8ed6",
+      "config/prod.exs" => "4d305ac8156d0e4bb49de00f219c7d4ecd553d762d484da994ea598b2e79ba90",
+      "config/runtime.exs" => "3f29f4cdd20a6b406ffa68f56108e8966f98e908b31d893a5126818db8a9fb85",
+      "config/test.exs" => "a20ca71cf45c0b51a81a452f3263f2711cb7336b67e556376127fe6341d509cf",
+      "lib/mix/tasks/assets.pnpm.ex" =>
+        "dd22b6d53a756d11fb66a7474d808170f73bffe07ef5fc11cd11dd8ba9bd7b65",
+      "lib/new_api_app.ex" => "0bbd7d634a418a9abb5fb9f93e53fe0a332ad85b220f1397439b091e1c1a4c02",
+      "lib/new_api_app/application.ex" =>
+        "dfd81ddd6c46736e5db861086841be7f2892336f7575511649f141c5a7934842",
+      "lib/new_api_app/mailer.ex" =>
+        "c607a46ffca95ab2e63c5c0c1078b1e9eb2f61640b845526a68bbd84c2e742dc",
+      "lib/new_api_app/repo.ex" =>
+        "6b171e503d4e1b7734e5e1cc91cfd52219d80dc7a9cd75e73cdf2eebe2db3f24",
+      "lib/new_api_app/vite_watcher.ex" =>
+        "8ac50a808c5ab386ccc0b126838bd60a416baa96da2cccc4d8d3ab3291a3cdc2",
+      "lib/new_api_app_web.ex" =>
+        "5318dd9a01aad452816b0361510f9b141bd607d01075e3ade926a3ee0e043e7d",
+      "lib/new_api_app_web/components/core_components.ex" =>
+        "61a088575a119417bbe754f251d0a025cdaf7be8607e0bf9ac57cf39d90ac0d9",
+      "lib/new_api_app_web/components/layouts.ex" =>
+        "960e810f4325681355df9d836ab8f6022b677f3410d0ed7c3d90d59b649b51ae",
+      "lib/new_api_app_web/components/layouts/root.html.heex" =>
+        "642ba8ed12f5c7d09a2a238cd043bc6f4e6fab5a987042670007ff5df1f47cbe",
+      "lib/new_api_app_web/controllers/error_json.ex" =>
+        "ba767ae62030f0f759c245ada6ccb8d865b00ac4a4e4c3d5bce5845e8aaa4d0d",
+      "lib/new_api_app_web/endpoint.ex" =>
+        "30d54eadcd8e152d18973dcd4962933bf3971598f9abb25060b46504d80ad9e6",
+      "lib/new_api_app_web/gettext.ex" =>
+        "0606b29e602f87bde9c10670522e2a873d74910cd1f4e915ec6fa9f80c2c1818",
+      "lib/new_api_app_web/router.ex" =>
+        "ec062d547df442a899ab96af2902741b96eb6fea219d315f044428306510d372",
+      "lib/new_api_app_web/telemetry.ex" =>
+        "545604fa4abecf9644ca57b1d495f587c9e19884d1d7c1c703dcd6513da7cce6",
+      "mix.exs" => "09ee67838729072a1fee151cd014731536baa623f17e3371a02e873290c71fb1",
+      "priv/gettext/en/LC_MESSAGES/errors.po" =>
+        "7965ec884cd9c0dd4f13b268b485e1e3edc13d8f2574eee6f11b35bf3175d05b",
+      "priv/gettext/errors.pot" =>
+        "e2ba1a9a3fd94ac18f7d60d8a03fdfcd0c306aa7b34c5c679f10d356fa42d358",
+      "priv/repo/migrations/.formatter.exs" =>
+        "0214526079b381af52379d2b1fff614512fe4f5bb9a04394ef3246e5b1f61c87",
+      "priv/repo/seeds.exs" => "82a007edef590351038659089cc5840ff011c5af7bc38659242922047122b472",
+      "priv/static/favicon.ico" =>
+        "01723aeae3ce3b5195a8f42e3eb6e9018a8c08b7acda4ed382b31341811f0a8a",
+      "priv/static/robots.txt" =>
+        "f994bfae2c1db1221ac049f1097776b444048e0b0a7705d33ea511b610bed115",
+      "test/mix/tasks/assets.pnpm_test.exs" =>
+        "15b8d061b77992d4f93810ce5ab2222e5b201bff5d435dc2214f2e03fcdfcee3",
+      "test/new_api_app/vite_watcher_test.exs" =>
+        "5fe6ce50ef5d4bebde61b605e113c5abcd4f1d2bf0681196f46cbce55e51909e",
+      "test/new_api_app_web/controllers/error_json_test.exs" =>
+        "2af6dd41cde5382eaa3e3ffc7d052596b7334f05cffa911df85419617cd513ff",
+      "test/support/conn_case.ex" =>
+        "1398686968936337abc0d883180d75fcc8227fb3a5b7d4855161a8e28d8a3c61",
+      "test/support/data_case.ex" =>
+        "031590471b16158509060d1de434a2640e2e1838ed1f9e0cc7c3ba8fbdde3f4f",
+      "test/test_helper.exs" => "70b2e16f8bc7ff44754829b35847cee6522b027df423f7080828f635b0846c9c"
+    },
     names: %{app: "new_api_app", module: "NewApiApp", name: "new_api_app"},
-    path: "priv/meta/web_component"
+    normalisations: [
+      {:secret, "config/config.exs", :signing_salt},
+      {:secret, "config/dev.exs", :secret_key_base},
+      {:secret, "config/test.exs", :secret_key_base},
+      {:secret, "lib/new_api_app_web/endpoint.ex", :signing_salt}
+    ],
+    path: "priv/meta/web_component",
+    tree_digest: "sha256:e71a29cd5a0c23c34dd48120a5b13083c34a01d74ea90fb17177c8bdbf18a23b"
   }
 }

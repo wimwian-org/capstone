@@ -1,0 +1,36 @@
+defmodule NewWebAppWeb.Layouts do
+  @moduledoc """
+  Layouts for the web surface, plus the Vite asset-tag wrapper the root layout
+  calls.
+  """
+
+  use NewWebAppWeb, :html
+
+  embed_templates "layouts/*"
+
+  @doc """
+  Renders Vite's asset tags, tolerating a manifest that hasn't been built yet.
+
+  Delegates to `PhoenixVite.Components.assets/1`, except when there's no dev
+  server watching *and* the manifest file doesn't exist yet — e.g. a fresh
+  checkout before `mix assets.build` has run. `PhoenixVite.Components.assets/1`
+  calls `File.read!/1` on the manifest in that case and raises, which otherwise
+  takes down every test that renders the root layout.
+  """
+  attr :names, :list, required: true
+  attr :manifest, :any, required: true
+  attr :to_url, {:fun, 1}, default: &Function.identity/1
+  attr :dev_server, :boolean, default: false
+  attr :crossorigin, :any, default: false
+
+  def vite_assets(assigns) do
+    if assigns.dev_server or vite_manifest_built?(assigns.manifest) do
+      PhoenixVite.Components.assets(assigns)
+    else
+      ~H""
+    end
+  end
+
+  defp vite_manifest_built?({app, path}), do: File.exists?(Application.app_dir(app, path))
+  defp vite_manifest_built?(_manifest), do: true
+end
