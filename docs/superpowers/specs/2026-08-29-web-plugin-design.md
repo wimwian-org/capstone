@@ -138,14 +138,22 @@ prod_image_api):
 
 ### The decision
 
-`Capstone.New.Options.from_config!/1` (`lib/capstone/new/options.ex:60-71`) is where a validated
-`%Capstone.Config{}` becomes the `%Options{}` struct `Bootstrap` acts on. This is the one place
-both `mix capstone.new` and (via the same `Capstone.Config` reader) `mix capstone.update` already
-funnel through, so it is where the implication belongs — not a special-case bolted onto
-`Bootstrap` itself, and not read live out of `priv/baselines.exs` (that file is a maintainer/dev
-artifact — per `Capstone.Plugin.Remote`'s own moduledoc, `priv/plugins/` and by the same reasoning
-`priv/meta/`/`priv/baselines.exs` are never shipped inside the hex package an end user's project
-actually depends on, so nothing under `lib/` may read them at runtime).
+**Revision note:** the first implementation of this section merged the implied plugin directly
+into `Options.plugins` inside `from_config!/1`. That broke `Bootstrap.run/3`, which writes the
+generated project's own `target.exs` via `Project.render_config(opts)` reading that SAME
+`opts.plugins` — the implied `:web_layer` got baked back into `target.exs` as if the user had
+typed it, contradicting this section's own stated goal below. Caught by Task 8's end-to-end
+toolchain test, which is exactly what that test exists to prove. The corrected design (below) is
+the one actually implemented.
+
+`Options.plugins` keeps meaning exactly what it always meant, before this feature existed:
+whatever `target.exs` (or a caller constructing `%Options{}` directly) explicitly declared —
+untouched by `base:`. Merging in the implied plugin happens as a separate, pure, on-demand
+computation, read only by the one consumer that actually needs the merged list
+(`Capstone.New.Bootstrap.apply_plugins!/3`, which installs plugins) — never by the consumer that
+needs the untouched, declared-only list (`Capstone.New.Project.render_config/1`, which writes
+`target.exs`). One field, two different readers with two different needs, is what broke; two pure
+functions reading the same field for two different purposes is what doesn't.
 
 ```elixir
 @base_plugins %{web: [:web_layer], both: [:web_layer]}
@@ -160,41 +168,52 @@ Svelte layer never comes from the generator (`generator_argv/1` strips
 from this plugin being applied, exactly as `generator_argv/1`'s own moduledoc
 already documents.
 """
-@spec implied_plugins(Capstone.Config.base()) :: [atom()]
+@spec implied_plugins(base()) :: [atom()]
 def implied_plugins(base), do: Map.get(@base_plugins, base, [])
+
+@doc """
+Every plugin that should actually be installed: base-implied plugins plus whatever
+was explicitly declared, deduplicated. This is the ONLY place the two lists merge —
+`plugins:` itself (declared-only) is never mutated, so `target.exs` (written from
+`plugins:`, never from this) stays an honest record of what the user asked for.
+"""
+@spec effective_plugins(t()) :: [atom()]
+def effective_plugins(%__MODULE__{} = opts) do
+  (implied_plugins(opts.base) ++ opts.plugins) |> Enum.uniq()
+end
 ```
 
-`from_config!/1` changes from:
+`from_config!/1` is **unchanged** by this feature — it still does the plain `plugins:
+config.plugins` passthrough it always did. `Options.plugins` therefore never differs, for any
+caller, from whatever was explicitly requested — via `target.exs`, or via a direct `%Options{}}`
+construction in a test — with zero change to any existing construction site.
 
-```elixir
-plugins: config.plugins,
-```
+`Capstone.New.Bootstrap.apply_plugins!/3` (`lib/capstone/new/bootstrap.ex`) is the one place that
+changes: it installs `Options.effective_plugins(opts)` instead of `opts.plugins`. This is the only
+consumer that ever needs the merged list — every other consumer (`Project.render_config/1`
+included) keeps reading `opts.plugins` and is correctly unaware `:web_layer` arrived by
+implication rather than by explicit listing.
 
-to:
-
-```elixir
-plugins: (implied_plugins(config.base) ++ config.plugins) |> Enum.uniq(),
-```
-
-Ordering: implied plugins first, so an explicit entry later in `config.plugins` naming the same
-plugin is what `Enum.uniq/1` keeps the position of — irrelevant for `Capstone.Plugin.Install`
-today (nothing currently orders plugin application by list position, per `Capstone.Manifest`'s
-own "encode!/1 sorts plugins by name" ordering rule), called out here only so a future ordering
-dependency has an explicit rule to change rather than an accidental one to discover.
-
-Everything downstream — `Capstone.New.Bootstrap`, `Capstone.Plugin.Install`, `Apply`, `Record` —
-is unmodified and unaware `:web_layer` arrived by implication rather than by explicit listing:
-it is applied through the exact same code path a user-chosen plugin already goes through, and
-recorded into the generated project's `plugin.exs` exactly the same way (`Capstone.Plugin.Record`
-records what `Apply` actually installed, not what `target.exs` literally typed).
+Ordering inside `effective_plugins/1`: implied plugins first, so an explicit entry later in
+`opts.plugins` naming the same plugin is what `Enum.uniq/1` keeps the position of — irrelevant for
+`Capstone.Plugin.Install` today (nothing currently orders plugin application by list position, per
+`Capstone.Manifest`'s own "encode!/1 sorts plugins by name" ordering rule), called out here only
+so a future ordering dependency has an explicit rule to change rather than an accidental one to
+discover.
 
 ### Why not the alternatives
 
-- **A `Bootstrap`-level post-generation special-case** (`if base in [:web, :both], do:
-  Install.run(:web_layer, ...)`) duplicates the base→plugin mapping as an ad-hoc conditional
-  rather than a single named, testable function, and — because generation and update are
-  different entry points that both need this behavior — risks the special-case being written
-  once and forgotten in the other.
+- **Merging into `Options.plugins` inside `from_config!/1`** (the first attempt) is exactly the
+  bug this revision fixes — see the revision note above. A single field cannot honestly serve a
+  reader that wants "what was declared" and a reader that wants "what should be installed" once
+  those two answers can differ.
+- **A `Bootstrap`-level ad-hoc conditional** (`if opts.base in [:web, :both], do: Install.run(...)`
+  inlined directly, with no named function) duplicates the base→plugin mapping as a one-off
+  branch rather than a single named, testable function, and — because generation and update are
+  different entry points that both need this behavior — risks the special-case being written once
+  and forgotten in the other. `effective_plugins/1` avoids this: it is a plain, exported, unit-
+  tested function on `Options`, and `Bootstrap` merely calls it — the DRY property this bullet
+  argues for is preserved, just computed on demand instead of stored.
 - **Reading the mapping out of `priv/baselines.exs` at runtime** keeps `lib/` as the single
   source of truth in theory, but `priv/baselines.exs`/`priv/meta/` are maintainer-only artifacts
   absent from what an end user's `{:capstone, "~> 0.x", only: :dev}` hex install actually
