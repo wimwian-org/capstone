@@ -318,6 +318,38 @@ defmodule Capstone.Integration.PluginLifecycleTest do
     Shell.cmd!(["test"], project)
   end
 
+  @tag :toolchain
+  @tag timeout: :timer.minutes(3)
+  test "mix capstone.new applies plugins: [:web_layer] from target.exs", %{tmp_dir: tmp} do
+    capstone_path = File.cwd!()
+    name = "with_web_layer"
+
+    opts = %Options{
+      name: name,
+      app: :with_web_layer,
+      module: WithWebLayer,
+      base: :api,
+      github_org: "acme",
+      capstone: {:path, capstone_path},
+      plugins: [:web_layer]
+    }
+
+    File.cd!(tmp, fn -> assert :ok = Bootstrap.run(opts, Bootstrap.defaults()) end)
+
+    project = Path.join(tmp, name)
+    assert File.exists?(Path.join(project, "target.exs"))
+    assert File.exists?(Path.join(project, "assets/svelte/components/AppShell.svelte"))
+
+    assert File.exists?(
+             Path.join(project, "lib/with_web_layer_web/components/core_components.ex")
+           )
+
+    assert File.exists?(Path.join(project, "lib/with_web_layer/vite_watcher.ex"))
+
+    Shell.cmd!(["compile"], project)
+    Shell.cmd!(["test"], project)
+  end
+
   # The failure mode this guards against is SILENT: apply returns :ok, writes
   # every :sole_owner file, and leaves the :manual hunk in an unresolved
   # conflict region at the end of a file that no longer compiles. So assert on
