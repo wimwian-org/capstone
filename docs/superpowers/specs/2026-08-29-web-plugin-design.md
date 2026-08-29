@@ -76,21 +76,27 @@ adds `config :live_svelte, ssr: false`), `config/dev.exs` (`key: :web_layer_dev`
 
 No change to `application.ex`.
 
-**Porting work required** (not a byte-for-byte copy): svelixir's tree is identity-stamped
-`new_web_app`/`NewWebApp`; capstone's convention (matching `baseline_api`, `cache_component`,
-`grpc_component`, etc.) is `new_api_app`/`NewApiApp`. The ported tree gets renamed to that
-identity before anything else happens to it.
+**Porting work required**: `priv/meta/web_component/` is derived against `baseline_api` the same
+way every other component is, so it already carries the `new_api_app`/`NewApiApp` identity
+capstone's convention expects (confirmed directly against svelixir's own
+`priv/meta/web_component/mix.exs` — `app: :new_api_app`, `defmodule NewApiApp.MixProject`) — no
+identity rewriting needed at port time. The `new_web_app`/`NewWebApp` identity appears only in
+the *composed* `priv/meta/baseline_web` output, and only because `Compose`'s existing rename step
+(`Template.capture/2`/`render/2`) is what produces it — already-implemented, already-tested
+capstone machinery this work reuses unchanged, not something the port does by hand. Porting
+`web_component/` itself is therefore a plain copy: no rename pass, only the hand-verification in
+step 1 below.
 
 ## Building the plugin
 
 Same sequence every other capstone plugin has used (grpc, cqrs, cache, openapi,
 prod_image_api):
 
-1. Copy svelixir's `priv/meta/web_component/` into capstone's `priv/meta/web_component/`,
-   rename its project identity to `new_api_app`/`NewApiApp`, and hand-verify it still compiles
-   and its tests pass against a copy of capstone's *current* `priv/meta/baseline_api/` — the
-   two projects' `baseline_api` trees may have drifted since they forked (different
-   `generator_version`/Elixir/Phoenix pins), which could shift anchor text `derive` depends on.
+1. Copy svelixir's `priv/meta/web_component/` verbatim into capstone's `priv/meta/web_component/`
+   (already `new_api_app`/`NewApiApp`-identified, no rename needed) and hand-verify it still
+   compiles and its tests pass — the two projects' `baseline_api` trees may have drifted since
+   they forked (different `generator_version`/Elixir/Phoenix pins), which could shift anchor text
+   `derive` depends on.
 2. Add `web_layer: %{derived_from: :api, path: "priv/meta/web_component"}` to
    `priv/baselines.exs`.
 3. Run `mix capstone.plugin.derive web_layer` → produces
