@@ -318,6 +318,43 @@ defmodule Capstone.Integration.PluginLifecycleTest do
     Shell.cmd!(["test"], project)
   end
 
+  @tag :toolchain
+  @tag timeout: :timer.minutes(3)
+  test "mix capstone.new applies plugins: [:openbao] from target.exs", %{tmp_dir: tmp} do
+    capstone_path = File.cwd!()
+    name = "with_openbao"
+
+    opts = %Options{
+      name: name,
+      app: :with_openbao,
+      module: WithOpenbao,
+      base: :api,
+      github_org: "acme",
+      capstone: {:path, capstone_path},
+      plugins: [:openbao]
+    }
+
+    File.cd!(tmp, fn -> assert :ok = Bootstrap.run(opts, Bootstrap.defaults()) end)
+
+    project = Path.join(tmp, name)
+    assert File.exists?(Path.join(project, "target.exs"))
+    assert File.exists?(Path.join(project, "compose.yaml"))
+    assert File.exists?(Path.join(project, "lib/with_openbao/vault.ex"))
+
+    assert_placed_not_marked(project, "config/runtime.exs", "WithOpenbao.Vault")
+    assert_placed_not_marked(project, "config/dev.exs", "WithOpenbao.Vault")
+    assert_placed_not_marked(project, "config/test.exs", "WithOpenbao.Vault")
+
+    # Bootstrap already ran deps.get and deps.compile; req is already a
+    # baseline dependency, so this plugin adds none.
+    Shell.cmd!(["compile"], project)
+
+    # No live OpenBao sidecar is started here — vault_test.exs stubs the HTTP
+    # transport with Req.Test, so this proves the plugin compiles and passes
+    # out of the box without `compose.yaml` ever being brought up.
+    Shell.cmd!(["test"], project)
+  end
+
   # The failure mode this guards against is SILENT: apply returns :ok, writes
   # every :sole_owner file, and leaves the :manual hunk in an unresolved
   # conflict region at the end of a file that no longer compiles. So assert on
