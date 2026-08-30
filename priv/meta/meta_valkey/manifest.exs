@@ -15,6 +15,7 @@
     {"test/APP/valkey/cache/l1_test.exs", :sole_owner},
     {"test/APP/valkey/cache_test.exs", :sole_owner},
     {"test/APP/valkey/invalidator_test.exs", :sole_owner},
+    {".gitignore", :contributes, [key: :valkey_]},
     {"README.md", :contributes, [key: :valkey_readme]},
     {"compose.yaml", :contributes, [key: :valkey_compose]},
     {"config/dev.exs", :contributes, [key: :valkey_dev]},

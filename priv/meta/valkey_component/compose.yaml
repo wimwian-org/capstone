@@ -44,6 +44,8 @@ services:
   # orchestrator runs it there, not this compose file).
   valkey:
     image: docker.io/valkey/valkey:alpine
+    volumes:
+      - ./.valkey_data:/data
     ports:
       - "127.0.0.1:6379:6379"
     healthcheck:

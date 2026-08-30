@@ -8,3 +8,9 @@ In dev and test, `compose.yaml`'s `valkey` service is up on `localhost:6379`
 with no auth, so nothing extra needs to be set up locally. In prod, the same
 image runs as this service's sidecar — set `VALKEY_HOST`/`VALKEY_PORT` if it
 isn't reachable at the default `localhost:6379`.
+
+Data written to Valkey persists across a container restart via a bind mount
+at `.valkey_data/` (gitignored) — the container's own default `SAVE`
+schedule is what actually flushes to disk; a hard `kill -9` between saves can
+still lose the most recent writes, same as any Redis-protocol store running
+without `appendonly yes`.
