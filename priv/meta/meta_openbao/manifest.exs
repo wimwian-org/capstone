@@ -1,8 +1,10 @@
 %{
   deps: [],
   files: [
+    {"lib/mix/tasks/openbao.setup.ex", :sole_owner},
     {"lib/APP/vault.ex", :sole_owner},
     {"lib/APP/vault/auth.ex", :sole_owner},
+    {"test/mix/tasks/openbao.setup_test.exs", :sole_owner},
     {"test/APP/vault/auth_test.exs", :sole_owner},
     {"test/APP/vault_test.exs", :sole_owner},
     {"README.md", :contributes, [key: :openbao_readme]},

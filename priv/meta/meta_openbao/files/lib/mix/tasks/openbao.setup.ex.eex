@@ -1,0 +1,128 @@
+defmodule Mix.Tasks.Openbao.Setup do
+  @shortdoc "Bootstraps AppRole auth on a running dev-mode OpenBao"
+  @moduledoc """
+  Bootstraps AppRole auth on a running dev-mode OpenBao sidecar — see
+  docs/superpowers/specs/2026-08-29-valkey-openbao-enhancements-design.md.
+
+      mix openbao.setup --base-url http://localhost:8200 --root-token <%= @app %>-dev-root-token
+
+  Dev-mode OpenBao auto-mounts KV v2 at `secret/` but does not auto-enable
+  the AppRole auth method — this task enables it, creates a role named after
+  the running app with a policy granting read on `secret/data/*`, and prints
+  the resulting `role_id`/`secret_id` to put in `config/dev.exs` (or
+  `OPENBAO_ROLE_ID`/`OPENBAO_SECRET_ID` for prod). Idempotent: re-running
+  against an already-bootstrapped OpenBao re-enables nothing (OpenBao itself
+  rejects a duplicate mount with a 400, which this task treats as already-done
+  rather than a failure) and rotates the secret_id.
+  """
+  use Mix.Task
+
+  @role "<%= @app %>"
+  @policy_name "<%= @app %>-read"
+
+  @impl Mix.Task
+  def run(argv) do
+    {opts, _rest} =
+      OptionParser.parse!(argv, strict: [base_url: :string, root_token: :string])
+
+    base_url =
+      opts[:base_url] || Mix.raise("mix openbao.setup requires --base-url and --root-token")
+
+    root_token =
+      opts[:root_token] || Mix.raise("mix openbao.setup requires --base-url and --root-token")
+
+    client =
+      Req.new(
+        Keyword.merge(
+          [base_url: base_url, headers: [{"x-vault-token", root_token}], retry: false],
+          req_opts()
+        )
+      )
+
+    enable_approle(client)
+    write_policy(client)
+    create_role(client)
+    role_id = read_role_id(client)
+    secret_id = generate_secret_id(client)
+
+    Mix.shell().info("role_id: #{role_id}")
+    Mix.shell().info("secret_id: #{secret_id}")
+  end
+
+  defp enable_approle(client) do
+    case Req.post(client, url: "/v1/sys/auth/approle", json: %{type: "approle"}) do
+      {:ok, %{status: status}} when status in [204, 400] ->
+        :ok
+
+      {:ok, %{status: status, body: body}} ->
+        Mix.raise("enabling approle failed (#{status}): #{inspect(body)}")
+
+      {:error, reason} ->
+        Mix.raise("enabling approle failed: #{inspect(reason)}")
+    end
+  end
+
+  defp write_policy(client) do
+    policy = ~s(path "secret/data/*" {\n  capabilities = ["read"]\n})
+
+    case Req.put(client, url: "/v1/sys/policies/acl/#{@policy_name}", json: %{policy: policy}) do
+      {:ok, %{status: 204}} ->
+        :ok
+
+      {:ok, %{status: status, body: body}} ->
+        Mix.raise("writing policy failed (#{status}): #{inspect(body)}")
+
+      {:error, reason} ->
+        Mix.raise("writing policy failed: #{inspect(reason)}")
+    end
+  end
+
+  defp create_role(client) do
+    body = %{token_policies: @policy_name, token_ttl: "1h", token_max_ttl: "4h"}
+
+    case Req.post(client, url: "/v1/auth/approle/role/#{@role}", json: body) do
+      {:ok, %{status: 204}} ->
+        :ok
+
+      {:ok, %{status: status, body: body}} ->
+        Mix.raise("creating role failed (#{status}): #{inspect(body)}")
+
+      {:error, reason} ->
+        Mix.raise("creating role failed: #{inspect(reason)}")
+    end
+  end
+
+  defp read_role_id(client) do
+    case Req.get(client, url: "/v1/auth/approle/role/#{@role}/role-id") do
+      {:ok, %{status: 200, body: %{"data" => %{"role_id" => role_id}}}} ->
+        role_id
+
+      {:ok, %{status: status, body: body}} ->
+        Mix.raise("reading role_id failed (#{status}): #{inspect(body)}")
+
+      {:error, reason} ->
+        Mix.raise("reading role_id failed: #{inspect(reason)}")
+    end
+  end
+
+  defp generate_secret_id(client) do
+    case Req.post(client, url: "/v1/auth/approle/role/#{@role}/secret-id", json: %{}) do
+      {:ok, %{status: 200, body: %{"data" => %{"secret_id" => secret_id}}}} ->
+        secret_id
+
+      {:ok, %{status: status, body: body}} ->
+        Mix.raise("generating secret_id failed (#{status}): #{inspect(body)}")
+
+      {:error, reason} ->
+        Mix.raise("generating secret_id failed: #{inspect(reason)}")
+    end
+  end
+
+  # Same test-injection pattern as <%= @module %>.Vault.Auth's req_test_opts/0.
+  defp req_opts do
+    case Application.get_env(:<%= @app %>, __MODULE__, [])[:plug] do
+      nil -> []
+      plug -> [plug: plug]
+    end
+  end
+end
