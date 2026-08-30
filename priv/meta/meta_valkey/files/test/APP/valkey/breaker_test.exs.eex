@@ -11,20 +11,20 @@ defmodule <%= @module %>.Valkey.BreakerTest do
     # backend call inside a Task.async'd process, which does not inherit the
     # test process's process dictionary.
     def get!(key, _default \\ nil, _opts \\ []), do: :persistent_term.get({:fake_get, key}, nil)
-    def put(_key, _value, _opts \\ []), do: :ok
-    def delete(_key, _opts \\ []), do: :ok
-    def put_new(_key, _value, _opts \\ []), do: true
-    def incr(_key, amount \\ 1, _opts \\ []), do: amount
-    def decr(_key, amount \\ 1, _opts \\ []), do: -amount
+    def put!(_key, _value, _opts \\ []), do: :ok
+    def delete!(_key, _opts \\ []), do: :ok
+    def put_new!(_key, _value, _opts \\ []), do: true
+    def incr!(_key, amount \\ 1, _opts \\ []), do: amount
+    def decr!(_key, amount \\ 1, _opts \\ []), do: -amount
   end
 
   defmodule FailingBackend do
     def get!(_key, _default \\ nil, _opts \\ []), do: raise("boom")
-    def put(_key, _value, _opts \\ []), do: raise("boom")
-    def delete(_key, _opts \\ []), do: raise("boom")
-    def put_new(_key, _value, _opts \\ []), do: raise("boom")
-    def incr(_key, _amount \\ 1, _opts \\ []), do: raise("boom")
-    def decr(_key, _amount \\ 1, _opts \\ []), do: raise("boom")
+    def put!(_key, _value, _opts \\ []), do: raise("boom")
+    def delete!(_key, _opts \\ []), do: raise("boom")
+    def put_new!(_key, _value, _opts \\ []), do: raise("boom")
+    def incr!(_key, _amount \\ 1, _opts \\ []), do: raise("boom")
+    def decr!(_key, _amount \\ 1, _opts \\ []), do: raise("boom")
   end
 
   defmodule SlowBackend do
@@ -77,6 +77,43 @@ defmodule <%= @module %>.Valkey.BreakerTest do
     )
 
     assert Breaker.get("k") == nil
+  end
+
+  test "put_new/incr/decr return the backend's bare value, not an {:ok, value} tuple" do
+    assert Breaker.put_new("k", "v") == true
+    assert Breaker.incr("k", 3) == 3
+    assert Breaker.decr("k", 3) == -3
+  end
+
+  test "a failing put/3 degrades to :ok but still counts as a failure and opens the circuit" do
+    Application.put_env(:<%= @app %>, Breaker,
+      backend: FailingBackend,
+      timeout_ms: 10,
+      failure_threshold: 2,
+      cooldown_ms: 30
+    )
+
+    assert Breaker.put("k", "v") == :ok
+    assert Breaker.put("k", "v") == :ok
+
+    # Circuit must be open now. Observe it through a propagating operation
+    # rather than the :atomics state, so the assertion survives a change of
+    # internal representation.
+    assert_raise RuntimeError, ~r/circuit open/, fn -> Breaker.put_new("k", "v") end
+  end
+
+  test "a failing delete/1 degrades to :ok but still counts as a failure and opens the circuit" do
+    Application.put_env(:<%= @app %>, Breaker,
+      backend: FailingBackend,
+      timeout_ms: 10,
+      failure_threshold: 2,
+      cooldown_ms: 30
+    )
+
+    assert Breaker.delete("k") == :ok
+    assert Breaker.delete("k") == :ok
+
+    assert_raise RuntimeError, ~r/circuit open/, fn -> Breaker.put_new("k", "v") end
   end
 
   test "put_new/2 raises (propagates) once the circuit is open" do

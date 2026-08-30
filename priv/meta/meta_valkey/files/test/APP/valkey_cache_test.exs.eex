@@ -28,6 +28,21 @@ defmodule <%= @module %>.Valkey.CacheLiveTest do
     assert Cache.get(key) == "hello"
   end
 
+  test "put_new/3 returns a bare boolean from the real L2, not Nebulex's {:ok, boolean}" do
+    key = "valkey_cache_test/put_new/#{System.unique_integer([:positive])}"
+
+    assert Cache.put_new(key, "first") == true
+    assert Cache.put_new(key, "second") == false
+  end
+
+  test "incr/2 and decr/2 return bare integers from the real L2, not Nebulex's {:ok, integer}" do
+    key = "valkey_cache_test/counter/#{System.unique_integer([:positive])}"
+
+    assert Cache.incr(key, 5) == 5
+    assert Cache.incr(key) == 6
+    assert Cache.decr(key, 2) == 4
+  end
+
   @tag timeout: :timer.seconds(30)
   test "the breaker opens when the Valkey container is stopped, and get/1 still returns (degrade-safe)" do
     key = "valkey_cache_test/breaker/#{System.unique_integer([:positive])}"
@@ -44,6 +59,27 @@ defmodule <%= @module %>.Valkey.CacheLiveTest do
 
     System.cmd("podman-compose", ["start", "valkey"], cd: File.cwd!())
     await_valkey_ready!()
+  end
+
+  @tag timeout: :timer.seconds(30)
+  test "a write against a stopped Valkey container degrades safely AND opens the breaker" do
+    key = "valkey_cache_test/write_breaker/#{System.unique_integer([:positive])}"
+
+    System.cmd("podman-compose", ["stop", "valkey"], cd: File.cwd!())
+
+    try do
+      # Writes must degrade safely (L1 still takes them) while the circuit is
+      # still closed...
+      Enum.each(1..5, fn i -> assert Cache.put(key, "attempt-#{i}") == :ok end)
+
+      # ...and each of those L2 failures must have been counted, so the
+      # circuit is now open. A propagating operation is the observable proof:
+      # it refuses without even reaching the backend.
+      assert_raise RuntimeError, ~r/circuit open/, fn -> Cache.put_new(key, "v") end
+    after
+      System.cmd("podman-compose", ["start", "valkey"], cd: File.cwd!())
+      await_valkey_ready!()
+    end
   end
 
   # Bounded readiness poll -- reuses compose.yaml's own healthcheck command

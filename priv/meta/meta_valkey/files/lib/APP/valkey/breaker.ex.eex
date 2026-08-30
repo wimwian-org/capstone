@@ -19,6 +19,13 @@ defmodule <%= @module %>.Valkey.Breaker do
   failure count, opened-at) published once via `:persistent_term`, mutated
   directly by whichever caller observes success/failure — no GenServer
   bottleneck on the hot path.
+
+  Every backend call must name a **bang** function (`get!`, `put!`, `delete!`,
+  `put_new!`, `incr!`, `decr!`). `run/2` classifies a call as failed only when
+  it *raises*; Nebulex's non-bang counterparts instead *return* `:ok |
+  {:error, reason}` (or `{:ok, value}`), which `run/2` would happily wrap as a
+  success — silently resetting the failure counter on every L2 error, so the
+  circuit could never open.
   """
 
   @doc false
@@ -33,20 +40,20 @@ defmodule <%= @module %>.Valkey.Breaker do
   def get(key, opts \\ []), do: guarded(:get!, [key, nil, opts], nil)
   @doc false
   @spec put(term, term, keyword) :: :ok
-  def put(key, value, opts \\ []), do: guarded(:put, [key, value, opts], :ok)
+  def put(key, value, opts \\ []), do: guarded(:put!, [key, value, opts], :ok)
   @doc false
   @spec delete(term, keyword) :: :ok
-  def delete(key, opts \\ []), do: guarded(:delete, [key, opts], :ok)
+  def delete(key, opts \\ []), do: guarded(:delete!, [key, opts], :ok)
 
   @doc false
   @spec put_new(term, term, keyword) :: boolean
-  def put_new(key, value, opts \\ []), do: bounded(:put_new, [key, value, opts])
+  def put_new(key, value, opts \\ []), do: bounded(:put_new!, [key, value, opts])
   @doc false
   @spec incr(term, integer, keyword) :: integer
-  def incr(key, amount \\ 1, opts \\ []), do: bounded(:incr, [key, amount, opts])
+  def incr(key, amount \\ 1, opts \\ []), do: bounded(:incr!, [key, amount, opts])
   @doc false
   @spec decr(term, integer, keyword) :: integer
-  def decr(key, amount \\ 1, opts \\ []), do: bounded(:decr, [key, amount, opts])
+  def decr(key, amount \\ 1, opts \\ []), do: bounded(:decr!, [key, amount, opts])
 
   @doc "Force the circuit back to closed with a clean failure count — test/ops utility only."
   @spec reset!() :: :ok
