@@ -68,6 +68,19 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
+  config :new_api_app, NewApiApp.Valkey.Cache.L1,
+    gc_interval: :timer.hours(1),
+    max_size: 1_000_000,
+    allocated_memory: 100_000_000
+
+  config :new_api_app, NewApiApp.Valkey.Cache.L2,
+    conn_opts: [
+      host: System.get_env("VALKEY_HOST", "localhost"),
+      port: String.to_integer(System.get_env("VALKEY_PORT", "6379"))
+    ],
+    pool_size: 5
+
+  # Legacy config for NewApiApp.Valkey (kept until Task 6 removes it from supervision)
   config :new_api_app, NewApiApp.Valkey,
     host: System.get_env("VALKEY_HOST", "localhost"),
     port: String.to_integer(System.get_env("VALKEY_PORT", "6379"))
