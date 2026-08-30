@@ -5,6 +5,15 @@ defmodule NewApiApp.Valkey.CacheTest do
   alias NewApiApp.Valkey.Cache
   alias NewApiApp.Valkey.Cache.L1
 
+  # A deterministic fake L2 backend, swapped in via config — same pattern as
+  # BreakerTest's FakeBackend. :persistent_term, not Process.put/get, because
+  # Breaker.run/2 executes the backend call inside a Task.async'd process,
+  # which does not inherit the test process's process dictionary.
+  defmodule FakeL2Backend do
+    def get!(key, _default \\ nil, _opts \\ []),
+      do: :persistent_term.get({:fake_l2_get, key}, nil)
+  end
+
   setup do
     start_supervised!(L1)
     start_supervised!(NewApiApp.Valkey.Invalidator)
@@ -16,6 +25,25 @@ defmodule NewApiApp.Valkey.CacheTest do
   test "get/1 on an L1 hit never touches the breaker" do
     L1.put("k", "cached")
     assert Cache.get("k") == "cached"
+  end
+
+  test "get/1 on an L1 miss and a Breaker/L2 hit backfills L1" do
+    Application.put_env(:new_api_app, Breaker,
+      backend: FakeL2Backend,
+      timeout_ms: 50,
+      failure_threshold: 3,
+      cooldown_ms: 30
+    )
+
+    on_exit(fn -> Application.delete_env(:new_api_app, Breaker) end)
+
+    :persistent_term.put({:fake_l2_get, "k2"}, "from-l2")
+    on_exit(fn -> :persistent_term.erase({:fake_l2_get, "k2"}) end)
+
+    assert L1.get!("k2") == nil
+
+    assert Cache.get("k2") == "from-l2"
+    assert L1.get!("k2") == "from-l2"
   end
 
   test "get/1 degrades to nil when L1 misses and the breaker's circuit is open" do
