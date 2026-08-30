@@ -30,13 +30,54 @@ defmodule Capstone.Plugin.Derive do
   """
   @spec run(keyword()) :: {:ok, map()} | {:error, term()}
   def run(opts) do
-    changes = Diff.changes(Keyword.fetch!(opts, :baseline), Keyword.fetch!(opts, :meta))
+    baseline = Keyword.fetch!(opts, :baseline)
+    meta = Keyword.fetch!(opts, :meta)
+    changes = Diff.changes(baseline, meta)
+    binary = binary_changes(baseline, meta, changes)
 
-    case changes.removed do
-      [] -> emit(opts, changes)
-      removed -> {:error, {:unrepresentable_deletions, removed}}
+    cond do
+      changes.removed != [] ->
+        {:error, {:unrepresentable_deletions, changes.removed}}
+
+      binary != [] ->
+        {:error, {:unrepresentable_binary_changes, binary}}
+
+      true ->
+        emit(opts, changes)
     end
   end
+
+  # `entries/2` templates every added file, and `shared/2` templates every
+  # modified file's diff block, via `Template.capture/2`, which deliberately
+  # refuses binary content (SDD's own positive control for this is the
+  # phx.new favicon — `Template.text?/1` false, `capture/2` returns
+  # `{:error, :binary}` rather than mangling it). Checked here, up front, for
+  # the same reason `changes.removed` is: fail with a clear reason before
+  # `emit/2` does any work, not with a `MatchError` mid-write — this covers
+  # only the `{:error, :binary}` case, not the separate `:render_mismatch`/
+  # `:render_raised` failures `capture/2` can also return, which are about a
+  # captured template failing to reproduce its source rather than the source
+  # being unrepresentable. This is not a corner case unique to one plugin —
+  # any raw component whose own tooling (a sidecar's bind mount, a build
+  # artifact) leaves an unexpected binary file behind, whether that file is
+  # new or one the raw project modified, hits this exact path;
+  # `Capstone.Baseline`'s `@pruned`/`@pruned_paths` is where a SPECIFIC,
+  # known-forever path belongs (`.gitignore` is not enough — pruning walks
+  # the filesystem, not the index), but new, unanticipated cases still need
+  # a diagnosable failure instead of a crash. A modified file counts as
+  # binary if EITHER side is: `shared/2`'s diffing (a prefix/suffix
+  # comparison, or a hunk-based reconstruction) has no meaning for binary
+  # content regardless of which side changed.
+  defp binary_changes(baseline, meta, changes) do
+    added = Enum.filter(changes.added, &binary_file?(meta, &1))
+
+    modified =
+      Enum.filter(changes.modified, &(binary_file?(baseline, &1) or binary_file?(meta, &1)))
+
+    Enum.uniq(added ++ modified)
+  end
+
+  defp binary_file?(root, path), do: not Template.text?(File.read!(Path.join(root, path)))
 
   defp emit(opts, changes) do
     out = Keyword.fetch!(opts, :out)

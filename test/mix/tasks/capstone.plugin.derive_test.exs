@@ -70,6 +70,33 @@ defmodule Mix.Tasks.Capstone.Plugin.DeriveTest do
     end
   end
 
+  test "a raw project that adds a binary file is refused, naming the path" do
+    # Template.capture/2 correctly refuses to template binary content; derive
+    # must turn that refusal into a named, actionable error rather than the
+    # bare MatchError this reproduces without the fix (deep in entries/2).
+    file = "priv/meta/cache_component/lib/new_api_app/dump.bin"
+    on_exit(fn -> File.rm(file) end)
+    File.write!(file, <<0, 159, 146, 150>>)
+
+    assert_raise Mix.Error, ~r/adds or modifies binary file.*dump\.bin/s, fn ->
+      Derive.run(["cache"])
+    end
+  end
+
+  test "a raw project that turns a baseline file binary is refused, naming the path" do
+    # The predecessor fix only guarded changes.added; a raw component that
+    # MODIFIES an existing baseline file into binary content (e.g. rebranding
+    # a favicon) hit the same unguarded MatchError in shared/2 instead.
+    file = "priv/meta/cache_component/README.md"
+    original = File.read!(file)
+    on_exit(fn -> File.write!(file, original) end)
+    File.write!(file, <<0, 159, 146, 150>>)
+
+    assert_raise Mix.Error, ~r/adds or modifies binary file.*README\.md/s, fn ->
+      Derive.run(["cache"])
+    end
+  end
+
   test "run/1 requires exactly one plugin name" do
     assert_raise Mix.Error, ~r/expects one plugin name/, fn ->
       Derive.run([])

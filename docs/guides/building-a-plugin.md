@@ -167,15 +167,23 @@ from, this fails: SDD 7.3 has no ownership mode for a deletion, so it must
 be represented some other way (or the deletion avoided).
 
 A raw project whose own `compose.yaml` bind-mounts a runtime data directory
-(e.g. `valkey_component`'s `.valkey_data/`) needs that directory deleted
-before you touch it here — being gitignored is not enough, since every path
-below walks the filesystem, not the git index. Left in place, a binary
-snapshot file in that directory breaks `derive` (`Capstone.Plugin.Derive`
-tries to template it as text and raises), the round-trip test for that
-plugin (it walks the raw project directly), `mix capstone.baseline.record`,
-and `test/capstone/baseline_test.exs`'s drift check — all four read the raw
-tree the same way. `rm -rf` the directory (or stop the sidecar first) before
-running any of `derive`, `baseline.record`, or the test suite.
+(e.g. `valkey_component`'s `.valkey_data/`) can leave a binary snapshot file
+behind just from running the sidecar the way that component's own README
+tells you to. Being gitignored is never enough by itself — `derive`,
+`baseline.record`, the round-trip tests, and `test/capstone/baseline_test.exs`'s
+drift check all walk the filesystem, not the git index — so any such
+directory that's expected to reappear belongs in `Capstone.Baseline`'s
+`@pruned`, where `.valkey_data` already is: every one of those four readers
+goes through `Baseline.tree/1`, so it's pruned automatically at any depth
+and none of them ever see it.
+
+For a binary file that *isn't* accounted for there — a new sidecar's own
+data directory, say — `derive` no longer crashes on it either way: it fails
+with a named, actionable error (`Mix.raise` naming the offending path)
+instead of a bare `MatchError`, whether the file is new or one the raw
+project modified. Add its path to `@pruned_paths` (or `@pruned`, for a
+directory name that should be excluded at any depth) if it will keep
+reappearing on its own; delete it and re-run if it's a one-off.
 
 ### 3. Package it
 

@@ -61,6 +61,25 @@ defmodule Mix.Tasks.Capstone.Plugin.Derive do
 
           #{Enum.join(paths, "\n  ")}
         """)
+
+      {:error, {:unrepresentable_binary_changes, paths}} ->
+        Mix.raise("""
+        #{name} adds or modifies binary file(s) that can't be templated as
+        plugin source:
+
+          #{Enum.join(paths, "\n  ")}
+
+        If this is real plugin content, Derive has no way to represent a
+        binary file as templated `:sole_owner` source, or a binary file's
+        change as a templated diff block -- either needs a different
+        ownership approach.
+
+        If this is NOT real content (a build artifact, a container's runtime
+        data), delete it and re-run, or -- if it will keep reappearing
+        whenever the raw component's own tooling runs -- add its path to
+        `Capstone.Baseline`'s `@pruned`/`@pruned_paths` so it's excluded
+        permanently.
+        """)
     end
   end
 
