@@ -68,7 +68,20 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
-  openbao_method = System.get_env("OPENBAO_METHOD", "token") |> String.to_existing_atom()
+  # An explicit allow-list, not String.to_existing_atom/1: on a release boot
+  # nothing has loaded :approle yet, so to_existing_atom/1 would raise
+  # ArgumentError for the very value this option exists to accept.
+  openbao_method =
+    case System.get_env("OPENBAO_METHOD", "token") do
+      "token" ->
+        :token
+
+      "approle" ->
+        :approle
+
+      other ->
+        raise ~s(OPENBAO_METHOD must be "token" or "approle", got: #{inspect(other)})
+    end
 
   openbao_token =
     if openbao_method == :token do
