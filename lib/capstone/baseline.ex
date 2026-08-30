@@ -31,7 +31,11 @@ defmodule Capstone.Baseline do
   # `erl_crash.dump` is never source. A crashed VM inside a meta project — a
   # test run with no database, say — would otherwise change that project's
   # recorded hashes and fail the drift check for a reason unrelated to drift.
-  @pruned_paths ~w(mix.lock erl_crash.dump priv/static/assets/ priv/static/.vite/)
+  # `.valkey_data/` is the same story with a sharper edge: it is the bind
+  # mount valkey_component's own compose.yaml writes its RDB snapshot into, so
+  # merely running the sidecar the way that component's README tells you to
+  # leaves a BINARY file behind, and derive then dies on it with a MatchError.
+  @pruned_paths ~w(mix.lock erl_crash.dump .valkey_data/ priv/static/assets/ priv/static/.vite/)
 
   # Pinned so the tar is byte-reproducible: the archive's filename is its
   # sha256, so unpinned clock values would rename an unchanged baseline on
