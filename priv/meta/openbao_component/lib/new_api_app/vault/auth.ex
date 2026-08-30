@@ -1,0 +1,145 @@
+defmodule NewApiApp.Vault.Auth do
+  @moduledoc """
+  Login, lease renewal, and a fail-closed boot gate for the OpenBao sidecar —
+  ported from `manage_infra`'s `ManageInfra.Crypto.Auth`, minus the
+  `:kubernetes` branch — see
+  docs/superpowers/specs/2026-08-29-valkey-openbao-enhancements-design.md.
+
+  `config[:method]`: `:token` (a static token from config, no login
+  round-trip — the zero-setup dev default) or `:approle` (`role_id`/
+  `secret_id` posted to `/v1/auth/approle/login`).
+
+  `:approle`'s *first* login happens synchronously inside `init/1` — blocking
+  `Supervisor.start_link/2` for one HTTP round-trip bounded by
+  `config[:timeout_ms]` — and returns `{:stop, reason}` on failure, which
+  fails `Application.start/2` itself: an unreachable/misconfigured OpenBao
+  refuses the whole app's boot. Every LATER failure (a lease renewal, or a
+  retry after the first login already succeeded) stays async and retries
+  forever via `Process.send_after/3` — an initial-boot failure is not the
+  same as a lease expiring mid-run.
+
+  Publishes the current token via `:persistent_term` on every successful
+  login/renewal, so `NewApiApp.Vault.read_secret/2` reads it without a
+  `GenServer` call per request.
+  """
+
+  use GenServer
+
+  require Logger
+
+  @retry_ms 5_000
+  @renew_fraction 2 / 3
+  @token_key {__MODULE__, :token}
+
+  @doc false
+  @spec start_link(keyword) :: GenServer.on_start()
+  def start_link(opts \\ []) do
+    GenServer.start_link(__MODULE__, opts, name: Keyword.get(opts, :name, __MODULE__))
+  end
+
+  @doc "The current OpenBao token, published by the last successful login/renewal."
+  @spec current_token() :: String.t()
+  def current_token, do: :persistent_term.get(@token_key)
+
+  @impl true
+  def init(_opts) do
+    case config()[:method] do
+      :token ->
+        :persistent_term.put(@token_key, config()[:token])
+        {:ok, %{}}
+
+      :approle ->
+        case approle_login() do
+          {:ok, token, ttl} ->
+            :persistent_term.put(@token_key, token)
+            schedule_renew(ttl)
+            {:ok, %{}}
+
+          {:error, reason} ->
+            {:stop, reason}
+        end
+    end
+  end
+
+  @impl true
+  def handle_info(:retry_login, state) do
+    case approle_login() do
+      {:ok, token, ttl} ->
+        :persistent_term.put(@token_key, token)
+        schedule_renew(ttl)
+
+      {:error, reason} ->
+        Logger.warning("NewApiApp.Vault.Auth login retry failed: #{inspect(reason)}")
+        Process.send_after(self(), :retry_login, @retry_ms)
+    end
+
+    {:noreply, state}
+  end
+
+  def handle_info(:renew, state) do
+    case renew_self(current_token()) do
+      {:ok, ttl} ->
+        schedule_renew(ttl)
+
+      {:error, reason} ->
+        Logger.warning("NewApiApp.Vault.Auth renew failed, re-authenticating: #{inspect(reason)}")
+        send(self(), :retry_login)
+    end
+
+    {:noreply, state}
+  end
+
+  defp approle_login do
+    body = %{role_id: config()[:role_id], secret_id: config()[:secret_id]}
+    opts = Keyword.merge([base_url: base_url()], req_test_opts())
+
+    opts
+    |> Req.new()
+    |> Req.post(
+      url: "/v1/auth/#{config()[:mount]}/login",
+      json: body,
+      retry: false,
+      receive_timeout: config()[:timeout_ms]
+    )
+    |> login_result()
+  end
+
+  defp renew_self(token) do
+    opts =
+      Keyword.merge([base_url: base_url(), headers: [{"x-vault-token", token}]], req_test_opts())
+
+    opts
+    |> Req.new()
+    |> Req.post(
+      url: "/v1/auth/token/renew-self",
+      retry: false,
+      receive_timeout: config()[:timeout_ms]
+    )
+    |> renew_result()
+  end
+
+  defp login_result({:ok, %{status: 200, body: %{"auth" => auth}}}),
+    do: {:ok, auth["client_token"], auth["lease_duration"]}
+
+  defp login_result({:ok, %{status: status, body: body}}), do: {:error, {status, body}}
+  defp login_result({:error, reason}), do: {:error, reason}
+
+  defp renew_result({:ok, %{status: 200, body: %{"auth" => %{"lease_duration" => ttl}}}}),
+    do: {:ok, ttl}
+
+  defp renew_result({:ok, %{status: status, body: body}}), do: {:error, {status, body}}
+  defp renew_result({:error, reason}), do: {:error, reason}
+
+  defp schedule_renew(ttl_seconds) do
+    Process.send_after(self(), :renew, round(ttl_seconds * 1000 * @renew_fraction))
+  end
+
+  defp base_url, do: config()[:base_url]
+
+  # Tests inject a `:plug` stub the same way NewApiApp.Vault.read_secret/2's
+  # own tests already do — see this module's moduledoc reference and
+  # NewApiApp.VaultTest.
+  defp req_test_opts, do: List.wrap(config()[:plug] && [plug: config()[:plug]])
+
+  defp config, do: Application.fetch_env!(:new_api_app, NewApiApp.Vault)
+end

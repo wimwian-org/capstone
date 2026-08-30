@@ -1,7 +1,12 @@
 defmodule NewApiApp.VaultTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
 
   @plug_opts [plug: {Req.Test, NewApiApp.Vault}]
+
+  setup do
+    start_supervised!(NewApiApp.Vault.Auth)
+    :ok
+  end
 
   test "returns the decoded KV v2 secret data on a 200" do
     Req.Test.stub(NewApiApp.Vault, fn conn ->
@@ -28,5 +33,14 @@ defmodule NewApiApp.VaultTest do
     # retry-with-backoff, which sleeps for real between attempts.
     assert NewApiApp.Vault.read_secret("new_api_app/db", [retry: false] ++ @plug_opts) ==
              {:error, {:unexpected_status, 500}}
+  end
+
+  test "health/0 returns :ok on a 200 with no auth header required" do
+    Req.Test.stub(NewApiApp.Vault, fn conn ->
+      refute Plug.Conn.get_req_header(conn, "x-vault-token") != []
+      Plug.Conn.send_resp(conn, 200, "")
+    end)
+
+    assert NewApiApp.Vault.health(@plug_opts) == :ok
   end
 end
