@@ -65,7 +65,24 @@ defmodule Capstone.Plugin.DeriveTest do
     # entries/2 rather than a diagnosable error naming the offending path.
     File.write!(Path.join(opts[:meta], "lib/app/dump.bin"), <<0, 159, 146, 150>>)
 
-    assert {:error, {:unrepresentable_binary_additions, ["lib/app/dump.bin"]}} =
+    assert {:error, {:unrepresentable_binary_changes, ["lib/app/dump.bin"]}} =
+             Derive.run(opts)
+  end
+
+  test "refuses a baseline file turned binary, naming the path, instead of crashing", %{
+    opts: opts
+  } do
+    # The measured defect: binary_additions/2 (this fix's predecessor) only
+    # guarded changes.added -- a raw component that MODIFIES an existing
+    # baseline file into binary content (e.g. rebranding priv/static/favicon.ico,
+    # present in every baseline) still hit the bare MatchError in shared/2's
+    # `{:ok, templated} = Template.capture(block, names)`, unguarded.
+    # config/config.exs already differs between baseline and meta in the
+    # :meta_pair factory, so overwriting it with binary bytes in meta alone
+    # is enough to exercise changes.modified with one binary side.
+    File.write!(Path.join(opts[:meta], "config/config.exs"), <<0, 159, 146, 150>>)
+
+    assert {:error, {:unrepresentable_binary_changes, ["config/config.exs"]}} =
              Derive.run(opts)
   end
 

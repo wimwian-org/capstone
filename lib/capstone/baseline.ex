@@ -18,7 +18,15 @@ defmodule Capstone.Baseline do
   # `deps` and `_build` do: measured, a meta project with its assets installed
   # reported 38,189 of 38,215 added files as installed packages, and derive
   # then failed trying to template a binary out of one.
-  @pruned ~w(.git deps _build node_modules)
+  #
+  # `.valkey_data` is a directory NAME, not a rooted path, deliberately: it is
+  # the bind mount `valkey_component`'s own `compose.yaml` writes its RDB
+  # snapshot into, so merely running the sidecar the way that component's own
+  # README tells you to leaves a BINARY file behind, and unlike `assets`
+  # below it has no legitimate meaning as source at any depth — including
+  # inside an umbrella sub-app's own component directory, which a rooted
+  # path would miss.
+  @pruned ~w(.git deps _build node_modules .valkey_data)
 
   # Build output and the lockfile, pruned by PATH rather than by directory
   # name. `assets` cannot go in @pruned above — at the project root it is the
@@ -31,15 +39,14 @@ defmodule Capstone.Baseline do
   # `erl_crash.dump` is never source. A crashed VM inside a meta project — a
   # test run with no database, say — would otherwise change that project's
   # recorded hashes and fail the drift check for a reason unrelated to drift.
-  # `.valkey_data/` is the same story with a sharper edge: it is the bind
-  # mount `valkey_component`'s own `compose.yaml` writes its RDB snapshot
-  # into, so merely running the sidecar the way that component's own README
-  # tells you to leaves a BINARY file behind. Being gitignored is not
-  # enough — this walks the filesystem, not the index. A path added here
-  # for the same reason gets an immediate, actionable `Mix.raise` from
-  # `Capstone.Plugin.Derive` if it's ever missed — see that module's
-  # `binary_additions/2`.
-  @pruned_paths ~w(mix.lock erl_crash.dump .valkey_data/ priv/static/assets/ priv/static/.vite/)
+  #
+  # A path that ISN'T listed here or in `@pruned` still can't crash `derive`
+  # silently if it turns out to be binary — `Capstone.Plugin.Derive`'s
+  # binary guard turns that into an immediate, actionable `Mix.raise`
+  # instead. This list is for cases already known to recur, so they're
+  # excluded before the drift check or derive ever sees them, rather than
+  # raising on every run.
+  @pruned_paths ~w(mix.lock erl_crash.dump priv/static/assets/ priv/static/.vite/)
 
   # Pinned so the tar is byte-reproducible: the archive's filename is its
   # sha256, so unpinned clock values would rename an unchanged baseline on

@@ -87,14 +87,18 @@ defmodule Capstone.MixProject do
   # (`hex_metadata.config` in each vendor directory). `only: :dev,
   # runtime: false, compile: false` -- never compiled, so nothing here
   # collides with (or substitutes for) the vendored `Capstone.Vendor.*`
-  # copies actually used at runtime; present solely so `mix docs` can
-  # resolve/link doc references to the real package a vendored type
-  # corresponds to, e.g. `Capstone.Source.MixExs.append_element/4`'s
-  # `@spec`, instead of linking into `Capstone.Vendor.*`, which
-  # `filter_modules` in `docs/0` deliberately excludes from published docs.
+  # copies actually used at runtime; present so `mix docs` can resolve/link
+  # bare prose references to the real package instead of leaving them
+  # dangling. `:sourceror` is deliberately NOT here: every `@spec` that
+  # touches a vendored Sourceror type names it through the
+  # `Capstone.Vendor.Sourceror` alias already in scope, which is the
+  # dialyzer-correct reference (it's the vendored copy that actually ships)
+  # and therefore always resolves to a module `filter_modules` in `docs/0`
+  # excludes -- adding the real package back here cannot fix that, it would
+  # only leave `@spec`s pointing at a module `mix docs` can no longer
+  # explain the absence of. See the comment on `docs/0` below.
   defp vendored_upstream_docs_deps do
     [
-      {:sourceror, "== 1.12.2", only: :dev, runtime: false},
       {:vex, "== 0.9.2", only: :dev, runtime: false},
       {:simple_enum, "== 1.0.0", only: :dev, runtime: false},
       {:typedstruct, "== 0.5.4", only: :dev, runtime: false}
@@ -140,13 +144,17 @@ defmodule Capstone.MixProject do
   # `filter_modules`, rather than patched one warning at a time. Prose
   # elsewhere that mentions a vendored module by name (moduledocs
   # explaining the mechanism, not `@spec`s) names it without linking, via
-  # `skip_code_autolink_to` -- `vendored_upstream_docs_deps/0` below exists
-  # for the one place that DOES want a real, working hexdocs link instead
-  # (`Capstone.Source.MixExs.append_element/4`'s `@spec`; see the comment
-  # there). `Mix.Dep.Lock` and `Mix.Tasks.Capstone.New.run/1` are the two
-  # remaining entries from capstone's own code -- real, intentional
-  # references to genuinely hidden/undocumented modules, named but never
-  # auto-linked.
+  # `skip_code_autolink_to` below -- `vendored_upstream_docs_deps/0` is the
+  # other half of that same case: a bare, un-namespaced prose reference
+  # (e.g. `Vex.valid?/2`) resolves to the real package's own docs once that
+  # package is present here as a dev-only, never-compiled dependency,
+  # rather than dangling. `Capstone.Source.MixExs.append_element/4`'s
+  # `@spec` is neither case -- see the comment on `vendored_upstream_docs_deps/0`
+  # above for why that one warning is accepted rather than suppressed.
+  # `Mix.Dep.Lock` and `Mix.Tasks.Capstone.New.run/1` are the two remaining
+  # `skip_code_autolink_to` entries from capstone's own code -- real,
+  # intentional references to genuinely hidden/undocumented modules, named
+  # but never auto-linked.
   defp docs do
     [
       main: "readme",
