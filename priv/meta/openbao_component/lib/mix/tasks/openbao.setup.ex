@@ -22,6 +22,15 @@ defmodule Mix.Tasks.Openbao.Setup do
 
   @impl Mix.Task
   def run(argv) do
+    # A bare `mix openbao.setup` invocation, unlike `mix test`/`mix run`,
+    # does not start any OTP application -- Req has no live Finch pool to
+    # send requests through without this. Deliberately narrower than
+    # `Mix.Task.run("app.start")`: starting the whole app would also boot
+    # `NewApiApp.Vault.Auth` (fail-closed, first in supervision), and this
+    # task's entire purpose is producing the AppRole credentials `Auth`
+    # needs before it can be configured for `:approle` in the first place.
+    {:ok, _} = Application.ensure_all_started(:req)
+
     {opts, _rest} =
       OptionParser.parse!(argv, strict: [base_url: :string, root_token: :string])
 
