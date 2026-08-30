@@ -37,6 +37,7 @@ defmodule NewApiApp.Valkey.BreakerTest do
   setup do
     Breaker.reset!()
     on_exit(&Breaker.reset!/0)
+    on_exit(fn -> :persistent_term.erase({:fake_get, "k"}) end)
 
     Application.put_env(:new_api_app, Breaker,
       backend: FakeBackend,
