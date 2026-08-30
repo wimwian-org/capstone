@@ -704,7 +704,7 @@
     tree_digest: "sha256:32f90697087995e7072ff150fc9eeeef6c5268b541cd7052fe69b13e1dd12402"
   },
   valkey: %{
-    archive_sha256: "fe45e4ffd1409a5eee8db6979143137357e6763b33279153db99960a6b3096ca",
+    archive_sha256: "eac1c319bb23e25c8f037edbe15245c733d29463ab361378c2d112c4933f4d40",
     derived_from: :api_podman,
     files: %{
       ".formatter.exs" => "a44a43d777033eb6c64e0101b7469611c2def3b377b04c9d6b2a8620a347d385",
@@ -738,7 +738,7 @@
         "18f68f5eec8914616c88bebbe9fa840b59e979c088328163989081269afce4b4",
       "lib/new_api_app_web/telemetry.ex" =>
         "545604fa4abecf9644ca57b1d495f587c9e19884d1d7c1c703dcd6513da7cce6",
-      "mix.exs" => "39c5a805d7be73501a921ffa5b29edb57bee04a176d7bcc9cdaa3118d4b038aa",
+      "mix.exs" => "8ce06d73339fecd182e052103752af9f97318f313637143b8d2a03653756908e",
       "priv/gettext/en/LC_MESSAGES/errors.po" =>
         "7965ec884cd9c0dd4f13b268b485e1e3edc13d8f2574eee6f11b35bf3175d05b",
       "priv/gettext/errors.pot" =>
@@ -768,7 +768,7 @@
       {:secret, "lib/new_api_app_web/endpoint.ex", :signing_salt}
     ],
     path: "priv/meta/valkey_component",
-    tree_digest: "sha256:42c4c297077c036780cdfddb57b95adf695aad1eb45f3c5f6ef8779c3919146b"
+    tree_digest: "sha256:be5c92116b973c0c36cc201ba176d9db16dd0ef1d507a0e898355ae1df5cab59"
   },
   web: %{
     archive_sha256: "6a1b8b2adbac7f9b9262a73993cc671eadf765d69f4c0fb9b2de6351873985f7",

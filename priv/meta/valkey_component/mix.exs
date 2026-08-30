@@ -39,6 +39,9 @@ defmodule NewApiApp.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
+      {:nebulex, "~> 3.0"},
+      {:nebulex_local, "~> 3.0"},
+      {:nebulex_redis_adapter, "~> 3.0"},
       {:redix, "~> 1.8"},
       {:phoenix, "~> 1.8.9"},
       {:phoenix_ecto, "~> 4.5"},

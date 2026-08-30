@@ -1,5 +1,10 @@
 %{
-  deps: ["{:redix, \"~> 1.8\"}"],
+  deps: [
+    "{:nebulex, \"~> 3.0\"}",
+    "{:nebulex_local, \"~> 3.0\"}",
+    "{:nebulex_redis_adapter, \"~> 3.0\"}",
+    "{:redix, \"~> 1.8\"}"
+  ],
   files: [
     {"lib/APP/valkey.ex", :sole_owner},
     {"test/APP/valkey_test.exs", :sole_owner},
