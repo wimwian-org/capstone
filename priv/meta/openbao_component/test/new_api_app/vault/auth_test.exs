@@ -82,7 +82,15 @@ defmodule NewApiApp.Vault.AuthTest do
     end)
 
     Process.flag(:trap_exit, true)
-    assert {:error, _reason} = start_supervised({Auth, name: @name})
+
+    # Asserting the specific {:unexpected_status, 400} reason (not a bare
+    # {:error, _reason} wildcard) matters here: a wildcard can't distinguish
+    # the fail-closed gate genuinely refusing to boot from any other startup
+    # failure, including a name collision with an already-running Auth
+    # (start_supervised also returns {:error, {:already_started, pid}} in
+    # that case) — exactly the failure mode this test is meant to catch.
+    assert {:error, {{:unexpected_status, 400}, _child}} =
+             start_supervised({Auth, name: @name})
   end
 
   test ":approle method: a renewal failure re-triggers a full login rather than crashing" do
