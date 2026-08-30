@@ -16,7 +16,8 @@
      [
        after: ["  @impl true", "  def start(_type, _args) do", "    children = ["],
        key: :openbao_application
-     ]}
+     ]},
+    {"test/test_helper.exs", :contributes, [key: :openbao_test_helper]}
   ],
   name: :openbao,
   version: "0.1.0"
