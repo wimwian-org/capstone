@@ -77,7 +77,7 @@ defmodule NewApiApp.Vault.LiveApproleTest do
 
     # Snapshot the actual configured value and restore that exact snapshot,
     # rather than hand-writing a restoration literal that can silently drift
-    # from what config/test.exs actually specifies (see Task 10's review).
+    # from what config/test.exs actually specifies.
     original = Application.get_env(:new_api_app, NewApiApp.Vault)
 
     Application.put_env(:new_api_app, NewApiApp.Vault,

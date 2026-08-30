@@ -476,6 +476,18 @@ Expected: FAIL — `NewApiApp.Valkey.Breaker` is undefined.
 
 - [ ] **Step 3: Implement `Breaker`**
 
+> **DO NOT RE-DERIVE THIS BLOCK AS WRITTEN — it has a known, already-fixed
+> defect.** All six call sites below name Nebulex's *non-bang* functions,
+> which return `:ok | {:error, reason}` (or `{:ok, value}`) rather than
+> raising. `run/2` treats only a raise as a failure, so an L2 error came back
+> as a success, `record_success/0` fired on every failed write, and the
+> circuit could never open — the exact resilience property this module
+> exists for. `:get` also has the wrong arity here. Fixed by switching to
+> `get!`/`put!`/`delete!`/`put_new!`/`incr!`/`decr!`; see
+> `.superpowers/sdd/2026-08-29-valkey-openbao-enhancements-plan/progress.md`
+> for the full history. Take `priv/meta/valkey_component/lib/new_api_app/valkey/breaker.ex`
+> as the source of truth, not the code below.
+
 ```elixir
 defmodule NewApiApp.Valkey.Breaker do
   @moduledoc """
@@ -1508,6 +1520,19 @@ Run: `cd priv/meta/openbao_component && mix test test/new_api_app/vault/auth_tes
 Expected: FAIL — `NewApiApp.Vault.Auth` is undefined.
 
 - [ ] **Step 3: Implement `Auth`**
+
+> **DO NOT RE-DERIVE THIS BLOCK AS WRITTEN — it has known, already-fixed
+> security defects.** Three of them: `schedule_renew/1` is unguarded (a `0` or
+> missing `lease_duration` gives either a tight renew-flood loop or an
+> `ArithmeticError` that crashes `init/1`), `login_result/1` and
+> `renew_result/1` put the whole response `body` into the error reason, which
+> `Logger.warning` then `inspect`s — leaking a live token into the logs — and
+> the `:token` branch's `config()[:token]` silently publishes `nil` instead of
+> failing loudly on a missing key. All fixed in `c1214ee` ("fix(openbao):
+> guard Auth's renewal scheduling, stop token/body leakage into logs"); see
+> `.superpowers/sdd/2026-08-29-valkey-openbao-enhancements-plan/progress.md`
+> for the full history. Take `priv/meta/openbao_component/lib/new_api_app/vault/auth.ex`
+> as the source of truth, not the code below.
 
 ```elixir
 defmodule NewApiApp.Vault.Auth do
