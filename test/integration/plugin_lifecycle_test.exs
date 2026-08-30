@@ -478,6 +478,12 @@ defmodule Capstone.Integration.PluginLifecycleTest do
       )
     )
 
+    # Pins that the String.replace/3 above actually took effect, not a
+    # silent no-op (a drifted literal would leave openbao_method on its
+    # env-var default, which still fails to boot below for the unrelated
+    # reason of a missing OPENBAO_TOKEN — same refute outcomes, wrong cause).
+    assert File.read!(runtime_exs) =~ "openbao_method = :approle"
+
     {output, exit_code} =
       System.cmd(
         "mix",
@@ -496,6 +502,13 @@ defmodule Capstone.Integration.PluginLifecycleTest do
 
     refute exit_code == 0
     refute output =~ "booted"
+    # Pins the actual mechanism, not just the outcome: the supervisor crash
+    # report names the child that refused to start, proving the fail-closed
+    # gate fired rather than the app failing to boot for some unrelated
+    # reason (e.g. a missing env var) that would also satisfy the refutes
+    # above. Confirmed against real `mix run` output: `Application.start/2`
+    # returns "shutdown: failed to start child: WithBadApprole.Vault.Auth".
+    assert output =~ "WithBadApprole.Vault.Auth"
   end
 
   @tag :toolchain
@@ -561,6 +574,14 @@ defmodule Capstone.Integration.PluginLifecycleTest do
   # a real registry plugin" test already uses for an unpublished fixture
   # plugin. `:podman` is untouched by this plan, so it still syncs for
   # real, exactly as the rest of this file's tests do.
+  #
+  # That real `:podman` sync (and any other non-overridden type elsewhere in
+  # this file) hits the live GitHub API on every run via
+  # `Capstone.Plugin.Remote.sync!/3`, uncached — pre-existing behavior, not
+  # something this helper introduces. `Remote` reads `GITHUB_TOKEN`/
+  # `GH_TOKEN` when present for a much higher authenticated rate limit (see
+  # `lib/capstone/plugin/remote.ex`); set one of those in CI and for
+  # repeated local runs to avoid the unauthenticated 60/hr limit.
   defp local_openbao_valkey_effects(capstone_path, tmp) do
     registry = Path.join(tmp, "registry-#{System.unique_integer([:positive])}")
 
