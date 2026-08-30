@@ -51,14 +51,12 @@ defmodule NewApiApp.Valkey.CacheTest do
   end
 
   test "get/1 on an L1 miss and a Breaker/L2 hit backfills L1" do
-    Application.put_env(:new_api_app, Breaker,
+    override_breaker_env(
       backend: FakeL2Backend,
       timeout_ms: 50,
       failure_threshold: 3,
       cooldown_ms: 30
     )
-
-    on_exit(fn -> Application.delete_env(:new_api_app, Breaker) end)
 
     :persistent_term.put({:fake_l2_get, "k2"}, "from-l2")
     on_exit(fn -> :persistent_term.erase({:fake_l2_get, "k2"}) end)
@@ -95,7 +93,7 @@ defmodule NewApiApp.Valkey.CacheTest do
   end
 
   defp use_unreachable_backend do
-    Application.put_env(:new_api_app, Breaker,
+    override_breaker_env(
       backend: UnreachableBackend,
       timeout_ms: 50,
       failure_threshold: 1,
@@ -103,10 +101,23 @@ defmodule NewApiApp.Valkey.CacheTest do
     )
 
     UnreachableBackend.reset_calls()
+    on_exit(&UnreachableBackend.erase_calls/0)
+  end
+
+  # Snapshot and restore, never Application.delete_env/2: config/test.exs's
+  # own Breaker settings have to survive for every later test in the VM (the
+  # live-sidecar ones included), and deleting the key leaves Breaker's
+  # timeout_ms/1 returning nil for all of them.
+  defp override_breaker_env(config) do
+    original = Application.get_env(:new_api_app, Breaker)
 
     on_exit(fn ->
-      Application.delete_env(:new_api_app, Breaker)
-      UnreachableBackend.erase_calls()
+      case original do
+        nil -> Application.delete_env(:new_api_app, Breaker)
+        original -> Application.put_env(:new_api_app, Breaker, original)
+      end
     end)
+
+    Application.put_env(:new_api_app, Breaker, config)
   end
 end

@@ -712,7 +712,7 @@
     tree_digest: "sha256:32f90697087995e7072ff150fc9eeeef6c5268b541cd7052fe69b13e1dd12402"
   },
   valkey: %{
-    archive_sha256: "a46d8c51a9d8de7c6fbf4365c51ab7fe0684d747da709dcc826047dff161d6d2",
+    archive_sha256: "39c8abf7d0eab4be9edbd5dd1c45dd27536890797f3df1120f8d3c14c8c5542e",
     derived_from: :api_podman,
     files: %{
       ".formatter.exs" => "a44a43d777033eb6c64e0101b7469611c2def3b377b04c9d6b2a8620a347d385",
@@ -767,15 +767,15 @@
       "priv/static/robots.txt" =>
         "f994bfae2c1db1221ac049f1097776b444048e0b0a7705d33ea511b610bed115",
       "test/new_api_app/valkey/breaker_test.exs" =>
-        "8ec1038f6f81570fbeb0175863ea7552c73208c7491b14aa82541f044d1e5a8c",
+        "653f72cd26ce2f93afd43e7eea46a75b5e5dcce259f2fe60794d11f3b971d90f",
       "test/new_api_app/valkey/cache/l1_test.exs" =>
         "430357265782f1cae2fa3524f2132b8e681b7de42361e397e2ddf0a9194c3071",
       "test/new_api_app/valkey/cache_test.exs" =>
-        "9212cf0717799f9a7ec1b2fdeef8a9bc32ce28f85544716f3bc95a7744fe0254",
+        "2f3e58d43e61a209b0927c866c5fb61f0e9e65f25aa4f0d0f9af0d11e7246a11",
       "test/new_api_app/valkey/invalidator_test.exs" =>
         "9933b1d3d9d605ad5327f5de54f4c0820b7634945d9feb67413361d9e9107413",
       "test/new_api_app/valkey_cache_test.exs" =>
-        "3cc5cfb20ae86258bcbcaf764f7d521329464c76603b96dd407d2cc4960e5876",
+        "9476aae2ff3ed515d2347261b279b2eb9fc60391c9a82a9e5dabb37bacaab487",
       "test/new_api_app_web/controllers/error_json_test.exs" =>
         "2af6dd41cde5382eaa3e3ffc7d052596b7334f05cffa911df85419617cd513ff",
       "test/support/conn_case.ex" =>
@@ -792,7 +792,7 @@
       {:secret, "lib/new_api_app_web/endpoint.ex", :signing_salt}
     ],
     path: "priv/meta/valkey_component",
-    tree_digest: "sha256:5a8de7c7c7cd4ff0c80bae5b57e7f01bb25480646fe07f56e0e15fea0fb2a065"
+    tree_digest: "sha256:353bb993f328e98417759d6b5ca799a51e5c16c15e6bd8a681a771858ce77e0f"
   },
   web: %{
     archive_sha256: "6a1b8b2adbac7f9b9262a73993cc671eadf765d69f4c0fb9b2de6351873985f7",

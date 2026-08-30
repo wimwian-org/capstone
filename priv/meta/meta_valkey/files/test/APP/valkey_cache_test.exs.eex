@@ -17,7 +17,7 @@ defmodule <%= @module %>.Valkey.CacheLiveTest do
   end
 
   test "put/3 then get/1 round-trips through L1 and the real L2" do
-    key = "valkey_cache_test/#{System.unique_integer([:positive])}"
+    key = unique_key("roundtrip")
 
     assert :ok = Cache.put(key, "hello")
     assert Cache.get(key) == "hello"
@@ -29,14 +29,14 @@ defmodule <%= @module %>.Valkey.CacheLiveTest do
   end
 
   test "put_new/3 returns a bare boolean from the real L2, not Nebulex's {:ok, boolean}" do
-    key = "valkey_cache_test/put_new/#{System.unique_integer([:positive])}"
+    key = unique_key("put_new")
 
     assert Cache.put_new(key, "first") == true
     assert Cache.put_new(key, "second") == false
   end
 
   test "incr/2 and decr/2 return bare integers from the real L2, not Nebulex's {:ok, integer}" do
-    key = "valkey_cache_test/counter/#{System.unique_integer([:positive])}"
+    key = unique_key("counter")
 
     assert Cache.incr(key, 5) == 5
     assert Cache.incr(key) == 6
@@ -45,7 +45,7 @@ defmodule <%= @module %>.Valkey.CacheLiveTest do
 
   @tag timeout: :timer.seconds(30)
   test "the breaker opens when the Valkey container is stopped, and get/1 still returns (degrade-safe)" do
-    key = "valkey_cache_test/breaker/#{System.unique_integer([:positive])}"
+    key = unique_key("breaker")
     Cache.put(key, "before")
     <%= @module %>.Valkey.Cache.L1.delete(key)
 
@@ -63,7 +63,7 @@ defmodule <%= @module %>.Valkey.CacheLiveTest do
 
   @tag timeout: :timer.seconds(30)
   test "a write against a stopped Valkey container degrades safely AND opens the breaker" do
-    key = "valkey_cache_test/write_breaker/#{System.unique_integer([:positive])}"
+    key = unique_key("write_breaker")
 
     System.cmd("podman-compose", ["stop", "valkey"], cd: File.cwd!())
 
@@ -80,6 +80,15 @@ defmodule <%= @module %>.Valkey.CacheLiveTest do
       System.cmd("podman-compose", ["start", "valkey"], cd: File.cwd!())
       await_valkey_ready!()
     end
+  end
+
+  # Random, not System.unique_integer/1: the sidecar's data survives across
+  # runs via compose.yaml's .valkey_data bind mount, while unique_integer/1
+  # restarts from a small number in every fresh VM — so a counter or put_new
+  # key from a previous run would still be sitting there.
+  defp unique_key(prefix) do
+    "valkey_cache_test/#{prefix}/" <>
+      Base.url_encode64(:crypto.strong_rand_bytes(12), padding: false)
   end
 
   # Bounded readiness poll -- reuses compose.yaml's own healthcheck command

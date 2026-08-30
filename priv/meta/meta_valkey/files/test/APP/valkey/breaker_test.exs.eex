@@ -39,6 +39,13 @@ defmodule <%= @module %>.Valkey.BreakerTest do
     on_exit(&Breaker.reset!/0)
     on_exit(fn -> :persistent_term.erase({:fake_get, "k"}) end)
 
+    # Snapshot and restore, never Application.delete_env/2: config/test.exs's
+    # own Breaker settings have to survive for every later test in the VM
+    # (the live-sidecar ones included), and deleting the key leaves
+    # timeout_ms/1 returning nil for all of them.
+    original = Application.get_env(:<%= @app %>, Breaker)
+    on_exit(fn -> restore_breaker_env(original) end)
+
     Application.put_env(:<%= @app %>, Breaker,
       backend: FakeBackend,
       timeout_ms: 10,
@@ -46,8 +53,11 @@ defmodule <%= @module %>.Valkey.BreakerTest do
       cooldown_ms: 30
     )
 
-    on_exit(fn -> Application.delete_env(:<%= @app %>, Breaker) end)
+    :ok
   end
+
+  defp restore_breaker_env(nil), do: Application.delete_env(:<%= @app %>, Breaker)
+  defp restore_breaker_env(config), do: Application.put_env(:<%= @app %>, Breaker, config)
 
   test "get/1 delegates to the backend and returns its result" do
     :persistent_term.put({:fake_get, "k"}, "v")
