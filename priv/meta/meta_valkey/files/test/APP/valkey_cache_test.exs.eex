@@ -43,5 +43,38 @@ defmodule <%= @module %>.Valkey.CacheLiveTest do
     assert Cache.get(key) == nil
 
     System.cmd("podman-compose", ["start", "valkey"], cd: File.cwd!())
+    await_valkey_ready!()
+  end
+
+  # Bounded readiness poll -- reuses compose.yaml's own healthcheck command
+  # (`valkey-cli ping`) instead of a fixed sleep, so this test doesn't hand
+  # back control (and the next test, if it runs next, doesn't start) until
+  # the sidecar is actually reachable again. Fails loudly rather than
+  # hanging if it never comes back.
+  defp await_valkey_ready! do
+    await_valkey_ready!(50, 100)
+  end
+
+  defp await_valkey_ready!(0, _interval_ms) do
+    flunk("valkey did not become ready again after podman-compose start")
+  end
+
+  defp await_valkey_ready!(attempts, interval_ms) do
+    case System.cmd("podman-compose", ["exec", "-T", "valkey", "valkey-cli", "ping"],
+           cd: File.cwd!(),
+           stderr_to_stdout: true
+         ) do
+      {output, 0} ->
+        if String.trim(output) == "PONG" do
+          :ok
+        else
+          Process.sleep(interval_ms)
+          await_valkey_ready!(attempts - 1, interval_ms)
+        end
+
+      _ ->
+        Process.sleep(interval_ms)
+        await_valkey_ready!(attempts - 1, interval_ms)
+    end
   end
 end
