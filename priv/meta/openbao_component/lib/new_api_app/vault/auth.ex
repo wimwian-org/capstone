@@ -45,7 +45,7 @@ defmodule NewApiApp.Vault.Auth do
   def init(_opts) do
     case config()[:method] do
       :token ->
-        :persistent_term.put(@token_key, config()[:token])
+        :persistent_term.put(@token_key, Keyword.fetch!(config(), :token))
         {:ok, %{}}
 
       :approle ->
@@ -121,18 +121,33 @@ defmodule NewApiApp.Vault.Auth do
   defp login_result({:ok, %{status: 200, body: %{"auth" => auth}}}),
     do: {:ok, auth["client_token"], auth["lease_duration"]}
 
-  defp login_result({:ok, %{status: status, body: body}}), do: {:error, {status, body}}
+  # Never carry the response `body` into the error reason here — a 200 that
+  # doesn't match the expected shape above (or any other status) could still
+  # legitimately hold a live token in its body, and this reason gets
+  # `inspect`ed straight into `Logger.warning`.
+  defp login_result({:ok, %{status: status}}), do: {:error, {:unexpected_status, status}}
   defp login_result({:error, reason}), do: {:error, reason}
 
   defp renew_result({:ok, %{status: 200, body: %{"auth" => %{"lease_duration" => ttl}}}}),
     do: {:ok, ttl}
 
-  defp renew_result({:ok, %{status: status, body: body}}), do: {:error, {status, body}}
+  # Same reasoning as login_result/1's fallback clause above.
+  defp renew_result({:ok, %{status: status}}), do: {:error, {:unexpected_status, status}}
   defp renew_result({:error, reason}), do: {:error, reason}
 
-  defp schedule_renew(ttl_seconds) do
-    Process.send_after(self(), :renew, round(ttl_seconds * 1000 * @renew_fraction))
+  # No renewal is scheduled for a non-positive/missing ttl (a `0` or absent
+  # `lease_duration` means "does not expire" — nothing to renew). Guards
+  # against two failure modes: `ttl: 0` producing an immediate
+  # `Process.send_after(self(), :renew, 0)` (a tight request-flood loop if
+  # renewal/login keeps succeeding with `ttl: 0`), and `ttl: nil` raising
+  # `ArithmeticError` out of `round/1`. The `max(..., 1_000)` floor also
+  # keeps a very small positive ttl from producing a near-zero-delay loop.
+  defp schedule_renew(ttl_seconds) when is_number(ttl_seconds) and ttl_seconds > 0 do
+    delay_ms = max(round(ttl_seconds * 1000 * @renew_fraction), 1_000)
+    Process.send_after(self(), :renew, delay_ms)
   end
+
+  defp schedule_renew(_ttl_seconds), do: :ok
 
   defp base_url, do: config()[:base_url]
 
