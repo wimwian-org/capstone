@@ -1,0 +1,47 @@
+defmodule NewApiApp.Valkey.CacheLiveTest do
+  use ExUnit.Case, async: false
+
+  # Exercises the real Valkey sidecar rather than a mock — excluded by
+  # default (see test/test_helper.exs), opt in with `mix test --include
+  # valkey`. Requires `podman-compose up -d valkey` (or the full stack) to
+  # already be running.
+  @moduletag :valkey
+
+  alias NewApiApp.Valkey.Breaker
+  alias NewApiApp.Valkey.Cache
+
+  setup do
+    Breaker.reset!()
+    on_exit(&Breaker.reset!/0)
+    :ok
+  end
+
+  test "put/3 then get/1 round-trips through L1 and the real L2" do
+    key = "valkey_cache_test/#{System.unique_integer([:positive])}"
+
+    assert :ok = Cache.put(key, "hello")
+    assert Cache.get(key) == "hello"
+
+    # Prove the write actually reached L2, not just L1: delete from L1 only
+    # and confirm the value still backfills from the real sidecar.
+    NewApiApp.Valkey.Cache.L1.delete(key)
+    assert Cache.get(key) == "hello"
+  end
+
+  @tag timeout: :timer.seconds(30)
+  test "the breaker opens when the Valkey container is stopped, and get/1 still returns (degrade-safe)" do
+    key = "valkey_cache_test/breaker/#{System.unique_integer([:positive])}"
+    Cache.put(key, "before")
+    NewApiApp.Valkey.Cache.L1.delete(key)
+
+    System.cmd("podman-compose", ["stop", "valkey"], cd: File.cwd!())
+
+    # Enough consecutive misses to trip failure_threshold (config/test.exs)
+    # without hanging the test suite on Breaker's own timeout_ms per call.
+    Enum.each(1..5, fn _ -> Cache.get(key) end)
+
+    assert Cache.get(key) == nil
+
+    System.cmd("podman-compose", ["start", "valkey"], cd: File.cwd!())
+  end
+end

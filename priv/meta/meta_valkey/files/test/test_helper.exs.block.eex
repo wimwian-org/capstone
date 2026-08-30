@@ -1,5 +1,5 @@
 
-# Redix has no official test/stub tooling, so <%= @module %>.ValkeyTest exercises
-# the real sidecar and is excluded by default -- opt in with
-# `mix test --include valkey`.
+# <%= @module %>.Valkey.CacheLiveTest exercises the real sidecar rather than a
+# mock, so it's excluded by default -- opt in with `mix test --include
+# valkey`.
 ExUnit.configure(exclude: [valkey: true])

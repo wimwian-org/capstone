@@ -15,6 +15,7 @@
     {"test/APP/valkey/cache/l1_test.exs", :sole_owner},
     {"test/APP/valkey/cache_test.exs", :sole_owner},
     {"test/APP/valkey/invalidator_test.exs", :sole_owner},
+    {"test/APP/valkey_cache_test.exs", :sole_owner},
     {".gitignore", :contributes, [key: :valkey_]},
     {"README.md", :contributes, [key: :valkey_readme]},
     {"compose.yaml", :contributes, [key: :valkey_compose]},
@@ -29,7 +30,8 @@
          "<%= @module %>.Valkey.Breaker",
          "<%= @module %>.Valkey.Invalidator"
        ]
-     ]}
+     ]},
+    {"test/test_helper.exs", :contributes, [key: :valkey_test_helper]}
   ],
   name: :valkey,
   version: "0.1.0"
