@@ -4,7 +4,12 @@ defmodule NewApiApp.VaultTest do
   @plug_opts [plug: {Req.Test, NewApiApp.Vault}]
 
   setup do
-    start_supervised!(NewApiApp.Vault.Auth)
+    # The application supervisor already runs a permanently-registered
+    # `NewApiApp.Vault.Auth` — a test-scoped instance under the same name
+    # would collide with it, so this one registers under a distinct name.
+    # `Auth.current_token/0` reads a module-keyed `:persistent_term`, not
+    # this name, so `read_secret/2`'s token lookup is unaffected.
+    start_supervised!({NewApiApp.Vault.Auth, name: :vault_test_auth})
     :ok
   end
 

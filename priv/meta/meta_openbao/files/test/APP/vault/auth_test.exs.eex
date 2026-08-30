@@ -1,12 +1,12 @@
-defmodule NewApiApp.Vault.AuthTest do
+defmodule <%= @module %>.Vault.AuthTest do
   use ExUnit.Case, async: false
 
   import ExUnit.CaptureLog
 
-  alias NewApiApp.Vault.Auth
+  alias <%= @module %>.Vault.Auth
 
   # The application supervisor already runs a permanently-registered
-  # `NewApiApp.Vault.Auth` (booted from config/test.exs's static token) — a
+  # `<%= @module %>.Vault.Auth` (booted from config/test.exs's static token) — a
   # test-scoped instance under the same name would collide with it, so every
   # `start_supervised!` below registers under this distinct name instead.
   # `Auth.current_token/0` reads a module-keyed `:persistent_term`, not this
@@ -14,9 +14,9 @@ defmodule NewApiApp.Vault.AuthTest do
   @name :auth_test_process
 
   setup do
-    original = Application.get_env(:new_api_app, NewApiApp.Vault)
+    original = Application.get_env(:<%= @app %>, <%= @module %>.Vault)
 
-    Application.put_env(:new_api_app, NewApiApp.Vault,
+    Application.put_env(:<%= @app %>, <%= @module %>.Vault,
       base_url: "http://localhost:8200",
       method: :token,
       token: "static-token",
@@ -32,7 +32,7 @@ defmodule NewApiApp.Vault.AuthTest do
     # last-run AuthTest test happened to `put_env`, since cross-module test
     # order isn't guaranteed.
     on_exit(fn ->
-      Application.put_env(:new_api_app, NewApiApp.Vault, original)
+      Application.put_env(:<%= @app %>, <%= @module %>.Vault, original)
     end)
 
     :ok
@@ -44,17 +44,17 @@ defmodule NewApiApp.Vault.AuthTest do
   end
 
   test ":approle method: a successful login publishes current_token/0 and schedules renewal" do
-    Application.put_env(:new_api_app, NewApiApp.Vault,
+    Application.put_env(:<%= @app %>, <%= @module %>.Vault,
       base_url: "http://localhost:8200",
       method: :approle,
       role_id: "role-1",
       secret_id: "secret-1",
       mount: "approle",
       timeout_ms: 1_000,
-      plug: {Req.Test, NewApiApp.Vault.Auth}
+      plug: {Req.Test, <%= @module %>.Vault.Auth}
     )
 
-    Req.Test.stub(NewApiApp.Vault.Auth, fn conn ->
+    Req.Test.stub(<%= @module %>.Vault.Auth, fn conn ->
       assert conn.request_path == "/v1/auth/approle/login"
 
       Req.Test.json(conn, %{
@@ -67,17 +67,17 @@ defmodule NewApiApp.Vault.AuthTest do
   end
 
   test ":approle method: a failing initial login stops the GenServer (fail-closed boot gate)" do
-    Application.put_env(:new_api_app, NewApiApp.Vault,
+    Application.put_env(:<%= @app %>, <%= @module %>.Vault,
       base_url: "http://localhost:8200",
       method: :approle,
       role_id: "wrong",
       secret_id: "wrong",
       mount: "approle",
       timeout_ms: 1_000,
-      plug: {Req.Test, NewApiApp.Vault.Auth}
+      plug: {Req.Test, <%= @module %>.Vault.Auth}
     )
 
-    Req.Test.stub(NewApiApp.Vault.Auth, fn conn ->
+    Req.Test.stub(<%= @module %>.Vault.Auth, fn conn ->
       Plug.Conn.send_resp(conn, 400, Jason.encode!(%{"errors" => ["invalid role or secret ID"]}))
     end)
 
@@ -86,19 +86,19 @@ defmodule NewApiApp.Vault.AuthTest do
   end
 
   test ":approle method: a renewal failure re-triggers a full login rather than crashing" do
-    Application.put_env(:new_api_app, NewApiApp.Vault,
+    Application.put_env(:<%= @app %>, <%= @module %>.Vault,
       base_url: "http://localhost:8200",
       method: :approle,
       role_id: "role-1",
       secret_id: "secret-1",
       mount: "approle",
       timeout_ms: 1_000,
-      plug: {Req.Test, NewApiApp.Vault.Auth}
+      plug: {Req.Test, <%= @module %>.Vault.Auth}
     )
 
     parent = self()
 
-    Req.Test.stub(NewApiApp.Vault.Auth, fn conn ->
+    Req.Test.stub(<%= @module %>.Vault.Auth, fn conn ->
       case conn.request_path do
         "/v1/auth/approle/login" ->
           send(parent, :logged_in)
@@ -122,19 +122,19 @@ defmodule NewApiApp.Vault.AuthTest do
   end
 
   test ":approle method: a lease_duration of 0 does not schedule a renewal (no request flood)" do
-    Application.put_env(:new_api_app, NewApiApp.Vault,
+    Application.put_env(:<%= @app %>, <%= @module %>.Vault,
       base_url: "http://localhost:8200",
       method: :approle,
       role_id: "role-1",
       secret_id: "secret-1",
       mount: "approle",
       timeout_ms: 1_000,
-      plug: {Req.Test, NewApiApp.Vault.Auth}
+      plug: {Req.Test, <%= @module %>.Vault.Auth}
     )
 
     parent = self()
 
-    Req.Test.stub(NewApiApp.Vault.Auth, fn conn ->
+    Req.Test.stub(<%= @module %>.Vault.Auth, fn conn ->
       send(parent, {:request, conn.request_path})
       Req.Test.json(conn, %{"auth" => %{"client_token" => "t0", "lease_duration" => 0}})
     end)
@@ -151,17 +151,17 @@ defmodule NewApiApp.Vault.AuthTest do
   end
 
   test ":approle method: a missing lease_duration does not crash the process" do
-    Application.put_env(:new_api_app, NewApiApp.Vault,
+    Application.put_env(:<%= @app %>, <%= @module %>.Vault,
       base_url: "http://localhost:8200",
       method: :approle,
       role_id: "role-1",
       secret_id: "secret-1",
       mount: "approle",
       timeout_ms: 1_000,
-      plug: {Req.Test, NewApiApp.Vault.Auth}
+      plug: {Req.Test, <%= @module %>.Vault.Auth}
     )
 
-    Req.Test.stub(NewApiApp.Vault.Auth, fn conn ->
+    Req.Test.stub(<%= @module %>.Vault.Auth, fn conn ->
       # No "lease_duration" key at all — auth["lease_duration"] resolves to
       # nil. Pre-fix, `schedule_renew(nil)` raised ArithmeticError out of
       # `round(nil * 1000 * ...)` inside the synchronous `init/1` login,
@@ -175,17 +175,17 @@ defmodule NewApiApp.Vault.AuthTest do
   end
 
   test ":approle method: a malformed 200 renewal response never logs the response body (no token leakage)" do
-    Application.put_env(:new_api_app, NewApiApp.Vault,
+    Application.put_env(:<%= @app %>, <%= @module %>.Vault,
       base_url: "http://localhost:8200",
       method: :approle,
       role_id: "role-1",
       secret_id: "secret-1",
       mount: "approle",
       timeout_ms: 1_000,
-      plug: {Req.Test, NewApiApp.Vault.Auth}
+      plug: {Req.Test, <%= @module %>.Vault.Auth}
     )
 
-    Req.Test.stub(NewApiApp.Vault.Auth, fn conn ->
+    Req.Test.stub(<%= @module %>.Vault.Auth, fn conn ->
       case conn.request_path do
         "/v1/auth/approle/login" ->
           Req.Test.json(conn, %{"auth" => %{"client_token" => "t1", "lease_duration" => 3_600}})

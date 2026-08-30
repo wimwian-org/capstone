@@ -1,7 +1,17 @@
 defmodule <%= @module %>.VaultTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
 
   @plug_opts [plug: {Req.Test, <%= @module %>.Vault}]
+
+  setup do
+    # The application supervisor already runs a permanently-registered
+    # `<%= @module %>.Vault.Auth` — a test-scoped instance under the same name
+    # would collide with it, so this one registers under a distinct name.
+    # `Auth.current_token/0` reads a module-keyed `:persistent_term`, not
+    # this name, so `read_secret/2`'s token lookup is unaffected.
+    start_supervised!({<%= @module %>.Vault.Auth, name: :vault_test_auth})
+    :ok
+  end
 
   test "returns the decoded KV v2 secret data on a 200" do
     Req.Test.stub(<%= @module %>.Vault, fn conn ->
@@ -28,5 +38,14 @@ defmodule <%= @module %>.VaultTest do
     # retry-with-backoff, which sleeps for real between attempts.
     assert <%= @module %>.Vault.read_secret("<%= @app %>/db", [retry: false] ++ @plug_opts) ==
              {:error, {:unexpected_status, 500}}
+  end
+
+  test "health/0 returns :ok on a 200 with no auth header required" do
+    Req.Test.stub(<%= @module %>.Vault, fn conn ->
+      refute Plug.Conn.get_req_header(conn, "x-vault-token") != []
+      Plug.Conn.send_resp(conn, 200, "")
+    end)
+
+    assert <%= @module %>.Vault.health(@plug_opts) == :ok
   end
 end

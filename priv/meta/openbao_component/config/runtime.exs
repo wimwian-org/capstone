@@ -68,15 +68,24 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
+  openbao_method = System.get_env("OPENBAO_METHOD", "token") |> String.to_existing_atom()
+
   openbao_token =
-    System.get_env("OPENBAO_TOKEN") ||
-      raise """
-      environment variable OPENBAO_TOKEN is missing.
-      """
+    if openbao_method == :token do
+      System.get_env("OPENBAO_TOKEN") ||
+        raise """
+        environment variable OPENBAO_TOKEN is missing.
+        """
+    end
 
   config :new_api_app, NewApiApp.Vault,
     base_url: System.get_env("OPENBAO_ADDR", "http://localhost:8200"),
-    token: openbao_token
+    method: openbao_method,
+    token: openbao_token,
+    role_id: System.get_env("OPENBAO_ROLE_ID"),
+    secret_id: System.get_env("OPENBAO_SECRET_ID"),
+    mount: System.get_env("OPENBAO_MOUNT", "approle"),
+    timeout_ms: 5_000
 
   # ## SSL Support
   #

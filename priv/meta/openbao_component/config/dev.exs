@@ -69,4 +69,9 @@ config :swoosh, :api_client, false
 # dev-mode token compose.yaml's openbao service is seeded with.
 config :new_api_app, NewApiApp.Vault,
   base_url: System.get_env("OPENBAO_ADDR", "http://localhost:8200"),
-  token: System.get_env("OPENBAO_TOKEN", "new_api_app-dev-root-token")
+  method: :token,
+  token: System.get_env("OPENBAO_TOKEN", "new_api_app-dev-root-token"),
+  role_id: nil,
+  secret_id: nil,
+  mount: "approle",
+  timeout_ms: 5_000
