@@ -1,0 +1,7 @@
+defmodule <%= @module %>.Valkey.Cache.L2 do
+  @moduledoc "Talks to the Valkey sidecar. Reached only through `<%= @module %>.Valkey.Breaker`."
+
+  use Nebulex.Cache,
+    otp_app: :<%= @app %>,
+    adapter: Nebulex.Adapters.Redis
+end

@@ -1,0 +1,7 @@
+defmodule <%= @module %>.Valkey.Cache.L1 do
+  @moduledoc "In-process ETS cache — the fast first-check level of `<%= @module %>.Valkey.Cache`."
+
+  use Nebulex.Cache,
+    otp_app: :<%= @app %>,
+    adapter: Nebulex.Adapters.Local
+end

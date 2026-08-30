@@ -1,9 +1,9 @@
-defmodule NewApiApp.Valkey.CacheTest do
+defmodule <%= @module %>.Valkey.CacheTest do
   use ExUnit.Case, async: false
 
-  alias NewApiApp.Valkey.Breaker
-  alias NewApiApp.Valkey.Cache
-  alias NewApiApp.Valkey.Cache.L1
+  alias <%= @module %>.Valkey.Breaker
+  alias <%= @module %>.Valkey.Cache
+  alias <%= @module %>.Valkey.Cache.L1
 
   # A deterministic fake L2 backend, swapped in via config — same pattern as
   # BreakerTest's FakeBackend. :persistent_term, not Process.put/get, because
@@ -30,14 +30,14 @@ defmodule NewApiApp.Valkey.CacheTest do
   end
 
   test "get/1 on an L1 miss and a Breaker/L2 hit backfills L1" do
-    Application.put_env(:new_api_app, Breaker,
+    Application.put_env(:<%= @app %>, Breaker,
       backend: FakeL2Backend,
       timeout_ms: 50,
       failure_threshold: 3,
       cooldown_ms: 30
     )
 
-    on_exit(fn -> Application.delete_env(:new_api_app, Breaker) end)
+    on_exit(fn -> Application.delete_env(:<%= @app %>, Breaker) end)
 
     :persistent_term.put({:fake_l2_get, "k2"}, "from-l2")
     on_exit(fn -> :persistent_term.erase({:fake_l2_get, "k2"}) end)
@@ -49,7 +49,7 @@ defmodule NewApiApp.Valkey.CacheTest do
   end
 
   test "get/1 degrades to nil when L1 misses and the breaker's circuit is open" do
-    Application.put_env(:new_api_app, Breaker,
+    Application.put_env(:<%= @app %>, Breaker,
       backend: nil,
       timeout_ms: 5,
       failure_threshold: 1,
@@ -62,7 +62,7 @@ defmodule NewApiApp.Valkey.CacheTest do
   end
 
   test "put_new/2 propagates (raises) rather than silently degrading" do
-    Application.put_env(:new_api_app, Breaker,
+    Application.put_env(:<%= @app %>, Breaker,
       backend: nil,
       timeout_ms: 5,
       failure_threshold: 1,

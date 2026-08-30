@@ -1,0 +1,115 @@
+defmodule <%= @module %>.Valkey.BreakerTest do
+  use ExUnit.Case, async: false
+
+  alias <%= @module %>.Valkey.Breaker
+
+  # A deterministic fake backend, swapped in via config — exactly
+  # manage_infra.Cache.Breaker's own `backend:` override, so the
+  # circuit/timeout paths are exercised without a live Valkey connection.
+  defmodule FakeBackend do
+    # :persistent_term, not Process.put/get — Breaker.run/2 executes the
+    # backend call inside a Task.async'd process, which does not inherit the
+    # test process's process dictionary.
+    def get!(key, _default \\ nil, _opts \\ []), do: :persistent_term.get({:fake_get, key}, nil)
+    def put(_key, _value, _opts \\ []), do: :ok
+    def delete(_key, _opts \\ []), do: :ok
+    def put_new(_key, _value, _opts \\ []), do: true
+    def incr(_key, amount \\ 1, _opts \\ []), do: amount
+    def decr(_key, amount \\ 1, _opts \\ []), do: -amount
+  end
+
+  defmodule FailingBackend do
+    def get!(_key, _default \\ nil, _opts \\ []), do: raise("boom")
+    def put(_key, _value, _opts \\ []), do: raise("boom")
+    def delete(_key, _opts \\ []), do: raise("boom")
+    def put_new(_key, _value, _opts \\ []), do: raise("boom")
+    def incr(_key, _amount \\ 1, _opts \\ []), do: raise("boom")
+    def decr(_key, _amount \\ 1, _opts \\ []), do: raise("boom")
+  end
+
+  defmodule SlowBackend do
+    def get!(_key, _default \\ nil, _opts \\ []) do
+      Process.sleep(50)
+      "too late"
+    end
+  end
+
+  setup do
+    Breaker.reset!()
+    on_exit(&Breaker.reset!/0)
+    on_exit(fn -> :persistent_term.erase({:fake_get, "k"}) end)
+
+    Application.put_env(:<%= @app %>, Breaker,
+      backend: FakeBackend,
+      timeout_ms: 10,
+      failure_threshold: 2,
+      cooldown_ms: 30
+    )
+
+    on_exit(fn -> Application.delete_env(:<%= @app %>, Breaker) end)
+  end
+
+  test "get/1 delegates to the backend and returns its result" do
+    :persistent_term.put({:fake_get, "k"}, "v")
+    assert Breaker.get("k") == "v"
+  end
+
+  test "get/1 returns nil (degrade-safe) after failure_threshold consecutive failures opens the circuit" do
+    Application.put_env(:<%= @app %>, Breaker,
+      backend: FailingBackend,
+      timeout_ms: 10,
+      failure_threshold: 2,
+      cooldown_ms: 30
+    )
+
+    assert Breaker.get("k") == nil
+    assert Breaker.get("k") == nil
+    # Circuit now open — a third call must not even attempt the backend.
+    assert Breaker.get("k") == nil
+  end
+
+  test "get/1 returns nil (degrade-safe) when the call exceeds timeout_ms" do
+    Application.put_env(:<%= @app %>, Breaker,
+      backend: SlowBackend,
+      timeout_ms: 5,
+      failure_threshold: 2,
+      cooldown_ms: 30
+    )
+
+    assert Breaker.get("k") == nil
+  end
+
+  test "put_new/2 raises (propagates) once the circuit is open" do
+    Application.put_env(:<%= @app %>, Breaker,
+      backend: FailingBackend,
+      timeout_ms: 10,
+      failure_threshold: 1,
+      cooldown_ms: 30
+    )
+
+    assert_raise RuntimeError, fn -> Breaker.put_new("k", "v") end
+    assert_raise RuntimeError, ~r/circuit open/, fn -> Breaker.put_new("k", "v") end
+  end
+
+  test "the circuit half-opens after cooldown_ms and closes again on success" do
+    Application.put_env(:<%= @app %>, Breaker,
+      backend: FailingBackend,
+      timeout_ms: 10,
+      failure_threshold: 1,
+      cooldown_ms: 5
+    )
+
+    assert Breaker.get("k") == nil
+    Process.sleep(10)
+
+    Application.put_env(:<%= @app %>, Breaker,
+      backend: FakeBackend,
+      timeout_ms: 10,
+      failure_threshold: 1,
+      cooldown_ms: 5
+    )
+
+    :persistent_term.put({:fake_get, "k"}, "recovered")
+    assert Breaker.get("k") == "recovered"
+  end
+end

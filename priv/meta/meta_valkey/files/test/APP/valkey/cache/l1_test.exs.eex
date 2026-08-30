@@ -1,10 +1,10 @@
-defmodule NewApiApp.Valkey.Cache.L1Test do
+defmodule <%= @module %>.Valkey.Cache.L1Test do
   # L1 is a supervised singleton started by the application (see
   # application.ex), not a per-test process — async: false, and setup clears
   # its state rather than starting a fresh instance.
   use ExUnit.Case, async: false
 
-  alias NewApiApp.Valkey.Cache.L1
+  alias <%= @module %>.Valkey.Cache.L1
 
   setup do
     L1.delete_all!()

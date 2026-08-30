@@ -16,7 +16,9 @@ defmodule NewApiApp.Application do
       # {NewApiApp.Worker, arg},
       # Start to serve requests, typically the last entry
       NewApiAppWeb.Endpoint,
-      NewApiApp.Valkey
+      NewApiApp.Valkey.Cache.L1,
+      NewApiApp.Valkey.Breaker,
+      NewApiApp.Valkey.Invalidator
     ]
 
     # See https://elixir.hexdocs.pm/Supervisor.html

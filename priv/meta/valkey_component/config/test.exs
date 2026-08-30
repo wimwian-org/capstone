@@ -57,8 +57,3 @@ config :new_api_app, NewApiApp.Valkey.Breaker,
   cooldown_ms: :timer.seconds(30)
 
 config :new_api_app, NewApiApp.Valkey.Cache, default_ttl: :timer.minutes(10)
-
-# Legacy config for NewApiApp.Valkey (kept until Task 6 removes it from supervision)
-config :new_api_app, NewApiApp.Valkey,
-  host: System.get_env("VALKEY_HOST", "localhost"),
-  port: String.to_integer(System.get_env("VALKEY_PORT", "6379"))

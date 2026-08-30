@@ -66,11 +66,26 @@ defmodule Capstone.Plugin.ValkeyRoundTripTest do
 
     {:ok, _} = Apply.run(@plugin, other)
 
-    assert File.read!(Path.join(other, "lib/other_app/valkey.ex")) =~
-             "defmodule OtherApp.Valkey"
+    assert File.read!(Path.join(other, "lib/other_app/valkey/cache.ex")) =~
+             "defmodule OtherApp.Valkey.Cache"
 
-    assert File.read!(Path.join(other, "lib/other_app/application.ex")) =~ "OtherApp.Valkey"
+    assert File.read!(Path.join(other, "lib/other_app/valkey/cache/l1.ex")) =~
+             "defmodule OtherApp.Valkey.Cache.L1"
 
-    refute File.exists?(Path.join(other, "lib/new_api_app/valkey.ex"))
+    assert File.read!(Path.join(other, "lib/other_app/valkey/cache/l2.ex")) =~
+             "defmodule OtherApp.Valkey.Cache.L2"
+
+    assert File.read!(Path.join(other, "lib/other_app/valkey/breaker.ex")) =~
+             "defmodule OtherApp.Valkey.Breaker"
+
+    assert File.read!(Path.join(other, "lib/other_app/valkey/invalidator.ex")) =~
+             "defmodule OtherApp.Valkey.Invalidator"
+
+    application = File.read!(Path.join(other, "lib/other_app/application.ex"))
+    assert application =~ "OtherApp.Valkey.Cache.L1"
+    assert application =~ "OtherApp.Valkey.Breaker"
+    assert application =~ "OtherApp.Valkey.Invalidator"
+
+    refute File.exists?(Path.join(other, "lib/new_api_app/valkey"))
   end
 end
