@@ -52,7 +52,9 @@ defmodule Capstone.Integration.PluginLifecycleTest do
   alias Capstone.New.Options
   alias Capstone.New.Shell
   alias Capstone.Plugin.Apply
+  alias Capstone.Plugin.Package
   alias Capstone.Plugin.Registry
+  alias Capstone.Plugin.Remote
   alias Capstone.Update
 
   # `Mix.Task.run/2` runs a task at most once per node. Both tests here go
@@ -406,12 +408,13 @@ defmodule Capstone.Integration.PluginLifecycleTest do
       plugins: [:podman, :openbao, :valkey]
     }
 
-    File.cd!(tmp, fn -> assert :ok = Bootstrap.run(opts, Bootstrap.defaults()) end)
+    {effects, registry} = local_openbao_valkey_effects(capstone_path, tmp)
+    File.cd!(tmp, fn -> assert :ok = Bootstrap.run(opts, effects, registry) end)
 
     project = Path.join(tmp, name)
     assert File.exists?(Path.join(project, "target.exs"))
     assert File.exists?(Path.join(project, "lib/with_sidecars/vault.ex"))
-    assert File.exists?(Path.join(project, "lib/with_sidecars/valkey.ex"))
+    assert File.exists?(Path.join(project, "lib/with_sidecars/valkey/cache.ex"))
 
     compose = File.read!(Path.join(project, "compose.yaml"))
     assert compose =~ "openbao:"
@@ -435,6 +438,64 @@ defmodule Capstone.Integration.PluginLifecycleTest do
     # this proves the plugins compile and pass out of the box without
     # `compose.yaml` ever being brought up.
     Shell.cmd!(["test"], project)
+
+    application_ex = File.read!(Path.join(project, "lib/with_sidecars/application.ex"))
+    assert application_ex =~ ~r/children = \[\s*\n\s*WithSidecars\.Vault\.Auth,/
+    assert application_ex =~ "WithSidecars.Valkey.Cache.L1"
+    assert application_ex =~ "WithSidecars.Valkey.Breaker"
+    assert application_ex =~ "WithSidecars.Valkey.Invalidator"
+  end
+
+  @tag :toolchain
+  @tag timeout: :timer.minutes(3)
+  test "an approle-misconfigured boot fails mix run outright (the boot gate)", %{tmp_dir: tmp} do
+    capstone_path = File.cwd!()
+    name = "with_bad_approle"
+
+    opts = %Options{
+      name: name,
+      app: :with_bad_approle,
+      module: WithBadApprole,
+      base: :api,
+      github_org: "acme",
+      capstone: {:path, capstone_path},
+      plugins: [:podman, :openbao]
+    }
+
+    {effects, registry} = local_openbao_valkey_effects(capstone_path, tmp)
+    File.cd!(tmp, fn -> assert :ok = Bootstrap.run(opts, effects, registry) end)
+
+    project = Path.join(tmp, name)
+
+    runtime_exs = Path.join(project, "config/runtime.exs")
+
+    File.write!(
+      runtime_exs,
+      String.replace(
+        File.read!(runtime_exs),
+        ~s[openbao_method = System.get_env("OPENBAO_METHOD", "token") |> String.to_existing_atom()],
+        ~s[openbao_method = :approle]
+      )
+    )
+
+    {output, exit_code} =
+      System.cmd(
+        "mix",
+        ["run", "-e", "IO.puts(:booted)"],
+        cd: project,
+        env: [
+          {"MIX_ENV", "prod"},
+          {"OPENBAO_ADDR", "http://localhost:8200"},
+          {"OPENBAO_ROLE_ID", "does-not-exist"},
+          {"OPENBAO_SECRET_ID", "does-not-exist"},
+          {"SECRET_KEY_BASE", String.duplicate("a", 64)},
+          {"DATABASE_URL", "ecto://postgres:postgres@localhost/nonexistent"}
+        ],
+        stderr_to_stdout: true
+      )
+
+    refute exit_code == 0
+    refute output =~ "booted"
   end
 
   @tag :toolchain
@@ -488,5 +549,34 @@ defmodule Capstone.Integration.PluginLifecycleTest do
       end)
 
     assert marked == []
+  end
+
+  # `Capstone.Plugin.Remote` downloads real archives from this repository's
+  # published GitHub releases (see its moduledoc) — a source that is
+  # necessarily behind an unreleased branch's own `priv/meta/meta_<name>`.
+  # `:openbao` and `:valkey` are exactly what this plan rewrote, so a real
+  # download would silently install the last-published (pre-rewrite)
+  # archive instead of this checkout's own plugin code — the same
+  # registry-dir + no-op-`sync` pattern `target_project_test.exs`'s "applies
+  # a real registry plugin" test already uses for an unpublished fixture
+  # plugin. `:podman` is untouched by this plan, so it still syncs for
+  # real, exactly as the rest of this file's tests do.
+  defp local_openbao_valkey_effects(capstone_path, tmp) do
+    registry = Path.join(tmp, "registry-#{System.unique_integer([:positive])}")
+
+    for type <- [:openbao, :valkey] do
+      {:ok, _path} =
+        Package.run(type, Path.join(capstone_path, "priv/meta/meta_#{type}"), registry)
+    end
+
+    effects = %{
+      Bootstrap.defaults()
+      | sync: fn
+          type, _dir when type in [:openbao, :valkey] -> :ok
+          type, dir -> Remote.sync!(type, dir)
+        end
+    }
+
+    {effects, registry}
   end
 end
