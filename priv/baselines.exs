@@ -499,18 +499,18 @@
     tree_digest: "sha256:cba7ab0ffc6d27a70cae451689126a51687d0690d0580b616ad1b74564050603"
   },
   openbao: %{
-    archive_sha256: "a6fae86fb49ca2601ee99cc80122982131656de8e04e23d31ed37a526f62c434",
+    archive_sha256: "3fbb2d1ed4097089f0ac92b834ec599b58260c19ec0309ea24271814083f754c",
     derived_from: :api_podman,
     files: %{
       ".formatter.exs" => "a44a43d777033eb6c64e0101b7469611c2def3b377b04c9d6b2a8620a347d385",
       ".gitignore" => "62ee1d39760528ade9087a64430331c1362541232b1213cdae98a25cce8888ed",
       "AGENTS.md" => "00f6f1bdb914d6eb925e9f1abaae89b10fe7b7245323df8e7bdf6c6b65fd31a4",
-      "README.md" => "b7543b32f6f0e9ac2aea13ee42b086d4de5ebbd711c61fbb2360b6f359c9dffb",
+      "README.md" => "481021f33b97509935cd3e28f8a2067026e4afa0df1705d5dbccd7e51309f902",
       "compose.yaml" => "4bc6589325c1a11f76e7853df1a75a4735dcbd378be7a748cdddc61998643731",
       "config/config.exs" => "6a7734a2b5f00eea9206414cb2c72524c86e7da1ca3a9827e6aae218c1eec155",
       "config/dev.exs" => "81a36e83aa6ebb4e5ac7555a874f62349ae73f8ef8334396b36addcffb8db47e",
       "config/prod.exs" => "4d305ac8156d0e4bb49de00f219c7d4ecd553d762d484da994ea598b2e79ba90",
-      "config/runtime.exs" => "c4b9805f18b7b2be9e8e32b4861f5adaae2e2be75a1ab15bc1a8c0d66142e40a",
+      "config/runtime.exs" => "756106b6690e36e89db1367687ab62aad6227d684aa310a44623b83e171558b0",
       "config/test.exs" => "214b87d0722dd35accc6a6dc05201371606611877e218c54623a2226db51be46",
       "lib/mix/tasks/openbao.setup.ex" =>
         "380e29b21c3395affb359d71129193c69dad5cce55958b10620d7dddbf6ab53b",
@@ -554,7 +554,7 @@
       "test/new_api_app/vault/auth_test.exs" =>
         "6482c047d83c0253abf0dde9972a97da8674ad0bc5c9861b66c66755e494219a",
       "test/new_api_app/vault_test.exs" =>
-        "37acef9bf9153010b12fe14ddb20edb6cb4898471f12a5df1f3c504d96ca210b",
+        "56768e7525af28e8e614f5f896683fd3340abe9d66a104d02c66fba2ca431673",
       "test/new_api_app_web/controllers/error_json_test.exs" =>
         "2af6dd41cde5382eaa3e3ffc7d052596b7334f05cffa911df85419617cd513ff",
       "test/support/conn_case.ex" =>
@@ -571,7 +571,7 @@
       {:secret, "lib/new_api_app_web/endpoint.ex", :signing_salt}
     ],
     path: "priv/meta/openbao_component",
-    tree_digest: "sha256:d6d14e33b78a2cb79b5071cd03aaf1cc10b21b50dfdd36ef181d8c766010539a"
+    tree_digest: "sha256:2d5c4753420b5f2fa6297a25cf41b53a9b27a1b346bb30c882d6d8da721d3b68"
   },
   podman: %{
     archive_sha256: "721780ec82a1e8942590a2a84bb66e143ae3183c6020c7953b0c2d375065dea9",
@@ -712,13 +712,13 @@
     tree_digest: "sha256:32f90697087995e7072ff150fc9eeeef6c5268b541cd7052fe69b13e1dd12402"
   },
   valkey: %{
-    archive_sha256: "2bb4b22c5d61b76005cad93e852d8edad70e7242b954d481494b4975110977a0",
+    archive_sha256: "a46d8c51a9d8de7c6fbf4365c51ab7fe0684d747da709dcc826047dff161d6d2",
     derived_from: :api_podman,
     files: %{
       ".formatter.exs" => "a44a43d777033eb6c64e0101b7469611c2def3b377b04c9d6b2a8620a347d385",
       ".gitignore" => "5a3f6e4dc279773afe1855079b9845b8e925d465ee59f4d0ae1663ab16e5f39b",
       "AGENTS.md" => "00f6f1bdb914d6eb925e9f1abaae89b10fe7b7245323df8e7bdf6c6b65fd31a4",
-      "README.md" => "ec7adac21b87db8ea4f6ddcce23cb18c78c77717808b9aef83243587520b9bb5",
+      "README.md" => "3d9409baa2929e662819fb0d2f04e4e514e346788eb1b55c485da9d847f18040",
       "compose.yaml" => "a8bc7cd88914a8f5716c1da77b542e3bfefe922d397c885d25b202909b7050d8",
       "config/config.exs" => "6a7734a2b5f00eea9206414cb2c72524c86e7da1ca3a9827e6aae218c1eec155",
       "config/dev.exs" => "76c635b9545be6edb2cfe828f1da4ccf9a705a1e10461a14c559644c050d0671",
@@ -733,9 +733,9 @@
       "lib/new_api_app/repo.ex" =>
         "6b171e503d4e1b7734e5e1cc91cfd52219d80dc7a9cd75e73cdf2eebe2db3f24",
       "lib/new_api_app/valkey/breaker.ex" =>
-        "432d1d6ace374e154ca98dad7be2189cdc5bc68df228b663f8195e7d6a6c051f",
+        "c5e108c44fd3ba4b3f2a0fd0d1b8981d4c6090b48bebb443b1b33708df20f9e5",
       "lib/new_api_app/valkey/cache.ex" =>
-        "fcbcc5216d2ffb68402580ff21f867c242361ee37b351d8f3d0dbec1f7fbcfc7",
+        "a7d05e448cf084399fb6e792aaff19c3bd31e1962a63daed094971387376dfcb",
       "lib/new_api_app/valkey/cache/l1.ex" =>
         "1c39ba2e2556d2ec0538062d89a23765ff71c8269a6e1d6cbb140871ce3519ef",
       "lib/new_api_app/valkey/cache/l2.ex" =>
@@ -767,15 +767,15 @@
       "priv/static/robots.txt" =>
         "f994bfae2c1db1221ac049f1097776b444048e0b0a7705d33ea511b610bed115",
       "test/new_api_app/valkey/breaker_test.exs" =>
-        "fecaa5cc5c4a6d2238d13df243159004bfa8bdefe49932b82d997f2adb98ee10",
+        "8ec1038f6f81570fbeb0175863ea7552c73208c7491b14aa82541f044d1e5a8c",
       "test/new_api_app/valkey/cache/l1_test.exs" =>
         "430357265782f1cae2fa3524f2132b8e681b7de42361e397e2ddf0a9194c3071",
       "test/new_api_app/valkey/cache_test.exs" =>
-        "1e074f1123ecf6ce46f5b390c881256141b12b196db12d927e9c02c8c1a90b50",
+        "9212cf0717799f9a7ec1b2fdeef8a9bc32ce28f85544716f3bc95a7744fe0254",
       "test/new_api_app/valkey/invalidator_test.exs" =>
         "9933b1d3d9d605ad5327f5de54f4c0820b7634945d9feb67413361d9e9107413",
       "test/new_api_app/valkey_cache_test.exs" =>
-        "e634e218a91d5ed566a3b3e98823623d833be0d0f606619608aa54b253cac402",
+        "3cc5cfb20ae86258bcbcaf764f7d521329464c76603b96dd407d2cc4960e5876",
       "test/new_api_app_web/controllers/error_json_test.exs" =>
         "2af6dd41cde5382eaa3e3ffc7d052596b7334f05cffa911df85419617cd513ff",
       "test/support/conn_case.ex" =>
@@ -792,7 +792,7 @@
       {:secret, "lib/new_api_app_web/endpoint.ex", :signing_salt}
     ],
     path: "priv/meta/valkey_component",
-    tree_digest: "sha256:4c436a5efd297a700e9ddc1d08cfad2b2a0727fb945319a2767c8c39478ca332"
+    tree_digest: "sha256:5a8de7c7c7cd4ff0c80bae5b57e7f01bb25480646fe07f56e0e15fea0fb2a065"
   },
   web: %{
     archive_sha256: "6a1b8b2adbac7f9b9262a73993cc671eadf765d69f4c0fb9b2de6351873985f7",
