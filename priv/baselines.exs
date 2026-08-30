@@ -499,7 +499,7 @@
     tree_digest: "sha256:cba7ab0ffc6d27a70cae451689126a51687d0690d0580b616ad1b74564050603"
   },
   openbao: %{
-    archive_sha256: "7adf934a1a46ae0f5251453cf910388ac1a66b4ae97a022ea1eb3bf74809377d",
+    archive_sha256: "5cd673525b3befddd39b869755979c2d561ae4da084ac4931eecfd9d65965fea",
     derived_from: :api_podman,
     files: %{
       ".formatter.exs" => "a44a43d777033eb6c64e0101b7469611c2def3b377b04c9d6b2a8620a347d385",
@@ -508,19 +508,23 @@
       "README.md" => "b7543b32f6f0e9ac2aea13ee42b086d4de5ebbd711c61fbb2360b6f359c9dffb",
       "compose.yaml" => "4bc6589325c1a11f76e7853df1a75a4735dcbd378be7a748cdddc61998643731",
       "config/config.exs" => "6a7734a2b5f00eea9206414cb2c72524c86e7da1ca3a9827e6aae218c1eec155",
-      "config/dev.exs" => "82fbe0785d59a2fc614e5f0aca2e32f1a7e1d4b483b583262158f6a627d66041",
+      "config/dev.exs" => "81a36e83aa6ebb4e5ac7555a874f62349ae73f8ef8334396b36addcffb8db47e",
       "config/prod.exs" => "4d305ac8156d0e4bb49de00f219c7d4ecd553d762d484da994ea598b2e79ba90",
-      "config/runtime.exs" => "afd44a4f66896c69d0f5b1dba45c95d597e14d1839e8f145621ef2b34aa626b3",
-      "config/test.exs" => "4979bd2b404c62626950024973e2011cad86178a0872a438348469a3d476ef34",
+      "config/runtime.exs" => "c4b9805f18b7b2be9e8e32b4861f5adaae2e2be75a1ab15bc1a8c0d66142e40a",
+      "config/test.exs" => "214b87d0722dd35accc6a6dc05201371606611877e218c54623a2226db51be46",
+      "lib/mix/tasks/openbao.setup.ex" =>
+        "380e29b21c3395affb359d71129193c69dad5cce55958b10620d7dddbf6ab53b",
       "lib/new_api_app.ex" => "0bbd7d634a418a9abb5fb9f93e53fe0a332ad85b220f1397439b091e1c1a4c02",
       "lib/new_api_app/application.ex" =>
-        "dfd81ddd6c46736e5db861086841be7f2892336f7575511649f141c5a7934842",
+        "c4d2c9b4ff5b68f67d808543dc21a53fc8536fcb9f2582c57d0f3f8332aa5609",
       "lib/new_api_app/mailer.ex" =>
         "c607a46ffca95ab2e63c5c0c1078b1e9eb2f61640b845526a68bbd84c2e742dc",
       "lib/new_api_app/repo.ex" =>
         "6b171e503d4e1b7734e5e1cc91cfd52219d80dc7a9cd75e73cdf2eebe2db3f24",
       "lib/new_api_app/vault.ex" =>
-        "2af3cc2f95729feb2f2b59cbb9d01c3a93940f9f3762a236d335de9a90b0802e",
+        "c76bde2a9228a2977a6b9fd24f8a7ed84dc1af2a019d83d02f1dcc3cd6d49a51",
+      "lib/new_api_app/vault/auth.ex" =>
+        "f4219da4ea44a21290b266f18d5658a706e3d614c8e716381bdfcc55bf1af1c0",
       "lib/new_api_app_web.ex" =>
         "d4ded48aa07fd27fc19fb5e082f4959cf9728e44fa08ca1fa96326122473d1f1",
       "lib/new_api_app_web/controllers/error_json.ex" =>
@@ -545,8 +549,12 @@
         "01723aeae3ce3b5195a8f42e3eb6e9018a8c08b7acda4ed382b31341811f0a8a",
       "priv/static/robots.txt" =>
         "f994bfae2c1db1221ac049f1097776b444048e0b0a7705d33ea511b610bed115",
+      "test/mix/tasks/openbao.setup_test.exs" =>
+        "0cebb7cef259321be162f0a1c2f67c19bacad13b79cde4448cdd0da6579e5fec",
+      "test/new_api_app/vault/auth_test.exs" =>
+        "6482c047d83c0253abf0dde9972a97da8674ad0bc5c9861b66c66755e494219a",
       "test/new_api_app/vault_test.exs" =>
-        "a0117e821854ddeadb9d54e4f41218d1f4528ee0b781545950f41915319f8b83",
+        "1fd53ed98f1a4c631a11f229714d7185760d9372859c7a0c813f82989dbf3278",
       "test/new_api_app_web/controllers/error_json_test.exs" =>
         "2af6dd41cde5382eaa3e3ffc7d052596b7334f05cffa911df85419617cd513ff",
       "test/support/conn_case.ex" =>
@@ -563,7 +571,7 @@
       {:secret, "lib/new_api_app_web/endpoint.ex", :signing_salt}
     ],
     path: "priv/meta/openbao_component",
-    tree_digest: "sha256:a70d598159ae1bcef3e032dc0cd2e7faf7b3c8ccb719c0055a092299c5c43358"
+    tree_digest: "sha256:519b7323b9658fc18d2c588d4c077ce6cbf22dd99ca735705a475aefcdf14564"
   },
   podman: %{
     archive_sha256: "721780ec82a1e8942590a2a84bb66e143ae3183c6020c7953b0c2d375065dea9",
