@@ -499,28 +499,32 @@
     tree_digest: "sha256:cba7ab0ffc6d27a70cae451689126a51687d0690d0580b616ad1b74564050603"
   },
   openbao: %{
-    archive_sha256: "7adf934a1a46ae0f5251453cf910388ac1a66b4ae97a022ea1eb3bf74809377d",
+    archive_sha256: "3fbb2d1ed4097089f0ac92b834ec599b58260c19ec0309ea24271814083f754c",
     derived_from: :api_podman,
     files: %{
       ".formatter.exs" => "a44a43d777033eb6c64e0101b7469611c2def3b377b04c9d6b2a8620a347d385",
       ".gitignore" => "62ee1d39760528ade9087a64430331c1362541232b1213cdae98a25cce8888ed",
       "AGENTS.md" => "00f6f1bdb914d6eb925e9f1abaae89b10fe7b7245323df8e7bdf6c6b65fd31a4",
-      "README.md" => "b7543b32f6f0e9ac2aea13ee42b086d4de5ebbd711c61fbb2360b6f359c9dffb",
+      "README.md" => "481021f33b97509935cd3e28f8a2067026e4afa0df1705d5dbccd7e51309f902",
       "compose.yaml" => "4bc6589325c1a11f76e7853df1a75a4735dcbd378be7a748cdddc61998643731",
       "config/config.exs" => "6a7734a2b5f00eea9206414cb2c72524c86e7da1ca3a9827e6aae218c1eec155",
-      "config/dev.exs" => "82fbe0785d59a2fc614e5f0aca2e32f1a7e1d4b483b583262158f6a627d66041",
+      "config/dev.exs" => "81a36e83aa6ebb4e5ac7555a874f62349ae73f8ef8334396b36addcffb8db47e",
       "config/prod.exs" => "4d305ac8156d0e4bb49de00f219c7d4ecd553d762d484da994ea598b2e79ba90",
-      "config/runtime.exs" => "afd44a4f66896c69d0f5b1dba45c95d597e14d1839e8f145621ef2b34aa626b3",
-      "config/test.exs" => "4979bd2b404c62626950024973e2011cad86178a0872a438348469a3d476ef34",
+      "config/runtime.exs" => "756106b6690e36e89db1367687ab62aad6227d684aa310a44623b83e171558b0",
+      "config/test.exs" => "214b87d0722dd35accc6a6dc05201371606611877e218c54623a2226db51be46",
+      "lib/mix/tasks/openbao.setup.ex" =>
+        "380e29b21c3395affb359d71129193c69dad5cce55958b10620d7dddbf6ab53b",
       "lib/new_api_app.ex" => "0bbd7d634a418a9abb5fb9f93e53fe0a332ad85b220f1397439b091e1c1a4c02",
       "lib/new_api_app/application.ex" =>
-        "dfd81ddd6c46736e5db861086841be7f2892336f7575511649f141c5a7934842",
+        "c4d2c9b4ff5b68f67d808543dc21a53fc8536fcb9f2582c57d0f3f8332aa5609",
       "lib/new_api_app/mailer.ex" =>
         "c607a46ffca95ab2e63c5c0c1078b1e9eb2f61640b845526a68bbd84c2e742dc",
       "lib/new_api_app/repo.ex" =>
         "6b171e503d4e1b7734e5e1cc91cfd52219d80dc7a9cd75e73cdf2eebe2db3f24",
       "lib/new_api_app/vault.ex" =>
-        "2af3cc2f95729feb2f2b59cbb9d01c3a93940f9f3762a236d335de9a90b0802e",
+        "c76bde2a9228a2977a6b9fd24f8a7ed84dc1af2a019d83d02f1dcc3cd6d49a51",
+      "lib/new_api_app/vault/auth.ex" =>
+        "f4219da4ea44a21290b266f18d5658a706e3d614c8e716381bdfcc55bf1af1c0",
       "lib/new_api_app_web.ex" =>
         "d4ded48aa07fd27fc19fb5e082f4959cf9728e44fa08ca1fa96326122473d1f1",
       "lib/new_api_app_web/controllers/error_json.ex" =>
@@ -545,15 +549,19 @@
         "01723aeae3ce3b5195a8f42e3eb6e9018a8c08b7acda4ed382b31341811f0a8a",
       "priv/static/robots.txt" =>
         "f994bfae2c1db1221ac049f1097776b444048e0b0a7705d33ea511b610bed115",
+      "test/mix/tasks/openbao.setup_test.exs" =>
+        "0cebb7cef259321be162f0a1c2f67c19bacad13b79cde4448cdd0da6579e5fec",
+      "test/new_api_app/vault/auth_test.exs" =>
+        "6482c047d83c0253abf0dde9972a97da8674ad0bc5c9861b66c66755e494219a",
       "test/new_api_app/vault_test.exs" =>
-        "a0117e821854ddeadb9d54e4f41218d1f4528ee0b781545950f41915319f8b83",
+        "56768e7525af28e8e614f5f896683fd3340abe9d66a104d02c66fba2ca431673",
       "test/new_api_app_web/controllers/error_json_test.exs" =>
         "2af6dd41cde5382eaa3e3ffc7d052596b7334f05cffa911df85419617cd513ff",
       "test/support/conn_case.ex" =>
         "1398686968936337abc0d883180d75fcc8227fb3a5b7d4855161a8e28d8a3c61",
       "test/support/data_case.ex" =>
         "031590471b16158509060d1de434a2640e2e1838ed1f9e0cc7c3ba8fbdde3f4f",
-      "test/test_helper.exs" => "70b2e16f8bc7ff44754829b35847cee6522b027df423f7080828f635b0846c9c"
+      "test/test_helper.exs" => "5956431ae7554b5ea258700d5e3cfebb1febe44d32594216f331b4a463a127a2"
     },
     names: %{app: "new_api_app", module: "NewApiApp", name: "new_api_app"},
     normalisations: [
@@ -563,7 +571,7 @@
       {:secret, "lib/new_api_app_web/endpoint.ex", :signing_salt}
     ],
     path: "priv/meta/openbao_component",
-    tree_digest: "sha256:a70d598159ae1bcef3e032dc0cd2e7faf7b3c8ccb719c0055a092299c5c43358"
+    tree_digest: "sha256:2d5c4753420b5f2fa6297a25cf41b53a9b27a1b346bb30c882d6d8da721d3b68"
   },
   podman: %{
     archive_sha256: "721780ec82a1e8942590a2a84bb66e143ae3183c6020c7953b0c2d375065dea9",
@@ -704,28 +712,36 @@
     tree_digest: "sha256:32f90697087995e7072ff150fc9eeeef6c5268b541cd7052fe69b13e1dd12402"
   },
   valkey: %{
-    archive_sha256: "fe45e4ffd1409a5eee8db6979143137357e6763b33279153db99960a6b3096ca",
+    archive_sha256: "39c8abf7d0eab4be9edbd5dd1c45dd27536890797f3df1120f8d3c14c8c5542e",
     derived_from: :api_podman,
     files: %{
       ".formatter.exs" => "a44a43d777033eb6c64e0101b7469611c2def3b377b04c9d6b2a8620a347d385",
-      ".gitignore" => "62ee1d39760528ade9087a64430331c1362541232b1213cdae98a25cce8888ed",
+      ".gitignore" => "5a3f6e4dc279773afe1855079b9845b8e925d465ee59f4d0ae1663ab16e5f39b",
       "AGENTS.md" => "00f6f1bdb914d6eb925e9f1abaae89b10fe7b7245323df8e7bdf6c6b65fd31a4",
-      "README.md" => "676b5a86ed8766266c4a36c19521cc5768fd82dffa92449f6e9806c707bb66e1",
-      "compose.yaml" => "afbe56059b1c778d5fbd1dc1b9ebae924c25b001aae6d13ff69cfc45b8c8e5e9",
+      "README.md" => "3d9409baa2929e662819fb0d2f04e4e514e346788eb1b55c485da9d847f18040",
+      "compose.yaml" => "a8bc7cd88914a8f5716c1da77b542e3bfefe922d397c885d25b202909b7050d8",
       "config/config.exs" => "6a7734a2b5f00eea9206414cb2c72524c86e7da1ca3a9827e6aae218c1eec155",
-      "config/dev.exs" => "41388ab08783bfb5058c6a1dc5d9c07b84f063b529584a0541c893939a2e8668",
+      "config/dev.exs" => "76c635b9545be6edb2cfe828f1da4ccf9a705a1e10461a14c559644c050d0671",
       "config/prod.exs" => "4d305ac8156d0e4bb49de00f219c7d4ecd553d762d484da994ea598b2e79ba90",
-      "config/runtime.exs" => "e19c7a5c95a9a03f2922ac4274c757eaa9d6180381e3aab6936a617f9f8afbbe",
-      "config/test.exs" => "3a7bb907edd986120667f5fe3e9e10a8c4c64bf00eb9444bec18577974bd1e20",
+      "config/runtime.exs" => "46e1ffab9b31ef979c3908f8cdd75f1308a6fb37f61a26f0f00fda086751746d",
+      "config/test.exs" => "9407ae62f67bb363a0d8849674789713444a775ee60219dd2a9ae0f8b25979e5",
       "lib/new_api_app.ex" => "0bbd7d634a418a9abb5fb9f93e53fe0a332ad85b220f1397439b091e1c1a4c02",
       "lib/new_api_app/application.ex" =>
-        "b75e3aa5aea6eab2706e8425282729560c4ba16793b711634bb6460ae6d12757",
+        "cf1864fc4b34f5a6f620ccf3f5cd2821ab267b490778ef59addcffbe6e1d75c6",
       "lib/new_api_app/mailer.ex" =>
         "c607a46ffca95ab2e63c5c0c1078b1e9eb2f61640b845526a68bbd84c2e742dc",
       "lib/new_api_app/repo.ex" =>
         "6b171e503d4e1b7734e5e1cc91cfd52219d80dc7a9cd75e73cdf2eebe2db3f24",
-      "lib/new_api_app/valkey.ex" =>
-        "ef41c94aaec49e17a5e44e76dffa5e9d49eed45b58cbb149878824ba67946ade",
+      "lib/new_api_app/valkey/breaker.ex" =>
+        "c5e108c44fd3ba4b3f2a0fd0d1b8981d4c6090b48bebb443b1b33708df20f9e5",
+      "lib/new_api_app/valkey/cache.ex" =>
+        "a7d05e448cf084399fb6e792aaff19c3bd31e1962a63daed094971387376dfcb",
+      "lib/new_api_app/valkey/cache/l1.ex" =>
+        "1c39ba2e2556d2ec0538062d89a23765ff71c8269a6e1d6cbb140871ce3519ef",
+      "lib/new_api_app/valkey/cache/l2.ex" =>
+        "b5ef945bd699eda172c9e3733da65bf3fcdfec00b1255bd917467be3adab09b2",
+      "lib/new_api_app/valkey/invalidator.ex" =>
+        "a8e356c57e71a52be6a527ad750bdb6e711a21e545a393241302c7840922b31a",
       "lib/new_api_app_web.ex" =>
         "d4ded48aa07fd27fc19fb5e082f4959cf9728e44fa08ca1fa96326122473d1f1",
       "lib/new_api_app_web/controllers/error_json.ex" =>
@@ -738,7 +754,7 @@
         "18f68f5eec8914616c88bebbe9fa840b59e979c088328163989081269afce4b4",
       "lib/new_api_app_web/telemetry.ex" =>
         "545604fa4abecf9644ca57b1d495f587c9e19884d1d7c1c703dcd6513da7cce6",
-      "mix.exs" => "39c5a805d7be73501a921ffa5b29edb57bee04a176d7bcc9cdaa3118d4b038aa",
+      "mix.exs" => "8ce06d73339fecd182e052103752af9f97318f313637143b8d2a03653756908e",
       "priv/gettext/en/LC_MESSAGES/errors.po" =>
         "7965ec884cd9c0dd4f13b268b485e1e3edc13d8f2574eee6f11b35bf3175d05b",
       "priv/gettext/errors.pot" =>
@@ -750,15 +766,23 @@
         "01723aeae3ce3b5195a8f42e3eb6e9018a8c08b7acda4ed382b31341811f0a8a",
       "priv/static/robots.txt" =>
         "f994bfae2c1db1221ac049f1097776b444048e0b0a7705d33ea511b610bed115",
-      "test/new_api_app/valkey_test.exs" =>
-        "a9b61615ef43596d688359458aad82ea89271938d3dfcb8646f27c60422fa62c",
+      "test/new_api_app/valkey/breaker_test.exs" =>
+        "653f72cd26ce2f93afd43e7eea46a75b5e5dcce259f2fe60794d11f3b971d90f",
+      "test/new_api_app/valkey/cache/l1_test.exs" =>
+        "430357265782f1cae2fa3524f2132b8e681b7de42361e397e2ddf0a9194c3071",
+      "test/new_api_app/valkey/cache_test.exs" =>
+        "2f3e58d43e61a209b0927c866c5fb61f0e9e65f25aa4f0d0f9af0d11e7246a11",
+      "test/new_api_app/valkey/invalidator_test.exs" =>
+        "9933b1d3d9d605ad5327f5de54f4c0820b7634945d9feb67413361d9e9107413",
+      "test/new_api_app/valkey_cache_test.exs" =>
+        "9476aae2ff3ed515d2347261b279b2eb9fc60391c9a82a9e5dabb37bacaab487",
       "test/new_api_app_web/controllers/error_json_test.exs" =>
         "2af6dd41cde5382eaa3e3ffc7d052596b7334f05cffa911df85419617cd513ff",
       "test/support/conn_case.ex" =>
         "1398686968936337abc0d883180d75fcc8227fb3a5b7d4855161a8e28d8a3c61",
       "test/support/data_case.ex" =>
         "031590471b16158509060d1de434a2640e2e1838ed1f9e0cc7c3ba8fbdde3f4f",
-      "test/test_helper.exs" => "f17f051866d21780b638786cedbd470aa0258d1495d7fd4f3702c8a2b623fbbf"
+      "test/test_helper.exs" => "0c472d275214d4984e227ec27210889826f1cd638a8757bcf01da083459a773f"
     },
     names: %{app: "new_api_app", module: "NewApiApp", name: "new_api_app"},
     normalisations: [
@@ -768,7 +792,7 @@
       {:secret, "lib/new_api_app_web/endpoint.ex", :signing_salt}
     ],
     path: "priv/meta/valkey_component",
-    tree_digest: "sha256:42c4c297077c036780cdfddb57b95adf695aad1eb45f3c5f6ef8779c3919146b"
+    tree_digest: "sha256:353bb993f328e98417759d6b5ca799a51e5c16c15e6bd8a681a771858ce77e0f"
   },
   web: %{
     archive_sha256: "6a1b8b2adbac7f9b9262a73993cc671eadf765d69f4c0fb9b2de6351873985f7",

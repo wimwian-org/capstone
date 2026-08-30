@@ -8,6 +8,7 @@ defmodule NewApiApp.Application do
   @impl true
   def start(_type, _args) do
     children = [
+      NewApiApp.Vault.Auth,
       NewApiAppWeb.Telemetry,
       NewApiApp.Repo,
       {DNSCluster, query: Application.get_env(:new_api_app, :dns_cluster_query) || :ignore},

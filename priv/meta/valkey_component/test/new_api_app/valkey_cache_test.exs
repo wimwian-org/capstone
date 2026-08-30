@@ -1,0 +1,125 @@
+defmodule NewApiApp.Valkey.CacheLiveTest do
+  use ExUnit.Case, async: false
+
+  # Exercises the real Valkey sidecar rather than a mock — excluded by
+  # default (see test/test_helper.exs), opt in with `mix test --include
+  # valkey`. Requires `podman-compose up -d valkey` (or the full stack) to
+  # already be running.
+  @moduletag :valkey
+
+  alias NewApiApp.Valkey.Breaker
+  alias NewApiApp.Valkey.Cache
+
+  setup do
+    Breaker.reset!()
+    on_exit(&Breaker.reset!/0)
+    :ok
+  end
+
+  test "put/3 then get/1 round-trips through L1 and the real L2" do
+    key = unique_key("roundtrip")
+
+    assert :ok = Cache.put(key, "hello")
+    assert Cache.get(key) == "hello"
+
+    # Prove the write actually reached L2, not just L1: delete from L1 only
+    # and confirm the value still backfills from the real sidecar.
+    NewApiApp.Valkey.Cache.L1.delete(key)
+    assert Cache.get(key) == "hello"
+  end
+
+  test "put_new/3 returns a bare boolean from the real L2, not Nebulex's {:ok, boolean}" do
+    key = unique_key("put_new")
+
+    assert Cache.put_new(key, "first") == true
+    assert Cache.put_new(key, "second") == false
+  end
+
+  test "incr/2 and decr/2 return bare integers from the real L2, not Nebulex's {:ok, integer}" do
+    key = unique_key("counter")
+
+    assert Cache.incr(key, 5) == 5
+    assert Cache.incr(key) == 6
+    assert Cache.decr(key, 2) == 4
+  end
+
+  @tag timeout: :timer.seconds(30)
+  test "the breaker opens when the Valkey container is stopped, and get/1 still returns (degrade-safe)" do
+    key = unique_key("breaker")
+    Cache.put(key, "before")
+    NewApiApp.Valkey.Cache.L1.delete(key)
+
+    System.cmd("podman-compose", ["stop", "valkey"], cd: File.cwd!())
+
+    # Enough consecutive misses to trip failure_threshold (config/test.exs)
+    # without hanging the test suite on Breaker's own timeout_ms per call.
+    Enum.each(1..5, fn _ -> Cache.get(key) end)
+
+    assert Cache.get(key) == nil
+
+    System.cmd("podman-compose", ["start", "valkey"], cd: File.cwd!())
+    await_valkey_ready!()
+  end
+
+  @tag timeout: :timer.seconds(30)
+  test "a write against a stopped Valkey container degrades safely AND opens the breaker" do
+    key = unique_key("write_breaker")
+
+    System.cmd("podman-compose", ["stop", "valkey"], cd: File.cwd!())
+
+    try do
+      # Writes must degrade safely (L1 still takes them) while the circuit is
+      # still closed...
+      Enum.each(1..5, fn i -> assert Cache.put(key, "attempt-#{i}") == :ok end)
+
+      # ...and each of those L2 failures must have been counted, so the
+      # circuit is now open. A propagating operation is the observable proof:
+      # it refuses without even reaching the backend.
+      assert_raise RuntimeError, ~r/circuit open/, fn -> Cache.put_new(key, "v") end
+    after
+      System.cmd("podman-compose", ["start", "valkey"], cd: File.cwd!())
+      await_valkey_ready!()
+    end
+  end
+
+  # Random, not System.unique_integer/1: the sidecar's data survives across
+  # runs via compose.yaml's .valkey_data bind mount, while unique_integer/1
+  # restarts from a small number in every fresh VM — so a counter or put_new
+  # key from a previous run would still be sitting there.
+  defp unique_key(prefix) do
+    "valkey_cache_test/#{prefix}/" <>
+      Base.url_encode64(:crypto.strong_rand_bytes(12), padding: false)
+  end
+
+  # Bounded readiness poll -- reuses compose.yaml's own healthcheck command
+  # (`valkey-cli ping`) instead of a fixed sleep, so this test doesn't hand
+  # back control (and the next test, if it runs next, doesn't start) until
+  # the sidecar is actually reachable again. Fails loudly rather than
+  # hanging if it never comes back.
+  defp await_valkey_ready! do
+    await_valkey_ready!(50, 100)
+  end
+
+  defp await_valkey_ready!(0, _interval_ms) do
+    flunk("valkey did not become ready again after podman-compose start")
+  end
+
+  defp await_valkey_ready!(attempts, interval_ms) do
+    case System.cmd("podman-compose", ["exec", "-T", "valkey", "valkey-cli", "ping"],
+           cd: File.cwd!(),
+           stderr_to_stdout: true
+         ) do
+      {output, 0} ->
+        if String.trim(output) == "PONG" do
+          :ok
+        else
+          Process.sleep(interval_ms)
+          await_valkey_ready!(attempts - 1, interval_ms)
+        end
+
+      _ ->
+        Process.sleep(interval_ms)
+        await_valkey_ready!(attempts - 1, interval_ms)
+    end
+  end
+end

@@ -1,0 +1,1 @@
+      <%= @module %>.Vault.Auth,

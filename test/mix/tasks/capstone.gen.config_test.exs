@@ -1,5 +1,9 @@
 defmodule Mix.Tasks.Capstone.Gen.ConfigTest do
-  use ExUnit.Case, async: true
+  # async: false — "defaults to target.exs in the current directory" below
+  # mutates the node-global cwd via File.cd!/2, which races every other async
+  # test that resolves a relative path (see Capstone.RootTest for the same
+  # rule).
+  use ExUnit.Case, async: false
 
   import ExUnit.CaptureIO
 

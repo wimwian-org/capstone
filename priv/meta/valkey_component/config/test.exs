@@ -39,6 +39,21 @@ config :phoenix,
 # Configure the Valkey (Redis-protocol) KV sidecar. Same host/port
 # compose.yaml's valkey service publishes, so `mix test --include valkey`
 # can connect without extra setup.
-config :new_api_app, NewApiApp.Valkey,
-  host: System.get_env("VALKEY_HOST", "localhost"),
-  port: String.to_integer(System.get_env("VALKEY_PORT", "6379"))
+config :new_api_app, NewApiApp.Valkey.Cache.L1,
+  gc_interval: :timer.hours(1),
+  max_size: 1_000_000,
+  allocated_memory: 100_000_000
+
+config :new_api_app, NewApiApp.Valkey.Cache.L2,
+  conn_opts: [
+    host: System.get_env("VALKEY_HOST", "localhost"),
+    port: String.to_integer(System.get_env("VALKEY_PORT", "6379"))
+  ],
+  pool_size: 5
+
+config :new_api_app, NewApiApp.Valkey.Breaker,
+  timeout_ms: 100,
+  failure_threshold: 3,
+  cooldown_ms: :timer.seconds(30)
+
+config :new_api_app, NewApiApp.Valkey.Cache, default_ttl: :timer.minutes(10)

@@ -1,0 +1,82 @@
+defmodule NewApiApp.Valkey.Cache do
+  @moduledoc """
+  The resilient multilevel cache's public API — replaces today's
+  `NewApiApp.Valkey.get/1`/`set/3`. Reads check `Cache.L1` first; on a miss, a
+  `Breaker`-guarded `Cache.L2` read backfills `L1`. Writes go to `L1`
+  immediately, then through the `Breaker` to `L2` — see
+  docs/superpowers/specs/2026-08-29-valkey-openbao-enhancements-design.md.
+
+  Known TTL ceiling: `get/1`'s L1 backfill always writes with `:default_ttl`,
+  never the (shorter) TTL the original `put/3` asked for. Reading L2's
+  remaining TTL back would cost a second round-trip on every read miss, so
+  `:default_ttl` is the effective upper bound on how stale an L1 copy can be
+  regardless of what a write requested. Anything needing a tighter bound
+  should set `:default_ttl` accordingly rather than relying on per-write TTLs.
+  """
+
+  alias NewApiApp.Valkey.Breaker
+  alias NewApiApp.Valkey.Cache.L1
+  alias NewApiApp.Valkey.Invalidator
+
+  @doc """
+  Gets `key`, checking L1 first and backfilling from L2 (via the Breaker) on a miss.
+
+  A backfilled entry is written to L1 with `:default_ttl`, not with whatever
+  TTL the original `put/3` specified — so it can live in L1 for up to
+  `:default_ttl` even if the write asked for less. See this module's moduledoc.
+  """
+  @spec get(term) :: term | nil
+  def get(key) do
+    case L1.get!(key) do
+      nil ->
+        case Breaker.get(key) do
+          nil ->
+            nil
+
+          value ->
+            L1.put(key, value, ttl: default_ttl())
+            value
+        end
+
+      value ->
+        value
+    end
+  end
+
+  @doc "Writes `key` to L1 immediately, then through the Breaker to L2."
+  @spec put(term, term, keyword) :: :ok
+  def put(key, value, opts \\ []) do
+    ttl = Keyword.get(opts, :ttl, default_ttl())
+
+    L1.put(key, value, ttl: ttl)
+    Breaker.put(key, value, ttl: ttl)
+    Invalidator.broadcast(key)
+    :ok
+  end
+
+  @doc "Deletes `key` from L1 and, through the Breaker, from L2."
+  @spec delete(term) :: :ok
+  def delete(key) do
+    L1.delete(key)
+    Breaker.delete(key)
+    Invalidator.broadcast(key)
+    :ok
+  end
+
+  @doc """
+  Sets `key` to `value` only if it does not already exist. Raises rather than
+  degrading — see `NewApiApp.Valkey.Breaker`'s moduledoc.
+  """
+  @spec put_new(term, term, keyword) :: boolean
+  def put_new(key, value, opts \\ []), do: Breaker.put_new(key, value, opts)
+
+  @doc "Atomically increments `key` by `amount`. Raises rather than degrading."
+  @spec incr(term, integer) :: integer
+  def incr(key, amount \\ 1), do: Breaker.incr(key, amount)
+
+  @doc "Atomically decrements `key` by `amount`. Raises rather than degrading."
+  @spec decr(term, integer) :: integer
+  def decr(key, amount \\ 1), do: Breaker.decr(key, amount)
+
+  defp default_ttl, do: Application.fetch_env!(:new_api_app, __MODULE__)[:default_ttl]
+end

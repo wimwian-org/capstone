@@ -1,7 +1,10 @@
 ExUnit.start()
 Ecto.Adapters.SQL.Sandbox.mode(NewApiApp.Repo, :manual)
 
-# Redix has no official test/stub tooling, so NewApiApp.ValkeyTest exercises
-# the real sidecar and is excluded by default -- opt in with
-# `mix test --include valkey`.
-ExUnit.configure(exclude: [valkey: true])
+# NewApiApp.Valkey.CacheLiveTest exercises the real sidecar rather than a
+# mock, so it's excluded by default -- opt in with `mix test --include
+# valkey`. Merges onto whatever `:exclude` another plugin's own contributed
+# block already set here -- a plain `ExUnit.configure(exclude: [valkey:
+# true])` would overwrite it outright, since ExUnit.configure/1 replaces the
+# option rather than merging it.
+ExUnit.configure(exclude: [{:valkey, true} | Keyword.get(ExUnit.configuration(), :exclude, [])])
