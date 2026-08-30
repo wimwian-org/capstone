@@ -80,6 +80,11 @@ if config_env() == :prod do
     ],
     pool_size: 5
 
+  config :new_api_app, NewApiApp.Valkey.Breaker,
+    timeout_ms: 100,
+    failure_threshold: 3,
+    cooldown_ms: :timer.seconds(30)
+
   # Legacy config for NewApiApp.Valkey (kept until Task 6 removes it from supervision)
   config :new_api_app, NewApiApp.Valkey,
     host: System.get_env("VALKEY_HOST", "localhost"),
