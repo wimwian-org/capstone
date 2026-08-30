@@ -499,7 +499,7 @@
     tree_digest: "sha256:cba7ab0ffc6d27a70cae451689126a51687d0690d0580b616ad1b74564050603"
   },
   openbao: %{
-    archive_sha256: "8f3e08e348e811cb27d19e8d8c65eb9e00b968f3d62d72d36901da193d843416",
+    archive_sha256: "a6fae86fb49ca2601ee99cc80122982131656de8e04e23d31ed37a526f62c434",
     derived_from: :api_podman,
     files: %{
       ".formatter.exs" => "a44a43d777033eb6c64e0101b7469611c2def3b377b04c9d6b2a8620a347d385",
@@ -561,7 +561,7 @@
         "1398686968936337abc0d883180d75fcc8227fb3a5b7d4855161a8e28d8a3c61",
       "test/support/data_case.ex" =>
         "031590471b16158509060d1de434a2640e2e1838ed1f9e0cc7c3ba8fbdde3f4f",
-      "test/test_helper.exs" => "c761bc151a4b5a253f78c1a52ecf26011842ded3eba83a6b4aba90956e08fa55"
+      "test/test_helper.exs" => "5956431ae7554b5ea258700d5e3cfebb1febe44d32594216f331b4a463a127a2"
     },
     names: %{app: "new_api_app", module: "NewApiApp", name: "new_api_app"},
     normalisations: [
@@ -571,7 +571,7 @@
       {:secret, "lib/new_api_app_web/endpoint.ex", :signing_salt}
     ],
     path: "priv/meta/openbao_component",
-    tree_digest: "sha256:274c11b39e2cf9e55a0f2616483ca0fd48508381b401ca11e02052f3dce7bf65"
+    tree_digest: "sha256:d6d14e33b78a2cb79b5071cd03aaf1cc10b21b50dfdd36ef181d8c766010539a"
   },
   podman: %{
     archive_sha256: "721780ec82a1e8942590a2a84bb66e143ae3183c6020c7953b0c2d375065dea9",
@@ -712,7 +712,7 @@
     tree_digest: "sha256:32f90697087995e7072ff150fc9eeeef6c5268b541cd7052fe69b13e1dd12402"
   },
   valkey: %{
-    archive_sha256: "007ceff27e3595318ae1c042f3a7656ae764488a2434ef7e82af26003bb6dfbd",
+    archive_sha256: "2bb4b22c5d61b76005cad93e852d8edad70e7242b954d481494b4975110977a0",
     derived_from: :api_podman,
     files: %{
       ".formatter.exs" => "a44a43d777033eb6c64e0101b7469611c2def3b377b04c9d6b2a8620a347d385",
@@ -782,7 +782,7 @@
         "1398686968936337abc0d883180d75fcc8227fb3a5b7d4855161a8e28d8a3c61",
       "test/support/data_case.ex" =>
         "031590471b16158509060d1de434a2640e2e1838ed1f9e0cc7c3ba8fbdde3f4f",
-      "test/test_helper.exs" => "3becd13bbb1ba65656fbebc0df96a077a45e2a4ab4efd5eb99af2d4fb66c4769"
+      "test/test_helper.exs" => "0c472d275214d4984e227ec27210889826f1cd638a8757bcf01da083459a773f"
     },
     names: %{app: "new_api_app", module: "NewApiApp", name: "new_api_app"},
     normalisations: [
@@ -792,7 +792,7 @@
       {:secret, "lib/new_api_app_web/endpoint.ex", :signing_salt}
     ],
     path: "priv/meta/valkey_component",
-    tree_digest: "sha256:9aefa1e7bffe30314172ce69eb913e70389a55d621d336c2105017749d8fb5e0"
+    tree_digest: "sha256:4c436a5efd297a700e9ddc1d08cfad2b2a0727fb945319a2767c8c39478ca332"
   },
   web: %{
     archive_sha256: "6a1b8b2adbac7f9b9262a73993cc671eadf765d69f4c0fb9b2de6351873985f7",
