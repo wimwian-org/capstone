@@ -1922,6 +1922,18 @@ In `priv/meta/openbao_component/config/runtime.exs`'s prod branch, replace:
 
 with:
 
+> **DO NOT RE-DERIVE THIS BLOCK AS WRITTEN — it has a known, already-fixed
+> defect.** `String.to_existing_atom/1` on `OPENBAO_METHOD` raises
+> `ArgumentError` on a release boot path if `:approle` hasn't already been
+> loaded elsewhere first — the justification below (that the atom is
+> "already interned by the time `config/runtime.exs` runs") does not hold
+> for a fresh release boot. A real production boot hazard, not a
+> theoretical one. Fixed with an explicit `case`/allow-list that raises a
+> named-values error message instead; see
+> `.superpowers/sdd/2026-08-29-valkey-openbao-enhancements-plan/progress.md`
+> for the full history. Take `priv/meta/openbao_component/config/runtime.exs`
+> as the source of truth, not the code below.
+
 ```elixir
   openbao_method = System.get_env("OPENBAO_METHOD", "token") |> String.to_existing_atom()
 

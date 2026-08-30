@@ -65,9 +65,3 @@ at `.valkey_data/` (gitignored) — the container's own default `SAVE`
 schedule is what actually flushes to disk; a hard `kill -9` between saves can
 still lose the most recent writes, same as any Redis-protocol store running
 without `appendonly yes`.
-
-If you're working on this plugin itself (not just using it): running the
-sidecar leaves a binary RDB snapshot in `.valkey_data/`. Delete that
-directory before running `mix capstone.plugin.derive valkey` from the repo
-root — the raw tree walk that builds the derived plugin does not skip
-binary files, and one left behind there will fail the derive.

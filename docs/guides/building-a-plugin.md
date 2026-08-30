@@ -166,6 +166,17 @@ If the raw project *deletes* a baseline file relative to what it derived
 from, this fails: SDD 7.3 has no ownership mode for a deletion, so it must
 be represented some other way (or the deletion avoided).
 
+A raw project whose own `compose.yaml` bind-mounts a runtime data directory
+(e.g. `valkey_component`'s `.valkey_data/`) needs that directory deleted
+before you touch it here — being gitignored is not enough, since every path
+below walks the filesystem, not the git index. Left in place, a binary
+snapshot file in that directory breaks `derive` (`Capstone.Plugin.Derive`
+tries to template it as text and raises), the round-trip test for that
+plugin (it walks the raw project directly), `mix capstone.baseline.record`,
+and `test/capstone/baseline_test.exs`'s drift check — all four read the raw
+tree the same way. `rm -rf` the directory (or stop the sidecar first) before
+running any of `derive`, `baseline.record`, or the test suite.
+
 ### 3. Package it
 
 ```bash

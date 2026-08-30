@@ -712,13 +712,13 @@
     tree_digest: "sha256:32f90697087995e7072ff150fc9eeeef6c5268b541cd7052fe69b13e1dd12402"
   },
   valkey: %{
-    archive_sha256: "2bc43b3dd536e88bda9bb2566878ad4712fee624d44bb08f2b3392bc3ce511a0",
+    archive_sha256: "39c8abf7d0eab4be9edbd5dd1c45dd27536890797f3df1120f8d3c14c8c5542e",
     derived_from: :api_podman,
     files: %{
       ".formatter.exs" => "a44a43d777033eb6c64e0101b7469611c2def3b377b04c9d6b2a8620a347d385",
       ".gitignore" => "5a3f6e4dc279773afe1855079b9845b8e925d465ee59f4d0ae1663ab16e5f39b",
       "AGENTS.md" => "00f6f1bdb914d6eb925e9f1abaae89b10fe7b7245323df8e7bdf6c6b65fd31a4",
-      "README.md" => "a6465394f58e726e994f1c196b4b43dd580ba83ef027aee4a6e5c2fbec843e59",
+      "README.md" => "3d9409baa2929e662819fb0d2f04e4e514e346788eb1b55c485da9d847f18040",
       "compose.yaml" => "a8bc7cd88914a8f5716c1da77b542e3bfefe922d397c885d25b202909b7050d8",
       "config/config.exs" => "6a7734a2b5f00eea9206414cb2c72524c86e7da1ca3a9827e6aae218c1eec155",
       "config/dev.exs" => "76c635b9545be6edb2cfe828f1da4ccf9a705a1e10461a14c559644c050d0671",
@@ -792,7 +792,7 @@
       {:secret, "lib/new_api_app_web/endpoint.ex", :signing_salt}
     ],
     path: "priv/meta/valkey_component",
-    tree_digest: "sha256:d151f62baace19f135e74d11806c7f3179289a89961a72a5fb1a933c7eded5a9"
+    tree_digest: "sha256:353bb993f328e98417759d6b5ca799a51e5c16c15e6bd8a681a771858ce77e0f"
   },
   web: %{
     archive_sha256: "6a1b8b2adbac7f9b9262a73993cc671eadf765d69f4c0fb9b2de6351873985f7",
