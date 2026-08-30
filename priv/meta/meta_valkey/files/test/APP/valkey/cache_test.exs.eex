@@ -14,6 +14,27 @@ defmodule <%= @module %>.Valkey.CacheTest do
       do: :persistent_term.get({:fake_l2_get, key}, nil)
   end
 
+  # A backend that cannot succeed, and counts the calls that reach it so a
+  # test can tell "the circuit was open" from "the call failed again".
+  # `backend: nil` would NOT do — Breaker's own `config()[:backend] ||
+  # Cache.L2` falls through to the real L2 on a nil, so a test written that
+  # way passes or fails on whether a sidecar happens to be running.
+  defmodule UnreachableBackend do
+    @calls {__MODULE__, :calls}
+
+    def call_count, do: :persistent_term.get(@calls, 0)
+    def reset_calls, do: :persistent_term.put(@calls, 0)
+    def erase_calls, do: :persistent_term.erase(@calls)
+
+    def get!(_key, _default \\ nil, _opts \\ []), do: fail!()
+    def put_new!(_key, _value, _opts \\ []), do: fail!()
+
+    defp fail! do
+      :persistent_term.put(@calls, call_count() + 1)
+      raise "l2 unreachable"
+    end
+  end
+
   # L1 and Invalidator are supervised singletons started by the application
   # (see application.ex), not per-test processes — clear L1's state instead
   # of starting fresh instances.
@@ -49,30 +70,43 @@ defmodule <%= @module %>.Valkey.CacheTest do
   end
 
   test "get/1 degrades to nil when L1 misses and the breaker's circuit is open" do
-    Application.put_env(:<%= @app %>, Breaker,
-      backend: nil,
-      timeout_ms: 5,
-      failure_threshold: 1,
-      cooldown_ms: 1_000
-    )
+    use_unreachable_backend()
 
-    :atomics.put(:persistent_term.get({Breaker, :state}, :atomics.new(3, signed: true)), 1, 1)
-
+    # failure_threshold: 1, so this first miss both fails and opens the
+    # circuit — rather than poking Breaker's :atomics state directly.
     assert Cache.get("missing") == nil
+
+    UnreachableBackend.reset_calls()
+    assert Cache.get("missing") == nil
+
+    assert UnreachableBackend.call_count() == 0,
+           "the circuit was not open: the backend was called a second time"
   end
 
   test "put_new/2 propagates (raises) rather than silently degrading" do
+    use_unreachable_backend()
+
+    # The failing call itself raises rather than fabricating a boolean...
+    assert_raise RuntimeError, ~r/l2 unreachable/, fn -> Cache.put_new("k", "v") end
+
+    # ...and having opened the circuit, the next one is refused outright —
+    # still a raise, still never a made-up answer.
+    assert_raise RuntimeError, ~r/circuit open/, fn -> Cache.put_new("k", "v") end
+  end
+
+  defp use_unreachable_backend do
     Application.put_env(:<%= @app %>, Breaker,
-      backend: nil,
-      timeout_ms: 5,
+      backend: UnreachableBackend,
+      timeout_ms: 50,
       failure_threshold: 1,
       cooldown_ms: 1_000
     )
 
-    ref = :atomics.new(3, signed: true)
-    :atomics.put(ref, 1, 1)
-    :persistent_term.put({Breaker, :state}, ref)
+    UnreachableBackend.reset_calls()
 
-    assert_raise RuntimeError, ~r/circuit open/, fn -> Cache.put_new("k", "v") end
+    on_exit(fn ->
+      Application.delete_env(:<%= @app %>, Breaker)
+      UnreachableBackend.erase_calls()
+    end)
   end
 end

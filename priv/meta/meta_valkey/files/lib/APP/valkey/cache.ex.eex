@@ -5,13 +5,26 @@ defmodule <%= @module %>.Valkey.Cache do
   `Breaker`-guarded `Cache.L2` read backfills `L1`. Writes go to `L1`
   immediately, then through the `Breaker` to `L2` — see
   docs/superpowers/specs/2026-08-29-valkey-openbao-enhancements-design.md.
+
+  Known TTL ceiling: `get/1`'s L1 backfill always writes with `:default_ttl`,
+  never the (shorter) TTL the original `put/3` asked for. Reading L2's
+  remaining TTL back would cost a second round-trip on every read miss, so
+  `:default_ttl` is the effective upper bound on how stale an L1 copy can be
+  regardless of what a write requested. Anything needing a tighter bound
+  should set `:default_ttl` accordingly rather than relying on per-write TTLs.
   """
 
   alias <%= @module %>.Valkey.Breaker
   alias <%= @module %>.Valkey.Cache.L1
   alias <%= @module %>.Valkey.Invalidator
 
-  @doc "Gets `key`, checking L1 first and backfilling from L2 (via the Breaker) on a miss."
+  @doc """
+  Gets `key`, checking L1 first and backfilling from L2 (via the Breaker) on a miss.
+
+  A backfilled entry is written to L1 with `:default_ttl`, not with whatever
+  TTL the original `put/3` specified — so it can live in L1 for up to
+  `:default_ttl` even if the write asked for less. See this module's moduledoc.
+  """
   @spec get(term) :: term | nil
   def get(key) do
     case L1.get!(key) do
